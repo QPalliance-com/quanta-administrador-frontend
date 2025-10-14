@@ -1,0 +1,223 @@
+<div class="card flex flex-col gap-6 w-full">
+    <p-progressSpinner *ngIf="loading$ | async"></p-progressSpinner>
+    <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
+        Mi compañía
+        <i class="pi pi-info-circle text-blue-500" pTooltip="Completa los datos de tu compañía. Usa los tooltips para ayuda en cada campo. Los campos obligatorios están marcados." tooltipPosition="right"></i>
+    </h2>
+
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded text-blue-800 text-sm flex items-center gap-2 mb-4">
+        <i class="pi pi-info-circle"></i>
+        Ingresa la información de tu empresa. El nombre, tipo y número de identificación, correo y dirección son obligatorios. Usa los tooltips para ayuda adicional.
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Sección: Datos generales -->
+        <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 mt-4 border-b pb-1">Datos generales</h3>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Tipo de persona
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Selecciona si la empresa es persona natural o jurídica." tooltipPosition="right"></i>
+            </label>
+            <p-select [options]="legalTypes" formControlName="legalType" placeholder="Seleccione tipo" class="w-full" pTooltip="Tipo de persona" tooltipPosition="top"></p-select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                Logo
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Adjunta el logo de la empresa." tooltipPosition="right"></i>
+            </label>
+            <p-fileupload
+                #fu
+                mode="basic"
+                chooseLabel="Seleccionar logo"
+                chooseIcon="pi pi-upload"
+                name="demo[]"
+                url=""
+                accept="image/*"
+                maxFileSize="1000000"
+                (onUpload)="onUpload($event)"
+                pTooltip="Adjunta el logo de la empresa"
+                tooltipPosition="top"
+            />
+        </div>
+
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Nombre de la compañía
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Nombre legal o comercial de la empresa." tooltipPosition="right"></i>
+            </label>
+            <input pInputText formControlName="companyName" placeholder="Nombre de la compañía" class="w-full" pTooltip="Nombre de la empresa" tooltipPosition="top" />
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Correo electrónico
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Correo electrónico principal de la empresa." tooltipPosition="right"></i>
+            </label>
+            <input pInputText formControlName="email" type="email" placeholder="Correo electrónico" class="w-full" pTooltip="Correo electrónico" tooltipPosition="top" />
+        </div>
+
+        <!-- Sección: Identificación y tributario -->
+        <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 mt-4 border-b pb-1">Identificación y datos tributarios</h3>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Tipo de identificación
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Selecciona el tipo de documento de identificación fiscal." tooltipPosition="right"></i>
+            </label>
+            <p-select [options]="documentTypes" formControlName="documentType" placeholder="Seleccione tipo" class="w-full" pTooltip="Tipo de identificación" tooltipPosition="top"></p-select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Número de identificación
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Número de identificación fiscal de la empresa." tooltipPosition="right"></i>
+            </label>
+            <input pInputText type="number" formControlName="numberIdentification" class="w-full" pTooltip="Número de identificación" tooltipPosition="top" />
+        </div>
+        <div *ngIf="form.get('documentType')?.value === 'NIT'">
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Dígito de verificación
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Dígito de verificación para NIT." tooltipPosition="right"></i>
+            </label>
+            <input pInputText formControlName="verificationDigit" class="w-full" pTooltip="Dígito de verificación" tooltipPosition="top" />
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Régimen tributario
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Selecciona el régimen tributario de la empresa." tooltipPosition="right"></i>
+            </label>
+            <p-select [options]="taxRegimes" formControlName="taxRegime" placeholder="Seleccione régimen" class="w-full" pTooltip="Régimen tributario" tooltipPosition="top"></p-select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Responsabilidad tributaria
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Selecciona la responsabilidad tributaria." tooltipPosition="right"></i>
+            </label>
+            <p-select [options]="taxResponsibilities" formControlName="taxResponsibility" placeholder="Seleccione responsabilidad" class="w-full" pTooltip="Responsabilidad tributaria" tooltipPosition="top"></p-select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Sector económico
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Sector económico principal de la empresa." tooltipPosition="right"></i>
+            </label>
+            <p-select [options]="sectors" formControlName="sector" placeholder="Seleccione sector" class="w-full" pTooltip="Sector económico" tooltipPosition="top"></p-select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Moneda principal
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Moneda principal de transacción." tooltipPosition="right"></i>
+            </label>
+            <p-select [options]="currencies" formControlName="currency" placeholder="Seleccione moneda" class="w-full" pTooltip="Moneda" tooltipPosition="top"></p-select>
+        </div>
+
+        <!-- Sección: Archivos PDF -->
+        <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 mt-4 border-b pb-1">Documentos legales (PDF)</h3>
+        </div>
+        <!-- RUT (PDF) -->
+        <div class="flex items-center gap-4">
+            <div class="flex-1">
+                <label class="block mb-1 font-medium flex items-center gap-2">
+                    RUT (PDF)
+                    <i class="pi pi-info-circle text-gray-400" pTooltip="Carga el archivo PDF del RUT de la empresa." tooltipPosition="right"></i>
+                </label>
+                <p-fileupload mode="basic" name="rutFile" accept="application/pdf" maxFileSize="5000000" chooseLabel="Seleccionar archivo" (onSelect)="onRutFileChange($event)" [auto]="false" class="w-full"></p-fileupload>
+            </div>
+            <div class="flex-1">
+                <ng-container *ngIf="form.get('rutFileUrl')?.value">
+                    <a [href]="form.get('rutFileUrl')?.value" target="_blank" class="text-blue-600 underline">Ver archivo</a>
+                </ng-container>
+            </div>
+        </div>
+        <!-- Certificado de existencia y representación legal (PDF) -->
+        <div class="flex items-center gap-4">
+            <div class="flex-1">
+                <label class="block mb-1 font-medium flex items-center gap-2">
+                    Certificado de existencia y representación legal
+                    <i class="pi pi-info-circle text-gray-400" pTooltip="Carga el certificado de existencia y representación legal (PDF)." tooltipPosition="right"></i>
+                </label>
+                <p-fileupload mode="basic" name="certificateFile" accept="application/pdf" maxFileSize="5000000" chooseLabel="Seleccionar archivo" (onSelect)="onCertificateFileChange($event)" [auto]="false" class="w-full"></p-fileupload>
+            </div>
+            <div class="flex-1">
+                <ng-container *ngIf="form.get('certificateFile')?.value">
+                    <a [href]="form.get('certificateFile')?.value" target="_blank" class="text-blue-600 underline">Ver archivo</a>
+                </ng-container>
+            </div>
+        </div>
+        <!-- Organigrama (PDF) -->
+        <div class="flex items-center gap-4">
+            <div class="flex-1">
+                <label class="block mb-1 font-medium flex items-center gap-2">
+                    Organigrama (PDF)
+                    <i class="pi pi-info-circle text-gray-400" pTooltip="Carga el archivo PDF del organigrama de la empresa." tooltipPosition="right"></i>
+                </label>
+                <p-fileupload mode="basic" name="orgChartFile" accept="application/pdf" maxFileSize="5000000" chooseLabel="Seleccionar archivo" (onSelect)="onOrgChartFileChange($event)" [auto]="false" class="w-full"></p-fileupload>
+            </div>
+            <div class="flex-1">
+                <ng-container *ngIf="form.get('orgChartFile')?.value">
+                    <a [href]="form.get('orgChartFile')?.value" target="_blank" class="text-blue-600 underline">Ver archivo</a>
+                </ng-container>
+            </div>
+        </div>
+
+        <!-- Sección: Ubicación y otros -->
+        <div class="col-span-2">
+            <h3 class="text-lg font-semibold mb-2 mt-4 border-b pb-1">Ubicación y otros</h3>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Dirección
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Dirección física de la empresa." tooltipPosition="right"></i>
+            </label>
+            <input pInputText formControlName="address" placeholder="Dirección" class="w-full" pTooltip="Dirección de la empresa" tooltipPosition="top" />
+        </div>
+        <div>
+            <label for="departmentId" class="text-sm mb-1 block flex items-center gap-2">
+                Departamento
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Departamento donde se ubica la empresa." tooltipPosition="right"></i>
+            </label>
+            <p-select
+                fluid
+                inputId="departmentId"
+                formControlName="departmentId"
+                [options]="(departments$ | async) ?? []"
+                optionLabel="name"
+                optionValue="id"
+                showFilter
+                placeholder="Seleccionar departamento"
+                pTooltip="Departamento"
+                tooltipPosition="top"
+            ></p-select>
+        </div>
+        <div>
+            <label for="cityId" class="text-sm mb-1 block flex items-center gap-2">
+                Ciudad
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Ciudad donde se ubica la empresa." tooltipPosition="right"></i>
+            </label>
+            <p-select fluid inputId="cityId" formControlName="cityId" [options]="(cities$ | async) ?? []" optionLabel="name" optionValue="id" showFilter placeholder="Seleccionar ciudad" pTooltip="Ciudad" tooltipPosition="top"></p-select>
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Sitio web
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Sitio web de la empresa (opcional)." tooltipPosition="right"></i>
+            </label>
+            <input pInputText formControlName="website" placeholder="Sitio web" class="w-full" pTooltip="Sitio web" tooltipPosition="top" />
+        </div>
+        <div>
+            <label class="block mb-1 font-medium flex items-center gap-2">
+                Número de colaboradores
+                <i class="pi pi-info-circle text-gray-400" pTooltip="Cantidad de colaboradores, asignado automáticamente." tooltipPosition="right"></i>
+            </label>
+            <input pInputText formControlName="collaboratorsCount" class="w-full" readonly />
+        </div>
+
+        <!-- Botón Guardar -->
+        <div class="flex justify-end gap-4 col-span-2 pt-6 border-t mt-6">
+            <button pButton type="button" class="p-button-secondary" (click)="cancel()" label="Cancelar" pTooltip="Cancelar y volver a la lista"></button>
+            <button pButton type="submit" label="Guardar" [disabled]="form.invalid" pTooltip="Guardar datos de la compañía"></button>
+        </div>
+    </form>
+</div>
+
+<p-toast></p-toast>

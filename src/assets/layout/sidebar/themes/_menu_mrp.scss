@@ -1,0 +1,7 @@
+@use '../../variables/mrp' as *;
+.layout-menu-mrp {
+    --menu-bg: #{$mrp-contrast};
+    --active-menuitem-bg: #{$mrp-contrast};
+    --active-menuitem-text-color: #{$mrp-primary-dark};
+    --menuitem-text-color: #{$mrp-text};
+}

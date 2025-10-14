@@ -1,0 +1,11 @@
+/**
+ * Core Services Barrel Export
+ * Centraliza la exportación de todos los servicios del dominio
+ */
+
+// Infrastructure Services
+export * from './department-city.service';
+
+// Business Domain Services
+export * from './company.service';
+export * from './user.service';

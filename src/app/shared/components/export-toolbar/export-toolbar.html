@@ -1,0 +1,37 @@
+<div class="flex items-center justify-end gap-2">
+    <button pButton icon="pi pi-upload" class="p-button-sm p-button-secondary" (click)="openExportDialog()" pTooltip="Exportar datos" tooltipPosition="top">Exportar</button>
+</div>
+
+<p-dialog header="Exportar datos" [(visible)]="exportDialogVisible" [modal]="true" [style]="{ width: '60%' }" [closable]="true" (onHide)="closeExportDialog()">
+    <div class="flex flex-col gap-4">
+        <div>
+            <label class="block text-xs text-gray-500 mb-1">Columnas a exportar</label>
+            <div class="flex gap-2 mb-2">
+                <button pButton type="button" class="p-button-xs p-button-text" (click)="selectAllColumns()">Seleccionar todas</button>
+                <button pButton type="button" class="p-button-xs p-button-text" (click)="deselectAllColumns()">Desmarcar todas</button>
+            </div>
+            <p-multiSelect appendTo="body" [options]="columns" [(ngModel)]="selectedColumns" [defaultLabel]="'Selecciona columnas'" optionLabel="label" optionValue="field" [showHeader]="false" [style]="{ width: '100%' }"></p-multiSelect>
+        </div>
+        <div>
+            <label class="block text-xs text-gray-500 mb-1">Vista previa</label>
+            <p-table [value]="previewData" [scrollable]="true" scrollHeight="200px" [tableStyle]="{ 'min-width': '100%' }">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th *ngFor="let col of selectedColumnDefs">{{ col.label }}</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-row>
+                    <tr>
+                        <td *ngFor="let col of selectedColumnDefs">{{ row[col.field] }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+            <p-select appendTo="body" [options]="exportFormats" [(ngModel)]="selectedExportFormat" optionLabel="label" optionValue="value" [style]="{ width: '150px' }" placeholder="Exportar como"></p-select>
+            <button pButton icon="pi pi-upload" class="p-button p-button-secondary" [disabled]="!selectedExportFormat" (click)="onExport()">Exportar</button>
+            <button pButton label="Cancelar" class="p-button p-button-text" (click)="closeExportDialog()"></button>
+        </div>
+        <div *ngIf="exportSuccess" class="text-green-600 text-sm text-right mt-2 flex items-center gap-2"><i class="pi pi-check-circle"></i> Exportación exitosa</div>
+    </div>
+</p-dialog>

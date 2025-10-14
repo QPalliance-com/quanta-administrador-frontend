@@ -1,0 +1,33 @@
+<div class="min-h-screen w-full flex items-center justify-center bg-gray-50 px-4">
+    <div class="max-w-md w-full">
+        <!-- Contenido principal -->
+        <div class="text-center space-y-8 animate-fade-in">
+            <!-- Ícono de error -->
+            <div class="flex justify-center animate-slide-up">
+                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center shadow-inner">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Código de error -->
+            <div class="animate-slide-up" style="animation-delay: 0.1s">
+                <h1 class="text-7xl font-extrabold text-gray-800 mb-2 tracking-tight">404</h1>
+                <div class="w-14 h-1 bg-red-400 mx-auto rounded-full"></div>
+            </div>
+
+            <!-- Mensaje -->
+            <div class="space-y-3 animate-slide-up" style="animation-delay: 0.2s">
+                <h2 class="text-2xl font-semibold text-gray-900">Página no encontrada</h2>
+                <p class="text-gray-600 leading-relaxed max-w-sm mx-auto">La página que buscas no existe o fue movida. Verifica la dirección o vuelve al inicio.</p>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center animate-slide-up" style="animation-delay: 0.3s">
+                <button (click)="goToHome()" pButton type="button" label="Volver al inicio" icon="pi pi-home" class="p-button-rounded p-button-primary"></button>
+                <button (click)="reloadPage()" pButton type="button" label="Reintentar" icon="pi pi-refresh" class="p-button-rounded p-button-secondary"></button>
+            </div>
+        </div>
+    </div>
+</div>

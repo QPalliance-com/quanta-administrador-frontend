@@ -1,0 +1,7 @@
+@use '../../variables/mrp' as *;
+.layout-topbar-mrp {
+    --topbar-bg: #{$mrp-contrast};
+    --topbar-item-text-color: #{$mrp-primary-dark};
+    --topbar-menu-button-bg: #{$mrp-accent};
+    --topbar-menu-button-text-color: #{$mrp-primary-dark};
+}

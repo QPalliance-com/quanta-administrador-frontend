@@ -1,0 +1,69 @@
+<div class="card">
+    <p-toolbar styleClass="mb-12">
+        <ng-template #start>
+            <p-button label="Nueva compañía" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+        </ng-template>
+        <ng-template #end>
+            <span class="mr-4 text-gray-600 text-sm flex items-center gap-2">
+                <i class="pi pi-database"></i>
+                Total compañías: <b>{{ (companies$ | async)?.length || 0 }}</b>
+            </span>
+            <!-- ExportToolbarComponent podría agregarse aquí si se requiere exportación -->
+            <i class="pi pi-info-circle ml-4 text-blue-500 cursor-pointer" pTooltip="Aquí puedes gestionar las compañías del sistema. Usa los botones de acción para ver, editar o eliminar." tooltipPosition="left"></i>
+        </ng-template>
+    </p-toolbar>
+    <p-table #companiesTable [value]="(companies$ | async) || []" [loading]="companiesLoading$ | async" selectionMode="multiple" [(selection)]="selectedCompanies" [paginator]="true" [rows]="10" [globalFilterFields]="filterFields">
+        <ng-template #caption>
+            <div class="flex items-center justify-between">
+                <div class="font-semibold text-xl mb-4 flex items-center gap-2">
+                    Compañías
+                    <i class="pi pi-question-circle text-blue-400" pTooltip="Listado de compañías del sistema." tooltipPosition="right"></i>
+                </div>
+                <p-iconfield>
+                    <p-inputicon styleClass="pi pi-search" />
+                    <input pInputText type="text" (input)="onGlobalFilter(companiesTable, $event)" placeholder="Buscar..." />
+                </p-iconfield>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th pTooltip="Logo de la compañía" tooltipPosition="top">Logo</th>
+                <th pTooltip="Nombre legal de la compañía" tooltipPosition="top">Nombre</th>
+                <th pTooltip="Tipo de persona jurídica o natural" tooltipPosition="top">Tipo Legal</th>
+                <th pTooltip="NIT o identificación" tooltipPosition="top">NIT</th>
+                <th pTooltip="Correo electrónico" tooltipPosition="top">Correo</th>
+                <th pTooltip="Sector económico" tooltipPosition="top">Sector</th>
+                <th pTooltip="Moneda principal" tooltipPosition="top">Moneda</th>
+                <th pTooltip="Dirección principal" tooltipPosition="top">Dirección</th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-company>
+            <tr>
+                <td>
+                    <img *ngIf="company.logoUrl" [src]="company.logoUrl" alt="Logo" class="w-8 h-8 object-contain rounded" />
+                </td>
+                <td>{{ company.companyName }}</td>
+                <td>{{ company.legalType === 'juridical' ? 'Jurídica' : 'Natural' }}</td>
+                <td>{{ company.numberIdentification }}<span *ngIf="company.verificationDigit">-{{ company.verificationDigit }}</span></td>
+                <td>{{ company.email }}</td>
+                <td>{{ company.sector || '-' }}</td>
+                <td>{{ company.currency }}</td>
+                <td>{{ company.address }}</td>
+                <td>
+                    <button pButton icon="pi pi-eye" class="p-button-text p-button-sm" (click)="viewCompany(company)" pTooltip="Ver" tooltipPosition="top"></button>
+                    <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editCompany(company)" pTooltip="Editar" tooltipPosition="top"></button>
+                    <button pButton icon="pi pi-trash" class="p-button-text p-button-sm text-red-500" (click)="deleteCompany(company)" pTooltip="Eliminar" tooltipPosition="top"></button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="7">No hay compañías registradas.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <p-dialog *ngIf="selectedCompany" header="Detalle de compañía" [(visible)]="displayViewDialog" [modal]="true" [style]="{ width: '500px' }" [closable]="true">
+        <app-company-info [company]="selectedCompany"></app-company-info>
+    </p-dialog>
+</div>

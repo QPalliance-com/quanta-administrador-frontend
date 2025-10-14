@@ -1,0 +1,18 @@
+// Variables CSS para el tema MRP
+:root {
+    --mrp-primary: #d62974;
+    --mrp-primary-light: #e85a9b;
+    --mrp-primary-dark: #a81e5a;
+    --mrp-accent: #f7b2d9;
+    --mrp-contrast: #fff;
+    --mrp-text: #22223b;
+    --surface-ground: #fff;
+}
+
+// Utilidad para resaltar secciones
+.mrp-highlight {
+    background: var(--mrp-primary);
+    color: var(--mrp-contrast);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+}
