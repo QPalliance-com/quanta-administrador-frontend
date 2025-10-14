@@ -1,0 +1,219 @@
+{
+    "success": true,
+    "message": "Menu encontrado.",
+    "data": [
+        {
+            "label": "Inicio",
+            "icon": "pi pi-fw pi-home",
+            "description": "Panel principal del administrador",
+            "items": [
+                {
+                    "label": "Dashboard General",
+                    "icon": "pi pi-home",
+                    "routerLink": ["/dashboard"],
+                    "description": "Resumen ejecutivo del sistema y empresas"
+                }
+            ]
+        },
+        {
+            "label": "Empresas",
+            "icon": "pi pi-fw pi-briefcase",
+            "items": [
+                {
+                    "label": "Contrato y Suscripción",
+                    "icon": "pi pi-file",
+                    "description": "Gestión contractual y planes SaaS por empresa",
+                    "items": [
+                        {
+                            "label": "Contratos",
+                            "icon": "pi pi-file-edit",
+                            "routerLink": ["/contracts/pages/contracts-list"],
+                            "description": "Listado y detalle de contratos por empresa"
+                        },
+                        {
+                            "label": "Suscripciones",
+                            "icon": "pi pi-id-card",
+                            "routerLink": ["/contracts/pages/subscriptions-list"],
+                            "description": "Control de suscripciones activas o suspendidas"
+                        },
+                        {
+                            "label": "Planes y Precios",
+                            "icon": "pi pi-list",
+                            "routerLink": ["/contracts/components/plan-features-form"],
+                            "description": "Gestión de planes, precios y características"
+                        },
+                        {
+                            "label": "Entitlements",
+                            "icon": "pi pi-check-circle",
+                            "routerLink": ["/contracts/pages/entitlements-summary"],
+                            "description": "Límites de uso y derechos de cada empresa"
+                        }
+                    ]
+                },
+                {
+                    "label": "Facturación y Cobros",
+                    "icon": "pi pi-wallet",
+                    "description": "Gestión de facturación, pagos y morosidad",
+                    "items": [
+                        {
+                            "label": "Facturas",
+                            "icon": "pi pi-file",
+                            "routerLink": ["/billing/pages/invoices-list"],
+                            "description": "Listado de facturas emitidas por empresa"
+                        },
+                        {
+                            "label": "Pagos",
+                            "icon": "pi pi-credit-card",
+                            "routerLink": ["/billing/pages/payments-list"],
+                            "description": "Registro y conciliación de pagos"
+                        },
+                        {
+                            "label": "Dunning",
+                            "icon": "pi pi-exclamation-triangle",
+                            "routerLink": ["/billing/pages/dunning-list"],
+                            "description": "Gestión de morosidad y suspensiones"
+                        },
+                        {
+                            "label": "Tablero Financiero",
+                            "icon": "pi pi-chart-line",
+                            "routerLink": ["/billing/pages/billing-dashboard"],
+                            "description": "MRR, aging, cartera y reintentos de cobro"
+                        }
+                    ]
+                },
+                {
+                    "label": "Módulos Contratados",
+                    "icon": "pi pi-th-large",
+                    "description": "Gestión de licencias y activaciones por empresa",
+                    "items": [
+                        {
+                            "label": "Catálogo de Módulos",
+                            "icon": "pi pi-list",
+                            "routerLink": ["/modules-management/pages/catalog-list"],
+                            "description": "Listado general de módulos SaaS disponibles"
+                        },
+                        {
+                            "label": "Módulos por Empresa",
+                            "icon": "pi pi-briefcase",
+                            "routerLink": ["/modules-management/pages/company-modules"],
+                            "description": "Visualización de módulos activados por cliente"
+                        },
+                        {
+                            "label": "Historial de Activación",
+                            "icon": "pi pi-history",
+                            "routerLink": ["/modules-management/pages/activation-history"],
+                            "description": "Registro de cambios en licencias o módulos"
+                        }
+                    ]
+                },
+                {
+                    "label": "Usuarios",
+                    "icon": "pi pi-users",
+                    "description": "Usuarios asociados a cada empresa",
+                    "items": [
+                        {
+                            "label": "Listado de Usuarios",
+                            "icon": "pi pi-list",
+                            "routerLink": ["/users/list"],
+                            "description": "Usuarios vinculados y sus roles"
+                        },
+                        {
+                            "label": "Métricas de Uso",
+                            "icon": "pi pi-chart-bar",
+                            "routerLink": ["/users/pages/user-metrics"],
+                            "description": "Actividad DAU/WAU/MAU por empresa"
+                        },
+                        {
+                            "label": "Adopción y Actividad",
+                            "icon": "pi pi-user-plus",
+                            "routerLink": ["/users/pages/adoption-dashboard"],
+                            "description": "Sugerencias de adopción y tasa de uso"
+                        }
+                    ]
+                },
+                {
+                    "label": "Empresa 360°",
+                    "icon": "pi pi-building",
+                    "description": "Ficha completa de cada empresa cliente",
+                    "items": [
+                        {
+                            "label": "Listado de Empresas",
+                            "icon": "pi pi-list",
+                            "routerLink": ["/company-360/list"],
+                            "description": "Empresas registradas en la plataforma"
+                        },
+                      
+                        {
+                            "label": "Salud de la Cuenta",
+                            "icon": "pi pi-heart",
+                            "routerLink": ["/company-360/pages/company-health"],
+                            "description": "Score de salud, uso y pagos de la empresa"
+                        },
+                        {
+                            "label": "Soporte / Tickets",
+                            "icon": "pi pi-comments",
+                            "routerLink": ["/company-360/pages/company-support"],
+                            "description": "Integración con HelpDesk y seguimiento de casos"
+                        },
+                        {
+                            "label": "Actividades y Notas",
+                            "icon": "pi pi-calendar",
+                            "routerLink": ["/company-360/pages/company-activities"],
+                            "description": "Touchpoints, llamadas, emails, acuerdos"
+                        }
+                    ]
+                },
+                {
+                    "label": "Analytics & Alertas",
+                    "icon": "pi pi-chart-line",
+                    "description": "Seguimiento de KPIs y alertas ejecutivas",
+                    "items": [
+                        {
+                            "label": "KPIs Clave",
+                            "icon": "pi pi-chart-pie",
+                            "routerLink": ["/analytics/pages/kpis-dashboard"],
+                            "description": "Indicadores de desempeño SaaS"
+                        },
+                        {
+                            "label": "Tendencias",
+                            "icon": "pi pi-chart-line",
+                            "routerLink": ["/analytics/pages/trends-report"],
+                            "description": "Crecimiento, retención y churn"
+                        },
+                        {
+                            "label": "Alertas Ejecutivas",
+                            "icon": "pi pi-bell",
+                            "routerLink": ["/analytics/pages/alerts-dashboard"],
+                            "description": "Renovaciones próximas y riesgos de churn"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "label": "Configuración",
+            "icon": "pi pi-cog",
+            "description": "Ajustes generales del sistema SaaS",
+            "items": [
+                {
+                    "label": "Usuarios del Sistema",
+                    "icon": "pi pi-user",
+                    "routerLink": ["/settings/users"],
+                    "description": "Gestión de usuarios administradores"
+                },
+                {
+                    "label": "Roles y Permisos",
+                    "icon": "pi pi-lock",
+                    "routerLink": ["/settings/roles"],
+                    "description": "Control de acceso por módulo"
+                },
+                {
+                    "label": "Notificaciones",
+                    "icon": "pi pi-bell",
+                    "routerLink": ["/settings/notifications"],
+                    "description": "Configuración de alertas del sistema"
+                }
+            ]
+        }
+    ]
+}

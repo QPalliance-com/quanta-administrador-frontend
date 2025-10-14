@@ -1,0 +1,33 @@
+{
+    "success": true,
+    "message": "Users info fetched",
+    "data": [
+        {
+            "id": 1,
+            "names": "Juan",
+            "lastNames": "Admin",
+            "email": "juan.admin@example.com",
+            "phone": "3123456789",
+            "status": "active",
+            "roleId": 1,
+            "userType": "Superadmin",
+            "position": "CTO",
+            "imageUrl": "https://avatar.iran.liara.run/public/boy",
+            "language": "es"
+        },
+        {
+            "id": 2,
+            "names": "Maria",
+            "lastNames": "Operativa",
+            "email": "maria.op@example.com",
+            "phone": "3219876543",
+            "status": "active",
+            "roleId": 2,
+            "userType": "Operator",
+            "position": "Inventory Analyst",
+            "imageUrl": "https://avatar.iran.liara.run/public/girl",
+            "language": "es"
+        }
+    ],
+    "traceId": "comp-001"
+}
