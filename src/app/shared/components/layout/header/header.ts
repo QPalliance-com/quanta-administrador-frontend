@@ -8,13 +8,11 @@ import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { MegaMenuModule } from 'primeng/megamenu';
 import { BadgeModule } from 'primeng/badge';
-import { Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { MenuSelectors, MenuActions } from '../../../state/layout';
+import { MenuService } from '../services/menu.service';
 import { OverlayBadge } from 'primeng/overlaybadge';
-// import { Notification } from '@/features/settings/models/notification.model';
-// import * as notificationSelectors from '@/features/settings/state/selectors/notification.selectors';
+
 @Component({
     selector: '[app-header]',
     standalone: true,
@@ -26,27 +24,25 @@ import { OverlayBadge } from 'primeng/overlaybadge';
     }
 })
 export class HeaderComponent implements OnDestroy {
-    private store = inject(Store);
     private router = inject(Router);
     _layoutService = inject(LayoutService);
+    private menuService = inject(MenuService);
 
     @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
     @ViewChild('menuButton') menuButton!: ElementRef<HTMLButtonElement>;
     @ViewChild('mobileMenuButton') mobileMenuButton!: ElementRef<HTMLButtonElement>;
 
-    items$ = this.store.select(MenuSelectors.selectMenuItems);
-    loading$ = this.store.select(MenuSelectors.selectMenuLoading);
+    items = this.menuService.menuItems;
+    loading$ = this.menuService.isLoading$;
    
     constructor() {
-        this.store.dispatch(MenuActions.loadMenu());
-      
-        // Suscribirse para recibir notificaciones nuevas en tiempo real
-       
+        // Menu loading handled by service
     }
 
     toggleDarkMode() {
         this._layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
     }
+    
     onMenuButtonClick() {
         this._layoutService.onMenuToggle();
     }
@@ -78,6 +74,7 @@ export class HeaderComponent implements OnDestroy {
     onTopbarMenuToggle() {
         this._layoutService.layoutState.update((val) => ({ ...val, topbarMenuActive: !val.topbarMenuActive }));
     }
+    
     goToNotifications() {
         this.router.navigate(['/settings/notifications']);
     }

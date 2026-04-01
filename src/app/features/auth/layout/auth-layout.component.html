@@ -1,0 +1,59 @@
+<div class="auth-bg min-h-screen flex items-center justify-center px-4 py-10 relative overflow-hidden">
+    <!-- Background orbs -->
+    <div class="auth-orb auth-orb--1"></div>
+    <div class="auth-orb auth-orb--2"></div>
+    <div class="auth-orb auth-orb--3"></div>
+
+    <!-- Auth Card -->
+    <div class="w-full max-w-md auth-form-enter relative z-10">
+        <!-- Logo flotando sobre el card -->
+        <div class="flex justify-center mb-6">
+            <img src="images/Logo-Quanta-Blanco.png" alt="Quanta" class="h-11 w-auto" />
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-2xl px-8 pt-8 pb-8">
+            <!-- Header Section -->
+            <div class="flex flex-col justify-center items-center mb-7">
+                <!-- Admin Icon -->
+                <div style="height: 56px; width: 56px" class="bg-primary rounded-full flex items-center justify-center mb-4">
+                    <i class="pi pi-shield text-surface-0 dark:text-surface-900 !text-4xl"></i>
+                </div>
+
+                <!-- Title -->
+                <h1 class="m-0 text-primary font-semibold text-2xl flex justify-center items-center">
+                    Quanta Admin
+                </h1>
+                <span class="block text-surface-500 mt-1 text-center text-sm">
+                    Panel de Super Administración
+                </span>
+            </div>
+
+            <!-- Loading Message -->
+            <div *ngIf="loading()" class="mt-6">
+                <p-message severity="info" text="Procesando tu solicitud..." [closable]="false" styleClass="w-full auth-message">
+                    <ng-template pTemplate="icon">
+                        <i class="pi pi-spinner pi-spin"></i>
+                    </ng-template>
+                </p-message>
+            </div>
+
+            <!-- Error message -->
+            <div *ngIf="error() as error" class="flex flex-col items-center gap-2 mt-4 bg-red-50 border border-red-300 rounded px-3 py-2 text-red-700 text-sm w-full max-w-md mx-auto">
+                <i class="pi pi-exclamation-triangle"></i>
+                <p class="flex-1">{{ error }}</p>
+            </div>
+
+            <!-- Router Outlet for Login Form -->
+            <div class="mt-8">
+                <router-outlet></router-outlet>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 text-center">
+                <p class="text-surface-500 dark:text-surface-400 text-sm">
+                    © {{ currentYear }} Quanta Solutions. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,18 +4,35 @@ import {
     NotFoundComponent, 
     ServerDownComponent 
 } from './shared/components';
+import { authGuard } from './core/guards';
 
 export const appRoutes: Routes = [
-    //   { path: 'login', loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule) },
+    // Auth routes (no guard)
+    {
+        path: 'auth',
+        loadChildren: () => import('./features/auth/auth.routes').then((m) => m.authRoutes)
+    },
+    // Protected routes (with AuthGuard)
     {
         path: '',
         component: MainLayoutComponent,
-        // canActivate: [AuthGuard],
+        canActivate: [authGuard],
         children: [
-            { path: 'users', data: { breadcrumb: 'Usuarios' }, loadChildren: () => import('./features/users/users.routes').then((m) => m.usersRoutes) },
-            { path: 'company-360', data: { breadcrumb: 'Compañía 360' }, loadChildren: () => import('./features/company-360/company-360.routes').then((m) => m.company360Routes) },
-
-            // Módulos futuros...
+            { 
+                path: '', 
+                redirectTo: 'dashboard', 
+                pathMatch: 'full' 
+            },
+            { 
+                path: 'dashboard', 
+                data: { breadcrumb: 'Dashboard' }, 
+                loadChildren: () => import('./features/company-360/company-360.routes').then((m) => m.company360Routes) 
+            },
+            { 
+                path: 'company-360', 
+                data: { breadcrumb: 'Compañía 360' }, 
+                loadChildren: () => import('./features/company-360/company-360.routes').then((m) => m.company360Routes) 
+            }
         ]
     },
     {
@@ -26,7 +43,6 @@ export const appRoutes: Routes = [
         path: 'server-error',
         component: ServerDownComponent
     },
-
     // Ruta catch-all al final
     {
         path: '**',

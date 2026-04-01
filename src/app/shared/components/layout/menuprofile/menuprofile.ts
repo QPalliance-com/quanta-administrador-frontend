@@ -1,9 +1,6 @@
-import { Component, computed, effect, ElementRef, inject, OnDestroy, Renderer2 } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, Renderer2, signal } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import * as userActions from '../../../../features/users/state/actions/user.actions';
-import * as fromUser from '../../../../features/users/state/selectors/user.selectors';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { LayoutService } from '../services/layout.service';
 import { TooltipModule } from 'primeng/tooltip';
@@ -35,30 +32,23 @@ import { Subscription } from 'rxjs';
 export class MenuprofileComponent implements OnDestroy {
     private destroy$ = new Subject<void>();
     _layoutService = inject(LayoutService);
-    private store = inject(Store);
-    user$ = this.store.select(fromUser.selectCurrentUser);
-    loading$ = this.store.select(fromUser.selectUsersLoading);
 
     renderer = inject(Renderer2);
-
     el = inject(ElementRef);
 
+    // Placeholder user data - will be replaced when AuthService is implemented
+    user$ = signal({ names: 'Admin', lastNames: 'User', imageUrl: 'assets/images/avatar.png', position: 'Administrador', id: 1 });
+    loading$ = signal(false);
+
     isHorizontal = computed(() => this._layoutService.isHorizontal() && this._layoutService.isDesktop());
-
     menuProfileActive = computed(() => this._layoutService.layoutState().menuProfileActive);
-
     menuProfilePosition = computed(() => this._layoutService.layoutConfig().menuProfilePosition);
-
     isTooltipDisabled = computed(() => !this._layoutService.isSlim());
 
     subscription!: Subscription;
-
     outsideClickListener: any;
 
     constructor() {
-        // Simula sesión: carga el usuario con id 1 al inicializar el menú
-        this.store.dispatch(userActions.loadUser({ id: 2 }));
-
         this.subscription = this._layoutService.overlayOpen$.pipe(takeUntil(this.destroy$)).subscribe(() => {
             if (this.isHorizontal() && this.menuProfileActive()) {
                 this._layoutService.layoutState.update((value) => ({ ...value, menuProfileActive: false }));

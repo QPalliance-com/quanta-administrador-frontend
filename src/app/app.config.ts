@@ -1,5 +1,5 @@
 import { ApplicationConfig, isDevMode } from '@angular/core';
-import { provideHttpClient, HTTP_INTERCEPTORS, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, HTTP_INTERCEPTORS, withInterceptorsFromDi, withInterceptors } from '@angular/common/http';
 import { provideRouter, withEnabledBlockingInitialNavigation, withHashLocation, withInMemoryScrolling } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideStore } from '@ngrx/store';
@@ -11,17 +11,18 @@ import { MessageService } from 'primeng/api';
 import { appRoutes } from './app.routes';
 import { AppTheme } from './core/theme/theme.config';
 import { departmentCityReducer } from './core/state/reducers/department-city.reducer';
-import { menuReducer, MenuEffects } from './shared/state/layout';
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
 import { LoaderInterceptor } from './core/interceptors/loading.interceptor';
 import { HttpErrorInterceptor } from './core/interceptors/http-error.interceptor';
-import { SettingsEffects, settingsReducer } from './features/users/state';
-import { Company360Effects, reducers as company360Reducers } from './features/company-360/state';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         // HTTP Configuration
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(
+            withInterceptorsFromDi(),
+            withInterceptors([authInterceptor])
+        ),
         {
             provide: HTTP_INTERCEPTORS,
             useClass: LoaderInterceptor,
@@ -43,23 +44,16 @@ export const appConfig: ApplicationConfig = {
                 anchorScrolling: 'enabled',
                 scrollPositionRestoration: 'enabled'
             }),
-            withEnabledBlockingInitialNavigation(),
-            withHashLocation()
+            withEnabledBlockingInitialNavigation()
         ),
 
         // Core Providers
         MessageService,
 
-        // NgRx Store Configuration
+        // NgRx Store Configuration (only for departmentCity lookup data)
         provideStore(
             {
-                // Core Module
-                departmentCity: departmentCityReducer,
-                menu: menuReducer,
-                // Settings Module
-                settings: settingsReducer,
-                // Company360 (spread para soportar featureKey dinámico)
-                ...company360Reducers
+                departmentCity: departmentCityReducer
             },
             {
                 runtimeChecks: {
@@ -72,14 +66,9 @@ export const appConfig: ApplicationConfig = {
             }
         ),
 
-        // NgRx Effects
+        // NgRx Effects (only for departmentCity)
         provideEffects([
-            // Core Effects
-            DepartmentCityEffects,
-            MenuEffects,
-              ...SettingsEffects,
-            ...Company360Effects
-          
+            DepartmentCityEffects
         ]),
 
         // NgRx DevTools

@@ -1,45 +1,59 @@
 <div class="card">
-    <p-toolbar styleClass="mb-12">
+    <p-toolbar styleClass="mb-6">
         <ng-template #start>
-            <p-button label="Nueva compañía" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+            <p-button label="Nueva compañía" icon="pi pi-plus" (onClick)="openNew()" />
         </ng-template>
         <ng-template #end>
-            <span class="mr-4 text-gray-600 text-sm flex items-center gap-2">
-                <i class="pi pi-database"></i>
-                Total compañías: <b>{{ (companies$ | async)?.length || 0 }}</b>
-            </span>
-            <!-- ExportToolbarComponent podría agregarse aquí si se requiere exportación -->
-            <i class="pi pi-info-circle ml-4 text-blue-500 cursor-pointer" pTooltip="Aquí puedes gestionar las compañías del sistema. Usa los botones de acción para ver, editar o eliminar." tooltipPosition="left"></i>
+            <app-export-toolbar *ngIf="companies().length > 0" [exportData]="companies()" [exportColumns]="cols" exportFileName="compañías" (exportFormat)="exportTable($event)" />
         </ng-template>
     </p-toolbar>
-    <p-table #companiesTable [value]="(companies$ | async) || []" [loading]="companiesLoading$ | async" selectionMode="multiple" [(selection)]="selectedCompanies" [paginator]="true" [rows]="10" [globalFilterFields]="filterFields">
+
+    <!-- Menú flotante compartido para acciones de fila -->
+    <p-menu #rowMenu [popup]="true" [model]="rowMenuItems" appendTo="body" />
+
+    <p-table
+        *ngIf="companies().length > 0 || !companiesLoading()"
+        #companiesTable
+        [value]="companies()"
+        [loading]="companiesLoading()"
+        [paginator]="true"
+        [globalFilterFields]="filterFields"
+        [rows]="15"
+        [columns]="cols"
+        [resizableColumns]="true"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [showCurrentPageReport]="true"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+        styleClass="p-datatable-sm"
+    >
         <ng-template #caption>
             <div class="flex items-center justify-between">
-                <div class="font-semibold text-xl mb-4 flex items-center gap-2">
-                    Compañías
-                    <i class="pi pi-question-circle text-blue-400" pTooltip="Listado de compañías del sistema." tooltipPosition="right"></i>
+                <div class="flex items-center gap-3">
+                    <span class="font-semibold text-xl">Compañías</span>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
+                        {{ companies().length }} registros
+                    </span>
                 </div>
-                <p-iconfield>
-                    <p-inputicon styleClass="pi pi-search" />
-                    <input pInputText type="text" (input)="onGlobalFilter(companiesTable, $event)" placeholder="Buscar..." />
-                </p-iconfield>
+                <input pInputText type="text" (input)="onGlobalFilter(companiesTable, $event)" placeholder="Buscar..." class="text-sm" />
             </div>
         </ng-template>
+
         <ng-template pTemplate="header">
             <tr>
-                <th pTooltip="Logo de la compañía" tooltipPosition="top">Logo</th>
-                <th pTooltip="Nombre legal de la compañía" tooltipPosition="top">Nombre</th>
-                <th pTooltip="Tipo de persona jurídica o natural" tooltipPosition="top">Tipo Legal</th>
-                <th pTooltip="NIT o identificación" tooltipPosition="top">NIT</th>
-                <th pTooltip="Correo electrónico" tooltipPosition="top">Correo</th>
-                <th pTooltip="Sector económico" tooltipPosition="top">Sector</th>
-                <th pTooltip="Moneda principal" tooltipPosition="top">Moneda</th>
-                <th pTooltip="Dirección principal" tooltipPosition="top">Dirección</th>
-                <th>Acciones</th>
+                <th *ngFor="let col of cols" pResizableColumn [pSortableColumn]="col.field">
+                    <div class="flex items-center gap-1">
+                        <span [pTooltip]="colTooltips[col.field]" tooltipPosition="top">{{ col.header }}</span>
+                        <p-sortIcon [field]="col.field" />
+                    </div>
+                </th>
+                <th style="width: 3rem"></th>
             </tr>
         </ng-template>
+
         <ng-template pTemplate="body" let-company>
-            <tr>
+            <tr class="cursor-pointer group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 border-l-2 border-l-transparent hover:border-l-primary" (click)="navigateToView(company.id)">
                 <td>
                     <img *ngIf="company.logoUrl" [src]="company.logoUrl" alt="Logo" class="w-8 h-8 object-contain rounded" />
                 </td>
@@ -47,23 +61,86 @@
                 <td>{{ company.legalType === 'juridical' ? 'Jurídica' : 'Natural' }}</td>
                 <td>{{ company.numberIdentification }}<span *ngIf="company.verificationDigit">-{{ company.verificationDigit }}</span></td>
                 <td>{{ company.email }}</td>
-                <td>{{ company.sector || '-' }}</td>
+                <td>{{ company.sector || '—' }}</td>
                 <td>{{ company.currency }}</td>
                 <td>{{ company.address }}</td>
-                <td>
-                    <button pButton icon="pi pi-eye" class="p-button-text p-button-sm" (click)="viewCompany(company)" pTooltip="Ver" tooltipPosition="top"></button>
-                    <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm" (click)="editCompany(company)" pTooltip="Editar" tooltipPosition="top"></button>
-                    <button pButton icon="pi pi-trash" class="p-button-text p-button-sm text-red-500" (click)="deleteCompany(company)" pTooltip="Eliminar" tooltipPosition="top"></button>
+                <td class="text-center">
+                    <button
+                        pButton
+                        icon="pi pi-ellipsis-v"
+                        severity="secondary"
+                        [text]="true"
+                        [rounded]="true"
+                        size="small"
+                        class="opacity-0 group-hover/row:opacity-100 transition-opacity"
+                        (click)="openRowMenu($event, company)"
+                        pTooltip="Más opciones"
+                        tooltipPosition="left"
+                    ></button>
                 </td>
             </tr>
         </ng-template>
+
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="7">No hay compañías registradas.</td>
+                <td [attr.colspan]="cols.length + 1" class="text-center text-surface-400 py-12">
+                    <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                    <span>No hay compañías registradas.</span>
+                    <button pButton label="Crear primera compañía" icon="pi pi-plus" [text]="true" class="mt-2 block mx-auto" (click)="openNew()"></button>
+                </td>
             </tr>
         </ng-template>
     </p-table>
-    <p-dialog *ngIf="selectedCompany" header="Detalle de compañía" [(visible)]="displayViewDialog" [modal]="true" [style]="{ width: '500px' }" [closable]="true">
-        <app-company-info [company]="selectedCompany"></app-company-info>
-    </p-dialog>
+
+    <div *ngIf="error$ | async as error" class="text-red-500 text-sm text-center py-2">
+        {{ error }}
+    </div>
 </div>
+
+<p-confirmdialog />
+
+<!-- Drawer lateral de detalle -->
+<p-drawer [(visible)]="displayViewDrawer" position="right" [style]="{ width: '420px' }" [modal]="true">
+    <ng-template #header>
+        <span class="font-semibold text-base flex items-center gap-2">
+            <i class="pi pi-building text-primary"></i>
+            Detalle de compañía
+        </span>
+    </ng-template>
+
+    <div *ngIf="selectedCompany" class="flex flex-col gap-5 pt-2">
+        <div class="flex flex-col gap-1 pb-4 border-b border-surface-100 dark:border-surface-800">
+            <span class="text-xl font-bold text-surface-900 dark:text-surface-100">{{ selectedCompany.companyName }}</span>
+            <span class="text-sm text-surface-400">{{ selectedCompany.email }}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Tipo Legal</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.legalType === 'juridical' ? 'Jurídica' : 'Natural' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">NIT</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.numberIdentification || '—' }}<span *ngIf="selectedCompany.verificationDigit">-{{ selectedCompany.verificationDigit }}</span></span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Sector</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.sector || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Moneda</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.currency || '—' }}</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <span class="text-xs text-surface-400 uppercase tracking-wide">Dirección</span>
+            <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.address || '—' }}</span>
+        </div>
+
+        <div class="flex gap-2 pt-4 border-t border-surface-100 dark:border-surface-800 mt-auto">
+            <button pButton label="Editar" icon="pi pi-pencil" class="flex-1" (click)="editCompany(selectedCompany); displayViewDrawer = false"></button>
+            <button pButton label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="displayViewDrawer = false"></button>
+        </div>
+    </div>
+</p-drawer>

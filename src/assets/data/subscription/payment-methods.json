@@ -1,0 +1,46 @@
+{
+    "success": true,
+    "message": "Métodos de pago obtenidos exitosamente",
+    "data": [
+        {
+            "id": 3001,
+            "companyId": 501,
+            "type": "CREDIT_CARD",
+            "last4Digits": "4242",
+            "cardBrand": "Visa",
+            "expiryMonth": 12,
+            "expiryYear": 2028,
+            "holderName": "Carlos Rodríguez",
+            "billingAddress": {
+                "street": "Calle 123 #45-67",
+                "city": "Bogotá",
+                "department": "Bogotá D.C.",
+                "country": "Colombia",
+                "postalCode": "110111"
+            },
+            "isDefault": true,
+            "isActive": true,
+            "createdAt": "2025-12-09T10:30:00Z"
+        },
+        {
+            "id": 3002,
+            "companyId": 501,
+            "type": "DEBIT_CARD",
+            "last4Digits": "5555",
+            "cardBrand": "Mastercard",
+            "expiryMonth": 6,
+            "expiryYear": 2027,
+            "holderName": "Carlos Rodríguez",
+            "billingAddress": {
+                "street": "Calle 123 #45-67",
+                "city": "Bogotá",
+                "department": "Bogotá D.C.",
+                "country": "Colombia",
+                "postalCode": "110111"
+            },
+            "isDefault": false,
+            "isActive": true,
+            "createdAt": "2025-11-15T14:20:00Z"
+        }
+    ]
+}

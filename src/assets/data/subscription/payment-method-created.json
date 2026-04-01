@@ -1,0 +1,24 @@
+{
+    "success": true,
+    "message": "Método de pago agregado exitosamente",
+    "data": {
+        "id": 3003,
+        "companyId": 501,
+        "type": "CREDIT_CARD",
+        "last4Digits": "1234",
+        "cardBrand": "Visa",
+        "expiryMonth": 3,
+        "expiryYear": 2029,
+        "holderName": "María González",
+        "billingAddress": {
+            "street": "Carrera 50 #20-10",
+            "city": "Medellín",
+            "department": "Antioquia",
+            "country": "Colombia",
+            "postalCode": "050001"
+        },
+        "isDefault": false,
+        "isActive": true,
+        "createdAt": "2025-12-09T11:45:00Z"
+    }
+}

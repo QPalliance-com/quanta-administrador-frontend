@@ -1,7 +1,7 @@
 <div class="layout-topbar-start flex-col">
     <a class="layout-topbar-logo" routerLink="/">
         <img src="{{ _layoutService.isDarkTheme() ? 'images/Logo-Quanta-Blanco.png' : 'images/Logo-Quanta-principal.png' }}" alt="Quanta Logo" class="layout-topbar-logo-image h-10 w-auto" />
-        <p>Administrador</p>
+        
     </a>
     <a #menuButton class="layout-menu-button" (click)="onMenuButtonClick()">
         <i class="pi pi-chevron-right"></i>
@@ -10,41 +10,6 @@
 <div class="layout-topbar-end">
     <div class="layout-topbar-actions-start"></div>
     <div class="layout-topbar-actions-end">
-        <ul class="layout-topbar-items">
-            <li>
-                <!-- <a pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
-                    <p-overlay-badge severity="warn">
-                        <i class="pi pi-bell !align-middle"></i>
-                    </p-overlay-badge>
-                </a>
-                <div class="hidden" *ngIf="unreadNotifications$ | async as unreadNotifications">
-                    <ul class="list-none p-0 m-0">
-                        <li class="px-4 py-1">
-                            <span>
-                                Tienes <b>{{ unreadNotifications.length }}</b> notificaciones nuevas
-                            </span>
-                        </li>
-                        <li *ngFor="let n of unreadNotifications" class="p-4">
-                            <div class="flex items-center">
-                                <div class="flex flex-col ml-4 flex-1">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="font-bold">{{ n.title }}</span>
-                                        <small>{{ n.createdAt | date: 'short' }}</small>
-                                    </div>
-                                    <span class="text-sm leading-normal">{{ n.message }}</span>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="px-4 py-2 text-center">
-                            <button type="button" (click)="goToNotifications()" class="text-primary hover:underline px-3 py-2 rounded bg-transparent border-none cursor-pointer">Ver todas las notificaciones</button>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <li *ngIf="company$ | async as company">
-                <img *ngIf="company.logoUrl" [src]="company.logoUrl" [alt]="company.companyName" />
-                <h1>{{ company.companyName }}</h1>
-            </li> -->
-        </ul>
+       <p>Administrador</p>
     </div>
 </div>

@@ -9,5 +9,5 @@ import { LoaderComponent } from './shared/components/ui/loader/loader';
   styleUrl: './app.scss'
 })
 export class AppComponent {
-  title = 'quanta-admin-frontend';
+  title = 'quanta-administrador-frontend';
 }

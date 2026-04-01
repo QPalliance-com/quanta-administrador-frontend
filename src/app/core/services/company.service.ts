@@ -1,141 +1,305 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Company } from '../models/company.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
+import { MessageService } from 'primeng/api';
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
     private readonly baseUrl = `${environment.apiUrl}company360/companies`;
 
-    constructor(private http: HttpClient) {}
+    // Core signals for state management
+    private companiesSignal = signal<Company[]>([]);
+    private selectedCompanySignal = signal<Company | null>(null);
+    private loadingSignal = signal(false);
+    private errorSignal = signal<any>(null);
+
+    // Public read-only signals
+    companies = this.companiesSignal.asReadonly();
+    selectedCompany = this.selectedCompanySignal.asReadonly();
+    loading = this.loadingSignal.asReadonly();
+    error = this.errorSignal.asReadonly();
+
+    // Computed properties
+    companiesCount = computed(() => this.companiesSignal().length);
+    companyIds = computed(() => this.companiesSignal().map(c => c.id));
+
+    constructor(
+        private http: HttpClient,
+        private messageService: MessageService
+    ) {}
+
+    // Computed selector for single company by ID
+    selectCompanyById(id: number) {
+        return computed(() => this.companiesSignal().find(c => c.id === id) || null);
+    }
 
     private extractSubdomain(): string {
         const host = window.location.hostname;
         const parts = host.split('.');
-        // Manejo de dominio local o sin subdominio
         if (parts.length < 3) return 'dev';
-
-        return parts[0]; // empresa1
+        return parts[0];
     }
 
-    // GET - Cargar todas las compañías (listado)
+    // GET - Load all companies
     loadCompanies() {
-        if (environment.useMockApi) {
-            return this.http.get<ApiResponse<Company[]>>('data/company360/companies.json');
-        }
-        return this.http.get<ApiResponse<Company[]>>(this.baseUrl);
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json')
+            : this.http.get<ApiResponse<Company[]>>(this.baseUrl);
+
+        return request.pipe(
+            map((response: ApiResponse<Company[]>) => {
+                this.loadingSignal.set(false);
+                if (response.success && response.data) {
+                    this.companiesSignal.set(response.data);
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: `${response.data.length} compañías cargadas correctamente`,
+                        life: 3000
+                    });
+                }
+                return response;
+            })
+        );
     }
 
-    // GET - Cargar compañía específica por ID
+    // GET - Load single company by ID
     loadCompanyById(id: number) {
-        if (environment.useMockApi) {
-            return this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
                 map((response: ApiResponse<Company[]>) => {
                     const company = response.data.find(c => c.id === id);
                     if (!company) {
-                        throw new Error(`Company with ID ${id} not found`);
+                        throw new Error(`Compañía con ID ${id} no encontrada`);
                     }
                     return {
                         ...response,
                         data: company,
-                        message: 'Company info fetched'
+                        message: 'Información de compañía obtenida'
                     } as ApiResponse<Company>;
                 })
-            );
-        }
-        return this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${id}`);
+            )
+            : this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${id}`);
+
+        return request.pipe(
+            map((response: ApiResponse<Company>) => {
+                this.loadingSignal.set(false);
+                if (response.success && response.data) {
+                    this.selectedCompanySignal.set(response.data);
+                }
+                return response;
+            })
+        );
     }
 
-    // GET - Cargar compañía por subdominio (método original)
+    // GET - Load company by subdomain
     loadCompany() {
-        if (environment.useMockApi) {
-            return this.http.get<ApiResponse<Company>>('data/company360/company.json');
-        }
-        const subdomain = this.extractSubdomain();
-        return this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${subdomain}`);
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company>>('data/company360/company.json')
+            : this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${this.extractSubdomain()}`);
+
+        return request.pipe(
+            map((response: ApiResponse<Company>) => {
+                this.loadingSignal.set(false);
+                if (response.success && response.data) {
+                    this.selectedCompanySignal.set(response.data);
+                }
+                return response;
+            })
+        );
     }
 
-    // POST - Crear nueva compañía
+    // POST - Create new company
     createCompany(company: Omit<Company, 'id'>) {
-        if (environment.useMockApi) {
-            // En mock, simular creación con ID temporal
-            const mockCompany = { ...company, id: Date.now() };
-            return this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
                 map((response: ApiResponse<Company[]>) => ({
                     ...response,
-                    data: mockCompany,
-                    message: 'Company created successfully'
+                    data: { ...company, id: Date.now() } as Company,
+                    message: 'Compañía creada correctamente'
                 } as ApiResponse<Company>))
-            );
-        }
-        return this.http.post<ApiResponse<Company>>(this.baseUrl, company);
+            )
+            : this.http.post<ApiResponse<Company>>(this.baseUrl, company);
+
+        return request.pipe(
+            map((response: ApiResponse<Company>) => {
+                this.loadingSignal.set(false);
+                if (response.success && response.data) {
+                    // Add to companies list
+                    this.companiesSignal.update(companies => [...companies, response.data as Company]);
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Compañía creada correctamente',
+                        life: 3000
+                    });
+                }
+                return response;
+            })
+        );
     }
 
-    // PUT - Actualizar compañía completa
+    // PUT - Update full company
     updateCompany(company: Company) {
-        if (environment.useMockApi) {
-            // En modo mock, simular actualización exitosa
-            return this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
                 map((response: ApiResponse<Company[]>) => ({
                     ...response,
                     data: company,
-                    message: 'Company updated successfully'
+                    message: 'Compañía actualizada correctamente'
                 } as ApiResponse<Company>))
-            );
-        }
-        return this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${company.id}`, company);
+            )
+            : this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${company.id}`, company);
+
+        return request.pipe(
+            map((response: ApiResponse<Company>) => {
+                this.loadingSignal.set(false);
+                if (response.success && response.data) {
+                    // Update in companies list
+                    this.companiesSignal.update(companies =>
+                        companies.map(c => c.id === response.data.id ? response.data : c)
+                    );
+                    if (this.selectedCompanySignal()?.id === response.data.id) {
+                        this.selectedCompanySignal.set(response.data);
+                    }
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Compañía actualizada correctamente',
+                        life: 3000
+                    });
+                }
+                return response;
+            })
+        );
     }
 
-    // PATCH - Actualizar campos específicos de compañía
+    // PATCH - Partial update company
     patchCompany(id: number, changes: Partial<Company>) {
-        if (environment.useMockApi) {
-            return this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
                 map((response: ApiResponse<Company[]>) => {
                     const company = response.data.find(c => c.id === id);
                     if (!company) {
-                        throw new Error(`Company with ID ${id} not found`);
+                        throw new Error(`Compañía con ID ${id} no encontrada`);
                     }
                     const updatedCompany = { ...company, ...changes };
                     return {
                         ...response,
                         data: updatedCompany,
-                        message: 'Company updated successfully'
+                        message: 'Compañía actualizada correctamente'
                     } as ApiResponse<Company>;
                 })
-            );
-        }
-        return this.http.patch<ApiResponse<Company>>(`${this.baseUrl}/${id}`, changes);
+            )
+            : this.http.patch<ApiResponse<Company>>(`${this.baseUrl}/${id}`, changes);
+
+        return request.pipe(
+            map((response: ApiResponse<Company>) => {
+                this.loadingSignal.set(false);
+                if (response.success && response.data) {
+                    // Update in companies list
+                    this.companiesSignal.update(companies =>
+                        companies.map(c => c.id === response.data.id ? response.data : c)
+                    );
+                    if (this.selectedCompanySignal()?.id === response.data.id) {
+                        this.selectedCompanySignal.set(response.data);
+                    }
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Compañía actualizada correctamente',
+                        life: 3000
+                    });
+                }
+                return response;
+            })
+        );
     }
 
-    // DELETE - Eliminar compañía
+    // DELETE - Delete company
     deleteCompany(id: number) {
-        if (environment.useMockApi) {
-            return this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
+        this.loadingSignal.set(true);
+        this.errorSignal.set(null);
+
+        const request = environment.useMockApi
+            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
                 map((response: ApiResponse<Company[]>) => {
                     const company = response.data.find(c => c.id === id);
                     if (!company) {
-                        throw new Error(`Company with ID ${id} not found`);
+                        throw new Error(`Compañía con ID ${id} no encontrada`);
                     }
                     return {
                         success: true,
-                        message: 'Company deleted successfully',
+                        message: 'Compañía eliminada correctamente',
                         data: undefined,
                         traceId: response.traceId
                     } as ApiResponse<void>;
                 })
-            );
-        }
-        return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`);
+            )
+            : this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`);
+
+        return request.pipe(
+            map((response: ApiResponse<void>) => {
+                this.loadingSignal.set(false);
+                if (response.success) {
+                    // Remove from companies list
+                    this.companiesSignal.update(companies =>
+                        companies.filter(c => c.id !== id)
+                    );
+                    if (this.selectedCompanySignal()?.id === id) {
+                        this.selectedCompanySignal.set(null);
+                    }
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Compañía eliminada correctamente',
+                        life: 3000
+                    });
+                }
+                return response;
+            })
+        );
     }
 
-    // PUT - Actualizar por subdominio (método original)
+    // PUT - Update by subdomain
     updateCompanyBySubdomain(company: Company) {
         const subdomain = this.extractSubdomain();
-        if (environment.useMockApi) {
-            return this.http.put<ApiResponse<Company>>('data/company360/company.json', company);
-        }
-        return this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${subdomain}`, company);
+        return environment.useMockApi
+            ? this.http.put<ApiResponse<Company>>('data/company360/company.json', company)
+            : this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${subdomain}`, company);
+    }
+
+    // Utility method to set selected company
+    setSelectedCompany(company: Company | null) {
+        this.selectedCompanySignal.set(company);
+    }
+
+    // Utility method to reset state
+    resetState() {
+        this.companiesSignal.set([]);
+        this.selectedCompanySignal.set(null);
+        this.loadingSignal.set(false);
+        this.errorSignal.set(null);
     }
 }

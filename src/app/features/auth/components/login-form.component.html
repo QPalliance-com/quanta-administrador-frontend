@@ -1,0 +1,55 @@
+<form (ngSubmit)="onSubmit()" class="flex flex-col gap-6 w-full max-w-md mx-auto p-6 bg-white dark:bg-surface-900 rounded-lg shadow-md">
+    <!-- Email Field -->
+    <div>
+        <label for="email" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+            Correo electrónico
+        </label>
+        <input
+            id="email"
+            name="email"
+            type="email"
+            pInputText
+            class="w-full"
+            [(ngModel)]="email"
+            [disabled]="loading()"
+            required
+            autocomplete="email"
+            placeholder="admin@quanta.com"
+        />
+    </div>
+
+    <!-- Password Field -->
+    <div>
+        <label for="password" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+            Contraseña
+        </label>
+        <p-password
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            [disabled]="loading()"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="Ingresa tu contraseña"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+            autocomplete="current-password"
+        />
+    </div>
+
+    <!-- Submit Button -->
+    <button 
+        pButton 
+        type="submit" 
+        label="Iniciar Sesión" 
+        icon="pi pi-sign-in"
+        class="w-full"
+        [disabled]="!isFormValid() || loading()"
+        [loading]="loading()"
+    ></button>
+
+    <!-- Help Text -->
+    <div class="text-center text-sm text-surface-500 dark:text-surface-400">
+        <p>Solo usuarios administradores pueden acceder</p>
+    </div>
+</form>

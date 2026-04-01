@@ -1,5 +1,5 @@
 <div class="card flex flex-col gap-6 w-full">
-    <p-progressSpinner *ngIf="loading$ | async"></p-progressSpinner>
+    <p-progressSpinner *ngIf="loading()"></p-progressSpinner>
     <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
         Mi compañía
         <i class="pi pi-info-circle text-blue-500" pTooltip="Completa los datos de tu compañía. Usa los tooltips para ayuda en cada campo. Los campos obligatorios están marcados." tooltipPosition="right"></i>

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "quanta-admin-frontend": {
+    "quanta-administrador-frontend": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/quanta-admin-frontend",
+            "outputPath": "dist/quanta-administrador-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -79,13 +79,13 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "quanta-admin-frontend:build:production"
+              "buildTarget": "quanta-administrador-frontend:build:production"
             },
             "qa": {
-              "buildTarget": "quanta-admin-frontend:build:qa"
+              "buildTarget": "quanta-administrador-frontend:build:qa"
             },
             "development": {
-              "buildTarget": "quanta-admin-frontend:build:development"
+              "buildTarget": "quanta-administrador-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -113,7 +113,45 @@
             ],
             "scripts": []
           }
-        }
+        },
+       "deploy": {
+                    "builder": "angular-cli-ghpages:deploy",
+                    "configurations": {
+                        "production": {
+                            "optimization": true,
+                            "outputHashing": "all",
+                            "sourceMap": false,
+                            "namedChunks": false,
+                            "aot": true,
+                            "extractLicenses": true,
+                            "fileReplacements": [
+                                {
+                                    "replace": "src/environments/environment.ts",
+                                    "with": "src/environments/environment.prod.ts"
+                                }
+                            ]
+                        },
+                        "qa": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "src/environments/environment.ts",
+                                    "with": "src/environments/environment.qa.ts"
+                                }
+                            ]
+                        },
+                        "dev": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "src/environments/environment.ts",
+                                    "with": "src/environments/environment.dev.ts"
+                                }
+                            ]
+                        }
+                    },
+                    "options": {
+                        "baseHref": "/quanta-administrador-frontend/"
+                    }
+                }
       }
     }
   }

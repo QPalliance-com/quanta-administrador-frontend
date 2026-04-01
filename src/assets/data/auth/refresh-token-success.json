@@ -1,0 +1,8 @@
+{
+    "success": true,
+    "message": "Token renovado exitosamente",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBxdWFudGEuY29tIiwicm9sZSI6InN1cGVyLWFkbWluIiwiaWF0IjoxNzMyNzI0NDAwLCJleHAiOjE3MzI4MTA4MDB9.mock_refreshed_token",
+        "expiresAt": 9999999999
+    }
+}

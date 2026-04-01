@@ -1,0 +1,36 @@
+{
+    "success": true,
+    "message": "Suscripción obtenida exitosamente",
+    "data": {
+        "id": 2001,
+        "companyId": 501,
+        "planId": 1,
+        "planName": "Plan Empresarial Quanta",
+        "status": "ACTIVE",
+        "startDate": "2025-12-09",
+        "endDate": null,
+        "nextBillingDate": "2026-01-09",
+        "billingPeriod": "MONTHLY",
+        "userConfig": {
+            "adminUsers": 2,
+            "operativeUsers": 5
+        },
+        "pricing": {
+            "adminUsers": 2,
+            "operativeUsers": 5,
+            "adminUnitPrice": 25000,
+            "operativeUnitPrice": 15000,
+            "subtotalAdmin": 50000,
+            "subtotalOperative": 75000,
+            "totalMonthly": 125000,
+            "totalAnnual": 1500000,
+            "currency": "COP",
+            "billingPeriod": "MONTHLY"
+        },
+        "autoRenew": true,
+        "cancelledAt": null,
+        "cancelReason": null,
+        "createdAt": "2025-12-09T10:30:00Z",
+        "updatedAt": "2025-12-09T10:30:00Z"
+    }
+}

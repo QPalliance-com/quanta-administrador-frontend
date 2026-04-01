@@ -1,0 +1,6 @@
+{
+    "success": false,
+    "message": "Credenciales inválidas. Por favor, verifica tu email y contraseña.",
+    "traceId": "admin-auth-error-001",
+    "data": null
+}

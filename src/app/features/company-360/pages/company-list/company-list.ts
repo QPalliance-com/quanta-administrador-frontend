@@ -1,35 +1,30 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ChangeDetectorRef } from '@angular/core';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
-import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { Store } from '@ngrx/store';
-import { Column } from '../../../../core/models/table-options.model';
+import { Column, ExportColumn } from '../../../../core/models/table-options.model';
 import { Company } from '@/core/models';
-import * as fromCompany from '../../state/selectors/company-360.selectors';
-import * as companyActions from '../../state/actions/company-360.actions';
-import { Observable } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
-import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { CompanyInfoComponent } from '../../components/company-info/company-info';
 import { Router } from '@angular/router';
+import { CompanyService } from '@/core/services/company.service';
+import { Drawer } from 'primeng/drawer';
+import { Menu } from 'primeng/menu';
+import { ExportToolbarComponent } from '@/shared/components/export-toolbar/export-toolbar';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Component({
     selector: 'app-company-list',
     standalone: true,
     imports: [
         CommonModule,
-        IconFieldModule,
         InputIconModule,
         TableModule,
         InputTextModule,
@@ -38,16 +33,21 @@ import { Router } from '@angular/router';
         RippleModule,
         ToastModule,
         ToolbarModule,
-        DialogModule,
         TagModule,
         ConfirmDialogModule,
-        ProgressSpinnerModule,
-        CompanyInfoComponent
+        Drawer,
+        Menu,
+        ExportToolbarComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './company-list.html'
 })
 export class CompanyListComponent implements OnInit {
+    private companyService = inject(CompanyService);
+    private confirmationService = inject(ConfirmationService);
+    private messageService = inject(MessageService);
+    private router = inject(Router);
+
     filterFields: string[] = [
         'companyName',
         'legalType',
@@ -58,25 +58,39 @@ export class CompanyListComponent implements OnInit {
         'address'
     ];
     cols!: Column[];
-    companies$!: Observable<Company[]>;
-    companiesLoading$!: Observable<boolean>;
-    selectedCompanies: Company[] = [];
+    exportColumns!: ExportColumn[];
+    companies = this.companyService.companies;
+    companiesLoading = this.companyService.loading;
+    
+    displayViewDrawer = false;
     selectedCompany: Company | null = null;
-    displayViewDialog = false;
+    rowMenuItems: MenuItem[] = [];
+    error$: Observable<string | null> = new BehaviorSubject(null);
+    
     @ViewChild('companiesTable') companiesTable!: Table;
+    @ViewChild('rowMenu') rowMenu!: Menu;
 
-    constructor(
-        private store: Store,
-        private confirmationService: ConfirmationService,
-        private cdr: ChangeDetectorRef,
-        private router: Router
-    ) {
-        this.companies$ = this.store.select(fromCompany.selectCompanies);
-        this.companiesLoading$ = this.store.select(fromCompany.selectCompanyLoading);
-    }
+    colTooltips: Record<string, string> = {
+        logoUrl: 'Logo de la compañía',
+        companyName: 'Nombre legal de la compañía',
+        legalType: 'Tipo de persona jurídica o natural',
+        numberIdentification: 'NIT o identificación',
+        email: 'Correo electrónico',
+        sector: 'Sector económico',
+        currency: 'Moneda principal',
+        address: 'Dirección principal'
+    };
 
     ngOnInit(): void {
-        this.store.dispatch(companyActions.loadCompanies());
+        this.companyService.loadCompanies().subscribe({
+            error: () => {
+                console.error('Error loading companies');
+            }
+        });
+        this.initializeColumns();
+    }
+
+    private initializeColumns(): void {
         this.cols = [
             { field: 'logoUrl', header: 'Logo', customExportHeader: 'Logo' },
             { field: 'companyName', header: 'Nombre', customExportHeader: 'Nombre legal' },
@@ -87,41 +101,80 @@ export class CompanyListComponent implements OnInit {
             { field: 'currency', header: 'Moneda', customExportHeader: 'Moneda principal' },
             { field: 'address', header: 'Dirección', customExportHeader: 'Dirección principal' }
         ];
+        this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
     }
 
-    openNew() {
-           this.router.navigate(['/company-360/new']);
-       }
-   
-       editCompany(company:Company) {
-           this.router.navigate(['/company-360/edit', company.id]);
-       }
-
-    viewCompany(company: Company) {
-        this.selectedCompany = company;
-          this.displayViewDialog = true;
-    
+    onGlobalFilter(table: Table, event: Event): void {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
 
-    deleteCompany(company: Company) {
+    openNew(): void {
+        this.router.navigate(['/company-360/new']);
+    }
+
+    navigateToView(companyId: string | number): void {
+        if (companyId) {
+            this.selectedCompany = this.companies().find(c => c.id === companyId) || null;
+            this.displayViewDrawer = true;
+        }
+    }
+
+    navigateToEdit(companyId: string | number): void {
+        if (companyId) {
+            this.router.navigate(['/company-360/edit', companyId]);
+        }
+    }
+
+    openRowMenu(event: MouseEvent, company: Company): void {
+        event.stopPropagation();
+        this.rowMenuItems = [
+            {
+                label: 'Ver detalle',
+                icon: 'pi pi-eye',
+                command: () => {
+                    this.selectedCompany = company;
+                    this.displayViewDrawer = true;
+                }
+            },
+            {
+                label: 'Editar',
+                icon: 'pi pi-pencil',
+                command: () => this.navigateToEdit(company.id!)
+            },
+            { separator: true },
+            {
+                label: 'Eliminar',
+                icon: 'pi pi-trash',
+                styleClass: 'danger-menu-item',
+                command: () => this.deleteCompany(company)
+            }
+        ];
+        this.rowMenu.toggle(event);
+    }
+
+    editCompany(company: Company): void {
+        this.router.navigate(['/company-360/edit', company.id]);
+    }
+
+    deleteCompany(company: Company): void {
         this.confirmationService.confirm({
-            message: `¿Seguro que deseas eliminar la compañía ${company.companyName}?`,
+            message: `¿Está seguro que desea eliminar la compañía <b>${company.companyName}</b>?`,
+            header: 'Confirmar eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Sí, eliminar',
+            rejectLabel: 'No, cancelar',
+            acceptButtonStyleClass: 'p-button-danger',
             accept: () => {
-                this.store.dispatch(companyActions.deleteCompany({ id: company.id }));
+                this.companyService.deleteCompany(company.id).subscribe({
+                    error: (err) => {
+                        console.error('Error deleting company:', err);
+                    }
+                });
             }
         });
     }
 
-    exportTable(format: 'excel' | 'csv') {
-        if (!this.companiesTable) return;
-        if (format === 'excel') {
-            (this.companiesTable as any).exportExcel?.();
-        } else {
-            this.companiesTable.exportCSV();
-        }
-    }
-
-    onGlobalFilter(table: Table, event: Event) {
-        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    exportTable(format: 'excel' | 'csv'): void {
+        this.messageService.add({ severity: 'success', summary: 'Exportación', detail: `Exportado como ${format.toUpperCase()}` });
     }
 }

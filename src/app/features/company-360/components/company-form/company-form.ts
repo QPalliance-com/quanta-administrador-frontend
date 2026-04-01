@@ -12,13 +12,12 @@ import { SelectModule } from 'primeng/select';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService } from 'primeng/api';
 import { Store } from '@ngrx/store';
-import * as companyActions from '../../state/actions/company-360.actions';
-import * as fromCompany from '../../state/selectors/company-360.selectors';
 import { DepartmentCityActions } from '@/core/state/actions/department-city.actions';
 import { selectAllDepartments, selectAllCities } from '@/core/state/selectors/department-city.selectors';
-import { Observable, Subject, filter, takeUntil, distinctUntilChanged } from 'rxjs';
+import { Subject, filter, takeUntil, distinctUntilChanged } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CompanyService } from '@/core/services/company.service';
 
 @Component({
     standalone: true,
@@ -27,48 +26,26 @@ import { ActivatedRoute, Router } from '@angular/router';
     imports: [CommonModule, ToastModule, TooltipModule, InputTextModule, SelectModule, ButtonModule, FileUploadModule, CheckboxModule, ReactiveFormsModule, ProgressSpinnerModule]
 })
 export class CompanyFormComponent implements OnInit, OnDestroy {
-    // Archivos cargados
-    rutFileUrlFile: File | null = null;
-    certificateFileFile: File | null = null;
-    orgChartFileFile: File | null = null;
-
-    onRutFileChange(event: any): void {
-        const file = event.target.files[0];
-        if (file) {
-            this.rutFileUrlFile = file;
-            this.form.patchValue({ rutFileUrl: file.name });
-        }
-    }
-
-    onCertificateFileChange(event: any): void {
-        const file = event.target.files[0];
-        if (file) {
-            this.certificateFileFile = file;
-            this.form.patchValue({ certificateFile: file.name });
-        }
-    }
-
-    onOrgChartFileChange(event: any): void {
-        const file = event.target.files[0];
-        if (file) {
-            this.orgChartFileFile = file;
-            this.form.patchValue({ orgChartFile: file.name });
-        }
-    }
     private fb = inject(FormBuilder);
     private store = inject(Store);
     private messageService = inject(MessageService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
+    private companyService = inject(CompanyService);
     private destroy$ = new Subject<void>();
+
+    // Archivos cargados
+    rutFileUrlFile: File | null = null;
+    certificateFileFile: File | null = null;
+    orgChartFileFile: File | null = null;
 
     form!: FormGroup;
     isEditMode = false;
     companyId!: number;
-    company$!: Observable<Company | null | undefined>;
-    loading$!: Observable<boolean>;
+    loading = this.companyService.loading;
     departments$ = this.store.select(selectAllDepartments);
     cities$ = this.store.select(selectAllCities);
+    
     documentTypes = Object.values(DocumentType).map((type) => ({
         label: DOCUMENT_TYPE_LABELS[type],
         value: type
@@ -96,29 +73,51 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         { label: 'Euro (EUR)', value: 'EUR' }
     ];
 
+    onRutFileChange(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.rutFileUrlFile = file;
+            this.form.patchValue({ rutFileUrl: file.name });
+        }
+    }
+
+    onCertificateFileChange(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.certificateFileFile = file;
+            this.form.patchValue({ certificateFile: file.name });
+        }
+    }
+
+    onOrgChartFileChange(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            this.orgChartFileFile = file;
+            this.form.patchValue({ orgChartFile: file.name });
+        }
+    }
+
     ngOnInit(): void {
         this.buildForm();
+        
         // Detectar modo edición y cargar compañía
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.isEditMode = true;
             this.companyId = +id;
-            this.store.dispatch(companyActions.loadCompanyById({ id: this.companyId }));
-            this.company$ = this.store.select(fromCompany.selectCompanyById(this.companyId));
-            this.company$
-                .pipe(
-                    takeUntil(this.destroy$),
-                    filter((company) => !!company)
-                )
-                .subscribe((company) => {
-                    this.form.patchValue(company!);
+            this.companyService.loadCompanyById(this.companyId)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: (response) => {
+                        if (response.data) {
+                            this.form.patchValue(response.data);
+                        }
+                    },
+                    error: (err) => console.error('Error loading company', err)
                 });
-        } else {
-            this.company$ = this.store.select(fromCompany.selectCompanyById(0));
         }
-        this.loading$ = this.store.select(fromCompany.selectCompanyLoading);
 
-        // Cargar datos iniciales
+        // Cargar datos iniciales de departamentos
         this.store.dispatch(DepartmentCityActions.loadDepartments());
 
         // Escuchar cambios de departamento para cargar ciudades
@@ -132,7 +131,6 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                 }
             });
     }
-
 
     private buildForm(): void {
         this.form = this.fb.group({
@@ -179,11 +177,20 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         }
         const company: Company = this.form.value;
         if (this.isEditMode) {
-            this.store.dispatch(companyActions.updateCompany({ company }));
+            this.companyService.updateCompany(company)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: () => this.router.navigate(['/company-360/list']),
+                    error: (err) => console.error('Error updating company', err)
+                });
         } else {
-            this.store.dispatch(companyActions.createCompany({ company }));
+            this.companyService.createCompany(company)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: () => this.router.navigate(['/company-360/list']),
+                    error: (err) => console.error('Error creating company', err)
+                });
         }
-        this.router.navigate(['/company-360/list']);
     }
 
     cancel(): void {

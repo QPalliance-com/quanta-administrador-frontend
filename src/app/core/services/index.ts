@@ -4,6 +4,7 @@
  */
 
 // Infrastructure Services
+export * from './auth.service';
 export * from './department-city.service';
 
 // Business Domain Services

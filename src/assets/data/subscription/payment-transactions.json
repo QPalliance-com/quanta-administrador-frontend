@@ -1,0 +1,70 @@
+{
+    "success": true,
+    "message": "Transacciones obtenidas exitosamente",
+    "data": [
+        {
+            "id": 5001,
+            "subscriptionId": 2001,
+            "paymentMethodId": 3001,
+            "amount": 125000,
+            "currency": "COP",
+            "status": "COMPLETED",
+            "transactionDate": "2025-12-09T10:30:00Z",
+            "description": "Pago mensual - Diciembre 2025",
+            "invoiceNumber": "INV-2025-12-001",
+            "invoiceUrl": "https://cdn.example.com/invoices/INV-2025-12-001.pdf",
+            "paymentGateway": "Stripe",
+            "gatewayTransactionId": "pi_mock_123456789",
+            "errorMessage": null,
+            "createdAt": "2025-12-09T10:30:00Z"
+        },
+        {
+            "id": 5002,
+            "subscriptionId": 2001,
+            "paymentMethodId": 3001,
+            "amount": 125000,
+            "currency": "COP",
+            "status": "COMPLETED",
+            "transactionDate": "2025-11-09T10:30:00Z",
+            "description": "Pago mensual - Noviembre 2025",
+            "invoiceNumber": "INV-2025-11-001",
+            "invoiceUrl": "https://cdn.example.com/invoices/INV-2025-11-001.pdf",
+            "paymentGateway": "Stripe",
+            "gatewayTransactionId": "pi_mock_987654321",
+            "errorMessage": null,
+            "createdAt": "2025-11-09T10:30:00Z"
+        },
+        {
+            "id": 5003,
+            "subscriptionId": 2001,
+            "paymentMethodId": 3002,
+            "amount": 125000,
+            "currency": "COP",
+            "status": "FAILED",
+            "transactionDate": "2025-10-09T10:30:00Z",
+            "description": "Pago mensual - Octubre 2025",
+            "invoiceNumber": "INV-2025-10-001",
+            "invoiceUrl": null,
+            "paymentGateway": "Stripe",
+            "gatewayTransactionId": "pi_mock_failed_456",
+            "errorMessage": "Fondos insuficientes en la tarjeta",
+            "createdAt": "2025-10-09T10:30:00Z"
+        },
+        {
+            "id": 5004,
+            "subscriptionId": 2001,
+            "paymentMethodId": 3001,
+            "amount": 125000,
+            "currency": "COP",
+            "status": "COMPLETED",
+            "transactionDate": "2025-10-09T11:00:00Z",
+            "description": "Reintento pago - Octubre 2025",
+            "invoiceNumber": "INV-2025-10-001-R",
+            "invoiceUrl": "https://cdn.example.com/invoices/INV-2025-10-001-R.pdf",
+            "paymentGateway": "Stripe",
+            "gatewayTransactionId": "pi_mock_retry_789",
+            "errorMessage": null,
+            "createdAt": "2025-10-09T11:00:00Z"
+        }
+    ]
+}

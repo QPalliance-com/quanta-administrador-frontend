@@ -1,0 +1,238 @@
+{
+    "success": true,
+    "message": "Login exitoso",
+    "traceId": "admin-auth-2024-001",
+    "data": {
+        "userCompany": {
+            "id": 1,
+            "logoUrl": "/assets/images/quanta-logo.png",
+            "companyName": "Quanta Solutions - Admin",
+            "legalType": "juridical",
+            "documentType": "NIT",
+            "numberIdentification": "9001234567",
+            "verificationDigit": "8",
+            "email": "admin@quantasolutions.com",
+            "rutFileUrl": "",
+            "certificateFile": "",
+            "taxRegime": "Simplificado",
+            "taxResponsibility": "Responsable de IVA",
+            "website": "https://quantasolutions.com",
+            "currency": "COP",
+            "address": "Cra 7 # 71-21, Torre A",
+            "departmentId": 11,
+            "cityId": 1
+        },
+        "userMenu": [
+            {
+                "label": "Dashboard",
+                "icon": "pi pi-home",
+                "description": "Panel principal",
+                "items": [
+                    {
+                        "label": "Métricas Generales",
+                        "icon": "pi pi-chart-bar",
+                        "routerLink": "/dashboard",
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "label": "Gestión de Empresas",
+                "icon": "pi pi-building",
+                "description": "Administración de compañías",
+                "items": [
+                    {
+                        "label": "Listado de Empresas",
+                        "icon": "pi pi-list",
+                        "routerLink": "/company-360",
+                        "visible": true
+                    },
+                    {
+                        "label": "Nueva Empresa",
+                        "icon": "pi pi-plus",
+                        "routerLink": "/company-360/new",
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "label": "Usuarios",
+                "icon": "pi pi-users",
+                "description": "Gestión de usuarios",
+                "items": [
+                    {
+                        "label": "Listado de Usuarios",
+                        "icon": "pi pi-list",
+                        "routerLink": "/users",
+                        "visible": true
+                    },
+                    {
+                        "label": "Roles y Permisos",
+                        "icon": "pi pi-shield",
+                        "routerLink": "/users/roles",
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "label": "Módulos del Sistema",
+                "icon": "pi pi-th-large",
+                "description": "Gestión de módulos",
+                "items": [
+                    {
+                        "label": "Módulos Activos",
+                        "icon": "pi pi-check-square",
+                        "routerLink": "/modules-management",
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "label": "Facturación",
+                "icon": "pi pi-money-bill",
+                "description": "Gestión de facturación",
+                "items": [
+                    {
+                        "label": "Facturación General",
+                        "icon": "pi pi-list",
+                        "routerLink": "/billing",
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "label": "Contratos",
+                "icon": "pi pi-file-edit",
+                "description": "Gestión de contratos",
+                "items": [
+                    {
+                        "label": "Listado de Contratos",
+                        "icon": "pi pi-list",
+                        "routerLink": "/contracts",
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "label": "Configuración",
+                "icon": "pi pi-cog",
+                "description": "Configuración del sistema",
+                "items": [
+                    {
+                        "label": "Ajustes Generales",
+                        "icon": "pi pi-sliders-h",
+                        "routerLink": "/settings",
+                        "visible": true
+                    }
+                ]
+            }
+        ],
+        "userPermissions": [
+            {
+                "id": 1,
+                "code": "admin.all",
+                "action": "Acceso total",
+                "description": "Acceso completo a todas las funcionalidades del sistema"
+            },
+            {
+                "id": 2,
+                "code": "companies.view",
+                "action": "Ver empresas",
+                "description": "Visualizar listado de empresas"
+            },
+            {
+                "id": 3,
+                "code": "companies.create",
+                "action": "Crear empresas",
+                "description": "Crear nuevas empresas en el sistema"
+            },
+            {
+                "id": 4,
+                "code": "companies.edit",
+                "action": "Editar empresas",
+                "description": "Modificar información de empresas"
+            },
+            {
+                "id": 5,
+                "code": "companies.delete",
+                "action": "Eliminar empresas",
+                "description": "Eliminar empresas del sistema"
+            },
+            {
+                "id": 6,
+                "code": "users.view",
+                "action": "Ver usuarios",
+                "description": "Visualizar listado de usuarios"
+            },
+            {
+                "id": 7,
+                "code": "users.create",
+                "action": "Crear usuarios",
+                "description": "Crear nuevos usuarios"
+            },
+            {
+                "id": 8,
+                "code": "users.edit",
+                "action": "Editar usuarios",
+                "description": "Modificar información de usuarios"
+            },
+            {
+                "id": 9,
+                "code": "users.delete",
+                "action": "Eliminar usuarios",
+                "description": "Eliminar usuarios del sistema"
+            },
+            {
+                "id": 10,
+                "code": "billing.view",
+                "action": "Ver facturación",
+                "description": "Visualizar información de facturación"
+            },
+            {
+                "id": 11,
+                "code": "billing.manage",
+                "action": "Gestionar facturación",
+                "description": "Administrar facturación del sistema"
+            },
+            {
+                "id": 12,
+                "code": "modules.view",
+                "action": "Ver módulos",
+                "description": "Visualizar módulos del sistema"
+            },
+            {
+                "id": 13,
+                "code": "modules.manage",
+                "action": "Gestionar módulos",
+                "description": "Activar/desactivar módulos"
+            },
+            {
+                "id": 14,
+                "code": "contracts.view",
+                "action": "Ver contratos",
+                "description": "Visualizar contratos"
+            },
+            {
+                "id": 15,
+                "code": "contracts.manage",
+                "action": "Gestionar contratos",
+                "description": "Crear y modificar contratos"
+            }
+        ],
+        "userData": {
+            "id": 1,
+            "names": "Super",
+            "lastNames": "Administrador",
+            "email": "admin@quanta.com",
+            "phone": "+57 300 123 4567",
+            "status": "active",
+            "roleId": "1",
+            "userType": "super-admin",
+            "position": "Super Administrador",
+            "imageUrl": "/assets/images/avatar-placeholder.png",
+            "language": "es",
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBxdWFudGEuY29tIiwicm9sZSI6InN1cGVyLWFkbWluIiwiaWF0IjoxNzMyNzI0NDAwLCJleHAiOjE3MzI4MTA4MDB9.mock_super_admin_token",
+            "expiredsAt": 9999999999
+        }
+    }
+}

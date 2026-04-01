@@ -1,0 +1,74 @@
+{
+    "success": true,
+    "message": "Registro completado exitosamente. Bienvenido a Quanta!",
+    "data": {
+        "user": {
+            "id": 1001,
+            "email": "admin@nuevaempresa.com",
+            "firstName": "Carlos",
+            "lastName": "Rodríguez",
+            "phone": "+573001234567",
+            "isActive": true,
+            "createdAt": "2025-12-09T10:30:00Z"
+        },
+        "company": {
+            "id": 501,
+            "companyName": "Nueva Empresa S.A.S.",
+            "taxId": "900987654-3",
+            "email": "contacto@nuevaempresa.com",
+            "phone": "+573101234567",
+            "address": "Calle 123 #45-67",
+            "city": "Bogotá",
+            "department": "Bogotá D.C.",
+            "country": "Colombia",
+            "website": "https://www.nuevaempresa.com",
+            "logoUrl": "https://ui-avatars.com/api/?name=Nueva+Empresa",
+            "tenantSlug": "nueva-empresa",
+            "isActive": true,
+            "createdAt": "2025-12-09T10:30:00Z"
+        },
+        "subscription": {
+            "id": 2001,
+            "companyId": 501,
+            "planId": 1,
+            "status": "ACTIVE",
+            "startDate": "2025-12-09",
+            "nextBillingDate": "2026-01-09",
+            "billingPeriod": "MONTHLY",
+            "userConfig": {
+                "adminUsers": 2,
+                "operativeUsers": 5
+            },
+            "pricing": {
+                "adminUsers": 2,
+                "operativeUsers": 5,
+                "adminUnitPrice": 25000,
+                "operativeUnitPrice": 15000,
+                "subtotalAdmin": 50000,
+                "subtotalOperative": 75000,
+                "totalMonthly": 125000,
+                "totalAnnual": 1500000,
+                "currency": "COP",
+                "billingPeriod": "MONTHLY"
+            },
+            "autoRenew": true,
+            "createdAt": "2025-12-09T10:30:00Z"
+        },
+        "paymentMethod": {
+            "id": 3001,
+            "companyId": 501,
+            "type": "CREDIT_CARD",
+            "last4Digits": "4242",
+            "cardBrand": "Visa",
+            "expiryMonth": 12,
+            "expiryYear": 2028,
+            "holderName": "Carlos Rodríguez",
+            "isDefault": true,
+            "isActive": true,
+            "createdAt": "2025-12-09T10:30:00Z"
+        },
+        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwMDEsImNvbXBhbnlJZCI6NTAxLCJlbWFpbCI6ImFkbWluQG51ZXZhZW1wcmVzYS5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MDI5NzQ2MDAsImV4cCI6MTcwMzA2MTAwMH0.mock_token_signature",
+        "refreshToken": "refresh_token_mock_12345",
+        "message": "Tu cuenta ha sido creada exitosamente. Ya puedes comenzar a usar Quanta MRP."
+    }
+}
