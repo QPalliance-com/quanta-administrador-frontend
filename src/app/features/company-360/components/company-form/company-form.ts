@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
@@ -38,9 +38,11 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     rutFileUrlFile: File | null = null;
     certificateFileFile: File | null = null;
     orgChartFileFile: File | null = null;
+    logoFile: File | null = null;
 
     form!: FormGroup;
     isEditMode = false;
+    companyName = signal<string>('');
     companyId!: number;
     loading = this.companyService.loading;
     departments$ = this.store.select(selectAllDepartments);
@@ -73,8 +75,16 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         { label: 'Euro (EUR)', value: 'EUR' }
     ];
 
+    onLogoFileChange(event: any): void {
+        const file = event.files?.[0];
+        if (file) {
+            this.logoFile = file;
+            this.form.patchValue({ logoUrl: file.name });
+        }
+    }
+
     onRutFileChange(event: any): void {
-        const file = event.target.files[0];
+        const file = event.files?.[0];
         if (file) {
             this.rutFileUrlFile = file;
             this.form.patchValue({ rutFileUrl: file.name });
@@ -82,19 +92,49 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     }
 
     onCertificateFileChange(event: any): void {
-        const file = event.target.files[0];
+        const file = event.files?.[0];
         if (file) {
             this.certificateFileFile = file;
-            this.form.patchValue({ certificateFile: file.name });
+            this.form.patchValue({ certificateFileUrl: file.name });
         }
     }
 
     onOrgChartFileChange(event: any): void {
-        const file = event.target.files[0];
+        const file = event.files?.[0];
         if (file) {
             this.orgChartFileFile = file;
-            this.form.patchValue({ orgChartFile: file.name });
+            this.form.patchValue({ orgChartFileUrl: file.name });
         }
+    }
+
+    isInvalid(fieldName: string): boolean {
+        const field = this.form.get(fieldName);
+        return !!(field && field.invalid && (field.dirty || field.touched));
+    }
+
+    getError(fieldName: string): string {
+        const control = this.form.get(fieldName);
+        if (!control || !control.errors) {
+            return '';
+        }
+
+        if (control.errors['required']) {
+            return 'Este campo es requerido';
+        }
+        if (control.errors['email']) {
+            return 'Ingresa un correo válido';
+        }
+        if (control.errors['min']) {
+            return `El valor mínimo es ${control.errors['min'].min}`;
+        }
+        if (control.errors['minlength']) {
+            return `Mínimo ${control.errors['minlength'].requiredLength} caracteres`;
+        }
+        if (control.errors['maxlength']) {
+            return `Máximo ${control.errors['maxlength'].requiredLength} caracteres`;
+        }
+
+        return 'Este campo es inválido';
     }
 
     ngOnInit(): void {
@@ -110,6 +150,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                 .subscribe({
                     next: (response) => {
                         if (response.data) {
+                            this.companyName.set(response.data.companyName);
                             this.form.patchValue(response.data);
                         }
                     },
@@ -135,22 +176,25 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     private buildForm(): void {
         this.form = this.fb.group({
             id: [null],
-            logoUrl: ['', Validators.required],
+            logoUrl: [''],
             companyName: ['', Validators.required],
             legalType: [null, Validators.required],
             documentType: [null, Validators.required],
             numberIdentification: [null, [Validators.required, Validators.min(1)]],
             verificationDigit: [''],
-            email: ['', [Validators.required, Validators.email]],
+            contactFirstName: ['', Validators.required],
+            contactLastName: ['', Validators.required],
+            contactEmail: ['', [Validators.required, Validators.email]],
+            contactPhone: ['', Validators.required],
             rutFileUrl: [''],
-            certificateFile: [''],
-            taxRegime: [null, Validators.required],
-            taxResponsibility: [null, Validators.required],
+            certificateFileUrl: [''],
+            taxRegime: [null],
+            taxResponsibility: [null],
             sector: [''],
             website: [''],
             currency: [null, Validators.required],
-            orgChartFile: [''],
-            address: [''],
+            orgChartFileUrl: [''],
+            address: ['', Validators.required],
             departmentId: [null, Validators.required],
             cityId: [null, Validators.required],
             collaboratorsCount: [{ value: null, disabled: true }]

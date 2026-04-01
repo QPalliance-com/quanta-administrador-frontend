@@ -25,7 +25,7 @@
                     "label": "Listado de Empresas",
                     "icon": "pi pi-list",
                     "routerLink": [
-                        "/company-360/list"
+                        "/company-360"
                     ],
                     "description": "Gestión de empresas registradas"
                 }
@@ -39,7 +39,7 @@
                     "label": "Listado de Usuarios",
                     "icon": "pi pi-list",
                     "routerLink": [
-                        "/users/list"
+                        "/users"
                     ],
                     "description": "Gestión de usuarios del sistema"
                 }

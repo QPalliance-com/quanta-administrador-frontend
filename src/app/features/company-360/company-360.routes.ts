@@ -5,12 +5,9 @@ import { CompanyFormComponent } from './components/company-form/company-form';
 export const company360Routes: Routes = [
     {
         path: '',
+         component: CompanyListComponent,
+                data: { breadcrumb: 'Lista de Compañías' },
         children: [
-            {
-                path: 'list',
-                component: CompanyListComponent,
-                data: { breadcrumb: 'Lista de Compañías' }
-            },
              {
                 path: 'new',
                 component: CompanyFormComponent,

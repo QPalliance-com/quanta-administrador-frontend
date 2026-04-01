@@ -32,6 +32,11 @@ export const appRoutes: Routes = [
                 path: 'company-360', 
                 data: { breadcrumb: 'Compañía 360' }, 
                 loadChildren: () => import('./features/company-360/company-360.routes').then((m) => m.company360Routes) 
+            },
+            { 
+                path: 'users', 
+                data: { breadcrumb: 'Usuarios' }, 
+                loadChildren: () => import('./features/users/users.routes').then((m) => m.usersRoutes) 
             }
         ]
     },

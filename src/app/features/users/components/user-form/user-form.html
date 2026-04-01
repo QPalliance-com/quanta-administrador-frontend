@@ -1,0 +1,196 @@
+<div class="card flex flex-col gap-6 w-full">
+
+    <!-- Header dinámico según modo -->
+    <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-0.5">
+            <div class="flex items-center gap-2 text-surface-400 text-sm mb-1 cursor-pointer hover:text-primary transition-colors" (click)="cancel()">
+                <i class="pi pi-arrow-left text-xs"></i>
+                <span>Usuarios</span>
+            </div>
+            <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-100">
+                {{ isEditMode ? 'Editar usuario' : 'Nuevo usuario' }}
+                <span *ngIf="isEditMode && userName" class="text-surface-400 font-normal text-lg">· {{ userName }}</span>
+            </h2>
+        </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+
+        <!-- INFORMACIÓN PERSONAL -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Información personal
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="names" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Nombres <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="names"
+                        formControlName="names"
+                        placeholder="Nombre de pila"
+                        [class.ng-invalid]="isInvalid('names')"
+                        [class.ng-dirty]="isInvalid('names')"
+                    />
+                    <small *ngIf="isInvalid('names')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('names') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="lastNames" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Apellidos <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="lastNames"
+                        formControlName="lastNames"
+                        placeholder="Apellidos"
+                        [class.ng-invalid]="isInvalid('lastNames')"
+                        [class.ng-dirty]="isInvalid('lastNames')"
+                    />
+                    <small *ngIf="isInvalid('lastNames')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('lastNames') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- INFORMACIÓN DE CONTACTO -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Información de contacto
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="email" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Correo electrónico <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="email"
+                        formControlName="email"
+                        type="email"
+                        placeholder="correo@empresa.com"
+                        [class.ng-invalid]="isInvalid('email')"
+                        [class.ng-dirty]="isInvalid('email')"
+                    />
+                    <small *ngIf="isInvalid('email')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('email') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="phone" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Teléfono <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="phone"
+                        formControlName="phone"
+                        type="tel"
+                        placeholder="+57 300 000 0000"
+                        [class.ng-invalid]="isInvalid('phone')"
+                        [class.ng-dirty]="isInvalid('phone')"
+                    />
+                    <small *ngIf="isInvalid('phone')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('phone') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- CREDENCIALES -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Credenciales
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1 md:col-span-2">
+                    <label for="username" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Usuario <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="username"
+                        formControlName="username"
+                        placeholder="nombre.usuario"
+                        [readonly]="isEditMode"
+                        [class.ng-invalid]="isInvalid('username')"
+                        [class.ng-dirty]="isInvalid('username')"
+                    />
+                    <small *ngIf="isInvalid('username')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('username') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- CONFIGURACIÓN -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Configuración
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="roleId" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Rol <span class="text-red-500">*</span>
+                    </label>
+                    <p-select
+                        fluid
+                        inputId="roleId"
+                        formControlName="roleId"
+                        [options]="roles"
+                        optionLabel="label"
+                        optionValue="value"
+                        showFilter
+                        placeholder="Seleccionar rol"
+                        [class.ng-invalid]="isInvalid('roleId')"
+                        [class.ng-dirty]="isInvalid('roleId')"
+                    />
+                    <small *ngIf="isInvalid('roleId')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('roleId') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="status" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Estado <span class="text-red-500">*</span>
+                    </label>
+                    <p-select
+                        fluid
+                        inputId="status"
+                        formControlName="status"
+                        [options]="statuses"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Seleccionar estado"
+                        [class.ng-invalid]="isInvalid('status')"
+                        [class.ng-dirty]="isInvalid('status')"
+                    />
+                    <small *ngIf="isInvalid('status')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('status') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- BOTONES -->
+        <div class="flex items-center justify-between pt-2 border-t border-surface-100 dark:border-surface-800">
+            <small class="text-surface-400 flex items-center gap-1">
+                <span class="text-red-500">*</span> Campos requeridos
+            </small>
+            <div class="flex gap-3">
+                <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
+                <p-button label="Guardar" icon="pi pi-check" type="submit" [disabled]="form.invalid" />
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<p-toast></p-toast>
