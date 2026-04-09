@@ -1,0 +1,116 @@
+name: Deploy Frontend to S3 + CloudFront
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Clear TypeScript cache
+        run: npx tsc --build --clean
+
+      - name: Determine environment
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          echo "Deploying from branch: $BRANCH"
+
+          case "$BRANCH" in
+            dev)
+              echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+              echo "S3_BUCKET=${{ secrets.S3_BUCKET_DEV }}" >> $GITHUB_ENV
+              echo "CLOUDFRONT_ID=${{ secrets.CLOUDFRONT_ID_DEV }}" >> $GITHUB_ENV
+              ;;
+            main)
+              echo "ENVIRONMENT=production" >> $GITHUB_ENV
+              echo "S3_BUCKET=${{ secrets.S3_BUCKET_PROD }}" >> $GITHUB_ENV
+              echo "CLOUDFRONT_ID=${{ secrets.CLOUDFRONT_ID_PROD }}" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "Unsupported branch: $BRANCH"
+              exit 1
+              ;;
+          esac
+
+      - name: Build Angular app
+        run: |
+          echo "Building for environment: ${{ env.ENVIRONMENT }}"
+          if [ "${{ env.ENVIRONMENT }}" = "dev" ]; then
+            npx ng build --configuration=dev
+          elif [ "${{ env.ENVIRONMENT }}" = "production" ]; then
+            npx ng build --configuration=production
+          else
+            echo "Unknown environment: ${{ env.ENVIRONMENT }}"
+            exit 1
+          fi
+
+      - name: List build output
+        run: |
+          echo "Build output structure:"
+          find dist/ -type f | head -20
+          echo "Total files: $(find dist/ -type f | wc -l)"
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::839088212270:role/GitHubActionsRole
+          aws-region: us-east-1
+
+      - name: Sync files to S3
+        run: |
+          # Sync all files except index.html first
+          aws s3 sync dist/frontend-qp/browser/ s3://${{ env.S3_BUCKET }}/ \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html" \
+            --exclude "*.json" \
+            --exclude "*.txt"
+
+          # Upload index.html with no-cache
+          aws s3 cp dist/frontend-qp/browser/index.html s3://${{ env.S3_BUCKET }}/index.html \
+            --cache-control "public,max-age=0,must-revalidate"
+
+          # Upload JSON and TXT files with short cache
+          aws s3 sync dist/frontend-qp/browser/ s3://${{ env.S3_BUCKET }}/ \
+            --cache-control "public,max-age=300" \
+            --include "*.json" \
+            --include "*.txt" \
+            --exclude "*"
+
+          # Ensure all assets are uploaded
+          if [ -d "dist/frontend-qp/browser/assets" ]; then
+            aws s3 sync dist/frontend-qp/browser/assets/ s3://${{ env.S3_BUCKET }}/assets/ \
+              --cache-control "public,max-age=31536000,immutable"
+          fi
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_ID }} \
+            --paths "/*"
+
+      - name: Deployment summary
+        run: |
+          echo " Deployment completed successfully!"
+          echo "Environment: ${{ env.ENVIRONMENT }}"
+          echo "S3 Bucket: ${{ env.S3_BUCKET }}"
+          echo "CloudFront Distribution: ${{ env.CLOUDFRONT_ID }}"
