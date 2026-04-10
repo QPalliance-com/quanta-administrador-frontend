@@ -12,6 +12,11 @@ export interface Company {
     certificateFile: string; // certificado de existencia y representación legal
     taxRegime: string; // desplegable
     taxResponsibility: string; // desplegable
+    identificationType?: string;
+    providerCustomerPmId?: string;
+    identifyProvider?: string;
+    tenantSlug?: string;
+    rutUrl?: string;
     sector?: string; // sector económico
     website: string;
     currency: string; // moneda principal de transacción
@@ -19,5 +24,9 @@ export interface Company {
     address: string;
     departmentId: number;
     cityId: number;
+    names?: string;
+    lastNames?: string;
+    phone?: string;
+    onBoardingComplete?: boolean;
     collaboratorsCount?: number; // asignado automáticamente desde Talento Humano
 }

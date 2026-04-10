@@ -23,15 +23,15 @@ export const appRoutes: Routes = [
                 redirectTo: 'dashboard', 
                 pathMatch: 'full' 
             },
-            { 
-                path: 'dashboard', 
-                data: { breadcrumb: 'Dashboard' }, 
-                loadChildren: () => import('./features/company-360/company-360.routes').then((m) => m.company360Routes) 
+            {
+                path: 'dashboard',
+                data: { breadcrumb: 'Dashboard' },
+                loadChildren: () => import('./features/dashboard/dashboard.routes').then((m) => m.dashboardRoutes)
             },
             { 
-                path: 'company-360', 
-                data: { breadcrumb: 'Compañía 360' }, 
-                loadChildren: () => import('./features/company-360/company-360.routes').then((m) => m.company360Routes) 
+                path: 'companies', 
+                data: { breadcrumb: 'Compañías' }, 
+                loadChildren: () => import('./features/companies/companies.routes').then((m) => m.companiesRoutes) 
             },
             { 
                 path: 'users', 

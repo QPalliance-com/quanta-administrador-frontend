@@ -224,21 +224,21 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             this.companyService.updateCompany(company)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
-                    next: () => this.router.navigate(['/company-360/list']),
+                    next: () => this.router.navigate(['/companies']),
                     error: (err) => console.error('Error updating company', err)
                 });
         } else {
             this.companyService.createCompany(company)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
-                    next: () => this.router.navigate(['/company-360/list']),
+                    next: () => this.router.navigate(['/companies']),
                     error: (err) => console.error('Error creating company', err)
                 });
         }
     }
 
     cancel(): void {
-        this.router.navigate(['/company-360/list']);
+        this.router.navigate(['/companies']);
     }
 
     ngOnDestroy(): void {

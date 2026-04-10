@@ -1,0 +1,341 @@
+import {
+  Component, AfterViewInit, OnDestroy, OnInit,
+  ViewChild, ElementRef, ViewEncapsulation,
+  inject, computed, effect
+} from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
+import Chart from 'chart.js/auto';
+
+import { CompanyService }          from '../../../../core/services/company.service';
+import { UserService }             from '../../../../core/services/user.service';
+import { SubscriptionPlanService } from '../../../../core/services/subscription-plan.service';
+
+@Component({
+  selector: 'app-dashboard-aurora',
+  standalone: true,
+  imports: [CommonModule, DecimalPipe],
+  templateUrl: './option-c.html',
+  encapsulation: ViewEncapsulation.None,
+  styles: [`
+    .bt-wrap {
+      min-height: calc(100vh - 80px);
+      background: var(--surface-hover);
+      font-family: 'Roboto', sans-serif;
+      padding: 24px 28px;
+    }
+
+    /* HEADER */
+    .bt-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .bt-title-row { display: flex; align-items: center; gap: 12px; }
+    .bt-accent-bar { width: 4px; height: 32px; background: var(--primary-color); }
+    .bt-title { font-size: 22px; font-weight: 700; color: var(--text-color); letter-spacing: -0.3px; }
+    .bt-subtitle { font-size: 13px; color: var(--text-color-secondary); margin-top: 2px; }
+    .bt-header-pills { display: flex; gap: 8px; }
+    .bt-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 6px 14px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-color-secondary);
+    }
+    .bt-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+
+    /* BENTO GRID */
+    .bt-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    /* CARDS */
+    .bt-card {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 20px 22px;
+      transition: box-shadow 0.15s;
+      cursor: default;
+    }
+    .bt-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .bt-card.col-2 { grid-column: span 2; }
+    .bt-card.col-3 { grid-column: span 3; }
+    .bt-card.row-2 { grid-row: span 2; }
+
+    /* Hero card */
+    .bt-card.hero {
+      background: var(--primary-color);
+      border-color: transparent; color: white;
+    }
+    .bt-card.hero:hover { box-shadow: 0 4px 24px rgba(214,41,116,0.35); }
+
+    /* LABELS */
+    .bt-eyebrow {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text-color-secondary);
+      margin-bottom: 8px;
+    }
+    .bt-card.hero .bt-eyebrow { color: rgba(255,255,255,0.65); }
+
+    /* BIG NUMBERS */
+    .bt-num {
+      font-size: 44px; font-weight: 700; line-height: 1;
+      letter-spacing: -2px; color: var(--text-color); margin-bottom: 6px;
+    }
+    .bt-num.lg { font-size: 54px; letter-spacing: -3px; }
+    .bt-card.hero .bt-num { color: white; }
+
+    .bt-sub { font-size: 13px; color: var(--text-color-secondary); }
+    .bt-card.hero .bt-sub { color: rgba(255,255,255,0.75); }
+
+    /* BADGES */
+    .bt-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 2px; margin-top: 8px;
+    }
+    .bb-pos  { background: rgba(34,197,94,0.1);  color: #16a34a; }
+    .bb-neg  { background: rgba(239,68,68,0.1);  color: #dc2626; }
+    .bb-warn { background: rgba(234,179,8,0.1);  color: #ca8a04; }
+    .bb-info { background: rgba(59,130,246,0.1); color: #2563eb; }
+    .bt-card.hero .bb-pos  { background: rgba(255,255,255,0.2); color: white; }
+    .bt-card.hero .bb-info { background: rgba(255,255,255,0.15); color: white; }
+
+    /* STATUS BADGES */
+    .bt-status {
+      display: inline-block;
+      font-size: 10px; font-weight: 600;
+      padding: 2px 7px; border-radius: 2px;
+    }
+    .bs-active   { background: rgba(34,197,94,0.1);  color: #16a34a; }
+    .bs-inactive { background: rgba(239,68,68,0.1);  color: #dc2626; }
+
+    /* LEGAL TYPE BREAKDOWN (inside hero) */
+    .bt-legal-rows { margin-top: 16px; }
+    .bt-legal-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .bt-legal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .bt-legal-label { font-size: 12px; color: rgba(255,255,255,0.75); flex: 1; }
+    .bt-legal-count { font-size: 16px; font-weight: 700; color: white; }
+    .bt-legal-bar-track {
+      flex: 1; height: 4px;
+      background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden;
+    }
+    .bt-legal-bar-fill { height: 100%; border-radius: 2px; }
+
+    /* ONBOARDING PROGRESS (inside hero) */
+    .bt-onboard { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2); }
+    .bt-onboard-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .bt-onboard-label { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.05em; }
+    .bt-onboard-pct { font-size: 22px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+    .bt-onboard-track {
+      height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden;
+    }
+    .bt-onboard-fill { height: 100%; background: rgba(255,255,255,0.9); border-radius: 3px; transition: width 0.6s ease; }
+
+    /* LOADING SKELETON */
+    .bt-skeleton {
+      height: 48px; width: 100px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+      background-size: 200% 100%;
+      animation: bt-shimmer 1.5s infinite;
+      border-radius: 2px;
+    }
+    .bt-skeleton.light {
+      background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-border) 50%, var(--surface-hover) 75%);
+      background-size: 200% 100%;
+    }
+    @keyframes bt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* DONUT CHART BOX */
+    .bt-chart-md { height: 150px; }
+
+    /* PLAN CARD */
+    .bt-plan-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 16px;
+    }
+    .bt-plan-name { font-size: 18px; font-weight: 700; color: var(--text-color); letter-spacing: -0.3px; }
+    .bt-plan-desc { font-size: 12px; color: var(--text-color-secondary); margin-top: 3px; }
+    .bt-plan-active { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #16a34a; }
+    .bt-plan-active-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+    .bt-plan-prices {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-bottom: 14px;
+    }
+    .bt-price-card {
+      background: var(--surface-hover);
+      border: 1px solid var(--surface-border);
+      padding: 10px 14px;
+    }
+    .bt-price-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-color-secondary); margin-bottom: 4px; }
+    .bt-price-value { font-size: 20px; font-weight: 700; color: var(--primary-color); letter-spacing: -0.5px; line-height: 1; }
+    .bt-price-period { font-size: 10px; color: var(--text-color-secondary); margin-top: 1px; }
+    .bt-plan-features { }
+    .bt-feature-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; color: var(--text-color-secondary);
+      padding: 4px 0; border-bottom: 1px solid var(--surface-border);
+    }
+    .bt-feature-item:last-child { border-bottom: none; }
+    .bt-feature-check { color: #22c55e; font-size: 11px; }
+    .bt-trial { font-size: 12px; color: var(--text-color-secondary); margin-bottom: 12px; }
+    .bt-trial span { font-weight: 600; color: var(--primary-color); }
+
+    /* COMPANIES TABLE */
+    .bt-table-head {
+      display: grid; grid-template-columns: 1fr 1fr 90px 90px;
+      padding: 0 0 8px; border-bottom: 2px solid var(--surface-border);
+    }
+    .bt-th { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-color-secondary); }
+    .bt-table-row {
+      display: grid; grid-template-columns: 1fr 1fr 90px 90px;
+      padding: 10px 0; border-bottom: 1px solid var(--surface-border);
+      align-items: center;
+    }
+    .bt-table-row:last-child { border-bottom: none; }
+    .bt-td { font-size: 13px; color: var(--text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bt-td.bold { font-weight: 600; }
+    .bt-td.muted { font-size: 12px; color: var(--text-color-secondary); }
+    .bt-legal-chip {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 2px;
+    }
+    .lc-natural   { background: rgba(214,41,116,0.08);  color: #D62974; border: 1px solid rgba(214,41,116,0.2); }
+    .lc-juridical { background: rgba(59,130,246,0.08); color: #2563eb; border: 1px solid rgba(59,130,246,0.2); }
+
+    /* USERS LIST */
+    .bt-user-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid var(--surface-border);
+    }
+    .bt-user-item:last-child { border-bottom: none; }
+    .bt-user-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--primary-color);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .bt-user-info { flex: 1; min-width: 0; }
+    .bt-user-name { font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bt-user-type { font-size: 10px; color: var(--text-color-secondary); margin-top: 1px; }
+
+    /* EMPTY STATE */
+    .bt-empty { font-size: 12px; color: var(--text-color-secondary); padding: 16px 0; text-align: center; }
+  `]
+})
+export class DashboardOptionCComponent implements OnInit, AfterViewInit, OnDestroy {
+  private companyService = inject(CompanyService);
+  private userService    = inject(UserService);
+  private subPlanService = inject(SubscriptionPlanService);
+
+  // ── Companies ──────────────────────────────────────────────────────────────
+  companies        = this.companyService.companies;
+  companiesCount   = this.companyService.companiesCount;
+  loadingCompanies = this.companyService.loading;
+
+  // ── Users ──────────────────────────────────────────────────────────────────
+  private usersRes$ = toSignal(
+    this.userService.getUsers().pipe(catchError(() => of(null))),
+    { initialValue: null }
+  );
+  loadingUsers  = computed(() => this.usersRes$() === null);
+  users         = computed(() => this.usersRes$()?.data ?? []);
+  usersCount    = computed(() => this.users().length);
+  activeUsers   = computed(() => this.users().filter(u => u.status === 'active').length);
+  inactiveUsers = computed(() => this.users().filter(u => u.status === 'inactive').length);
+  activeRatio   = computed(() => {
+    const t = this.usersCount();
+    return t > 0 ? Math.round((this.activeUsers() / t) * 100) : 0;
+  });
+
+  // ── Subscription plan ──────────────────────────────────────────────────────
+  private planRes$ = toSignal(
+    this.subPlanService.getPlan().pipe(catchError(() => of(null))),
+    { initialValue: null }
+  );
+  plan         = computed(() => this.planRes$()?.data ?? null);
+  adminPricing = computed(() => this.plan()?.userPricing.find(p => p.userType === 'ADMIN') ?? null);
+  opPricing    = computed(() => this.plan()?.userPricing.find(p => p.userType === 'OPERATIVE') ?? null);
+
+  // ── Derived company metrics ────────────────────────────────────────────────
+  naturalCount    = computed(() => this.companies().filter(c => c.legalType === 'natural').length);
+  juridicalCount  = computed(() => this.companies().filter(c => c.legalType === 'juridical').length);
+  onboardingDone  = computed(() => this.companies().filter(c => c.onBoardingComplete).length);
+  onboardingPct   = computed(() => {
+    const t = this.companiesCount();
+    return t > 0 ? Math.round((this.onboardingDone() / t) * 100) : 0;
+  });
+  naturalPct      = computed(() => {
+    const t = this.companiesCount();
+    return t > 0 ? Math.round((this.naturalCount() / t) * 100) : 0;
+  });
+  recentCompanies = computed(() => [...this.companies()].slice(-8).reverse());
+  recentUsers     = computed(() => [...this.users()].slice(-6));
+
+  @ViewChild('btLegalCanvas') legalRef!: ElementRef<HTMLCanvasElement>;
+  private legalChart?: Chart;
+
+  constructor() {
+    effect(() => {
+      const n = this.naturalCount();
+      const j = this.juridicalCount();
+      if (this.legalChart) {
+        this.legalChart.data.datasets[0].data = [n, j];
+        this.legalChart.update('none');
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    this.companyService.loadCompanies().subscribe();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.initLegalChart(), 50);
+  }
+
+  ngOnDestroy(): void {
+    this.legalChart?.destroy();
+  }
+
+  initials(user: { names: string; lastNames: string }): string {
+    return `${user.names?.[0] ?? ''}${user.lastNames?.[0] ?? ''}`.toUpperCase();
+  }
+
+  private initLegalChart(): void {
+    const ctx = this.legalRef.nativeElement.getContext('2d')!;
+    this.legalChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Persona Natural', 'Persona Jurídica'],
+        datasets: [{
+          data: [this.naturalCount(), this.juridicalCount()],
+          backgroundColor: ['#D62974', '#3b82f6'],
+          borderWidth: 0, hoverOffset: 5
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: {
+          legend: {
+            display: true, position: 'right',
+            labels: { boxWidth: 10, font: { size: 11, family: 'Roboto' }, color: '#64748b', padding: 12 }
+          },
+          tooltip: { backgroundColor: '#1e293b', titleColor: '#D62974', bodyColor: '#e2e8f0' }
+        }
+      }
+    });
+  }
+}

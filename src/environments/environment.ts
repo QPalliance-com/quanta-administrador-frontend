@@ -1,7 +1,7 @@
-export const environment = {
+import { createEnvironment } from './environment.base';
+
+export const environment = createEnvironment({
+    baseUrl: 'http://localhost:4200',
     production: false,
-    apiUrl: 'http://localhost:8000/api/v1/',
-    environmentName: 'development',
-    useMockApi: true
-    // Add any other environment-specific variables here
-};
+    environmentName: 'localhost'
+});

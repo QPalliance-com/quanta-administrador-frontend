@@ -51,11 +51,7 @@ export class CompanyListComponent implements OnInit {
     filterFields: string[] = [
         'companyName',
         'legalType',
-        'numberIdentification',
-        'email',
-        'sector',
-        'currency',
-        'address'
+        'email'
     ];
     cols!: Column[];
     exportColumns!: ExportColumn[];
@@ -94,12 +90,8 @@ export class CompanyListComponent implements OnInit {
         this.cols = [
             { field: 'logoUrl', header: 'Logo', customExportHeader: 'Logo' },
             { field: 'companyName', header: 'Nombre', customExportHeader: 'Nombre legal' },
-            { field: 'legalType', header: 'Tipo Legal', customExportHeader: 'Tipo Legal' },
-            { field: 'numberIdentification', header: 'NIT', customExportHeader: 'NIT' },
-            { field: 'email', header: 'Correo', customExportHeader: 'Correo electrónico' },
-            { field: 'sector', header: 'Sector', customExportHeader: 'Sector económico' },
-            { field: 'currency', header: 'Moneda', customExportHeader: 'Moneda principal' },
-            { field: 'address', header: 'Dirección', customExportHeader: 'Dirección principal' }
+            { field: 'legalType', header: 'Tipo', customExportHeader: 'Tipo' },
+            { field: 'email', header: 'Correo', customExportHeader: 'Correo electrónico' }
         ];
         this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
     }
@@ -109,19 +101,33 @@ export class CompanyListComponent implements OnInit {
     }
 
     openNew(): void {
-        this.router.navigate(['/company-360/new']);
+        this.router.navigate(['/companies/new']);
     }
 
     navigateToView(companyId: string | number): void {
         if (companyId) {
-            this.selectedCompany = this.companies().find(c => c.id === companyId) || null;
-            this.displayViewDrawer = true;
+            this.viewCompanyDetail(Number(companyId));
         }
+    }
+
+    private viewCompanyDetail(companyId: number): void {
+        this.selectedCompany = null;
+        this.companyService.loadCompanyById(companyId).subscribe({
+            next: (response) => {
+                if (response.success && response.data) {
+                    this.selectedCompany = response.data;
+                    this.displayViewDrawer = true;
+                }
+            },
+            error: () => {
+                this.error$ = new BehaviorSubject('No se pudo cargar el detalle de la compañía.');
+            }
+        });
     }
 
     navigateToEdit(companyId: string | number): void {
         if (companyId) {
-            this.router.navigate(['/company-360/edit', companyId]);
+            this.router.navigate(['/companies/edit', companyId]);
         }
     }
 
@@ -131,10 +137,7 @@ export class CompanyListComponent implements OnInit {
             {
                 label: 'Ver detalle',
                 icon: 'pi pi-eye',
-                command: () => {
-                    this.selectedCompany = company;
-                    this.displayViewDrawer = true;
-                }
+                command: () => this.viewCompanyDetail(company.id!)
             },
             {
                 label: 'Editar',
@@ -152,8 +155,11 @@ export class CompanyListComponent implements OnInit {
         this.rowMenu.toggle(event);
     }
 
-    editCompany(company: Company): void {
-        this.router.navigate(['/company-360/edit', company.id]);
+    editCompany(company: Company | null): void {
+        if (!company) {
+            return;
+        }
+        this.router.navigate(['/companies/edit', company.id]);
     }
 
     deleteCompany(company: Company): void {

@@ -1,7 +1,7 @@
-export const environment = {
+import { createEnvironment } from './environment.base';
+
+export const environment = createEnvironment({
+    baseUrl: 'https://dev.quantapro.com.co',
     production: false,
-    apiUrl: 'http://localhost:8001/api/v1/',
-    environmentName: 'dev',
-    useMockApi: false
-    // Add any other environment-specific variables here
-};
+    environmentName: 'dev'
+});

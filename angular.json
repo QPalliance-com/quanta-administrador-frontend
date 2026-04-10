@@ -47,7 +47,7 @@
                             "fileReplacements": [
                                 {
                                     "replace": "src/environments/environment.ts",
-                                    "with": "src/environments/environment.prod.ts"
+                                    "with": "src/environments/environment.main.ts"
                                 }
                             ]
                         },
@@ -67,13 +67,21 @@
                                 }
                             ]
                         },
+                        "demo": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "src/environments/environment.ts",
+                                    "with": "src/environments/environment.demo.ts"
+                                }
+                            ]
+                        },
                         "development": {
                             "optimization": false,
                             "extractLicenses": false,
                             "sourceMap": true
                         }
                     },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -83,6 +91,12 @@
             },
             "qa": {
               "buildTarget": "quanta-administrador-frontend:build:qa"
+            },
+            "dev": {
+              "buildTarget": "quanta-administrador-frontend:build:dev"
+            },
+            "demo": {
+              "buildTarget": "quanta-administrador-frontend:build:demo"
             },
             "development": {
               "buildTarget": "quanta-administrador-frontend:build:development"
@@ -127,7 +141,7 @@
                             "fileReplacements": [
                                 {
                                     "replace": "src/environments/environment.ts",
-                                    "with": "src/environments/environment.prod.ts"
+                                    "with": "src/environments/environment.main.ts"
                                 }
                             ]
                         },

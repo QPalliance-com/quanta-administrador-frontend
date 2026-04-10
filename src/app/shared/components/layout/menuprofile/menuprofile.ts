@@ -1,5 +1,6 @@
 import { Component, computed, effect, ElementRef, inject, OnDestroy, Renderer2, signal } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { LayoutService } from '../services/layout.service';
@@ -8,7 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SkeletonModule } from 'primeng/skeleton';
-import { Subscription } from 'rxjs';
+import * as AuthActions from '@/features/auth/state/actions/auth.actions';
 
 @Component({
     selector: '[app-menu-profile]',
@@ -32,6 +33,7 @@ import { Subscription } from 'rxjs';
 export class MenuprofileComponent implements OnDestroy {
     private destroy$ = new Subject<void>();
     _layoutService = inject(LayoutService);
+    private store = inject(Store);
 
     renderer = inject(Renderer2);
     el = inject(ElementRef);
@@ -91,6 +93,12 @@ export class MenuprofileComponent implements OnDestroy {
         this.destroy$.complete();
         this.subscription.unsubscribe();
         this.unbindOutsideClickListener();
+    }
+
+    logout() {
+        console.log('🚪 Cerrando sesión desde menuprofile...');
+        // Despachar la acción de logout que manejará todo el proceso
+        this.store.dispatch(AuthActions.logout());
     }
 
     toggleMenu() {

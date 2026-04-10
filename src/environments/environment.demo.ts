@@ -1,7 +1,7 @@
 import { createEnvironment } from './environment.base';
 
 export const environment = createEnvironment({
-    baseUrl: 'https://qa.quantapro.com.co',
+    baseUrl: 'https://demo.quantapro.com.co',
     production: false,
-    environmentName: 'qa'
+    environmentName: 'demo'
 });

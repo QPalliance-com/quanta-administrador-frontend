@@ -59,11 +59,7 @@
                 </td>
                 <td>{{ company.companyName }}</td>
                 <td>{{ company.legalType === 'juridical' ? 'Jurídica' : 'Natural' }}</td>
-                <td>{{ company.numberIdentification }}<span *ngIf="company.verificationDigit">-{{ company.verificationDigit }}</span></td>
                 <td>{{ company.email }}</td>
-                <td>{{ company.sector || '—' }}</td>
-                <td>{{ company.currency }}</td>
-                <td>{{ company.address }}</td>
                 <td class="text-center">
                     <button
                         pButton
@@ -109,33 +105,79 @@
     </ng-template>
 
     <div *ngIf="selectedCompany" class="flex flex-col gap-5 pt-2">
-        <div class="flex flex-col gap-1 pb-4 border-b border-surface-100 dark:border-surface-800">
-            <span class="text-xl font-bold text-surface-900 dark:text-surface-100">{{ selectedCompany.companyName }}</span>
-            <span class="text-sm text-surface-400">{{ selectedCompany.email }}</span>
+        <div class="flex items-start gap-4 pb-4 border-b border-surface-100 dark:border-surface-800">
+            <img *ngIf="selectedCompany.logoUrl" [src]="selectedCompany.logoUrl" alt="Logo" class="w-14 h-14 object-contain rounded" />
+            <div class="flex-1">
+                <span class="text-xl font-bold text-surface-900 dark:text-surface-100">{{ selectedCompany.companyName }}</span>
+                <div class="text-sm text-surface-400">{{ selectedCompany.email }}</div>
+            </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Tipo Legal</span>
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Tipo</span>
                 <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.legalType === 'juridical' ? 'Jurídica' : 'Natural' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Identificación</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.identificationType || selectedCompany.documentType || '—' }}</span>
             </div>
             <div class="flex flex-col gap-1">
                 <span class="text-xs text-surface-400 uppercase tracking-wide">NIT</span>
                 <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.numberIdentification || '—' }}<span *ngIf="selectedCompany.verificationDigit">-{{ selectedCompany.verificationDigit }}</span></span>
             </div>
             <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Sector</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.sector || '—' }}</span>
+                <span class="text-xs text-surface-400 uppercase tracking-wide">RUT</span>
+                <a *ngIf="selectedCompany.rutUrl || selectedCompany.rutFileUrl" [href]="selectedCompany.rutUrl || selectedCompany.rutFileUrl" target="_blank" class="text-sm font-medium text-primary">Ver archivo</a>
+                <span *ngIf="!selectedCompany.rutUrl && !selectedCompany.rutFileUrl" class="text-sm font-medium text-surface-700 dark:text-surface-200">—</span>
             </div>
             <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Moneda</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.currency || '—' }}</span>
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Website</span>
+                <a *ngIf="selectedCompany.website" [href]="selectedCompany.website" target="_blank" class="text-sm font-medium text-primary">{{ selectedCompany.website }}</a>
+                <span *ngIf="!selectedCompany.website" class="text-sm font-medium text-surface-700 dark:text-surface-200">—</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Operador</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.identifyProvider || '—' }}</span>
             </div>
         </div>
 
-        <div class="flex flex-col gap-1">
-            <span class="text-xs text-surface-400 uppercase tracking-wide">Dirección</span>
-            <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.address || '—' }}</span>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Proveedor PM</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.providerCustomerPmId || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Tenant</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.tenantSlug || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Dirección</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.address || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Departamento / Ciudad</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.departmentId || '—' }} / {{ selectedCompany.cityId || '—' }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Nombre de contacto</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.names || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Apellidos de contacto</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.lastNames || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Teléfono</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.phone || '—' }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Onboarding completo</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.onBoardingComplete ? 'Sí' : 'No' }}</span>
+            </div>
         </div>
 
         <div class="flex gap-2 pt-4 border-t border-surface-100 dark:border-surface-800 mt-auto">

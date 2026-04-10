@@ -1,0 +1,99 @@
+<div class="cmd-wrap">
+
+  <!-- Topbar oscuro -->
+  <div class="cmd-topbar">
+    <div>
+      <div class="cmd-eyebrow">Quanta SaaS · Panel de Control</div>
+      <div class="cmd-title">Centro de Operaciones</div>
+    </div>
+    <div class="cmd-live">
+      <div class="cmd-live-dot"></div>
+      Sistema activo — {{ currentTime }}
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="cmd-kpis">
+    @for (kpi of kpis; track kpi.lbl) {
+      <div class="cmd-kpi">
+        <div class="cmd-kpi-lbl">{{ kpi.lbl }}</div>
+        <div class="cmd-kpi-val" [class.v-pink]="kpi.pink">{{ kpi.val }}</div>
+        <span class="cmd-badge"
+              [class.up]="kpi.type === 'up'"
+              [class.down]="kpi.type === 'down'"
+              [class.warn]="kpi.type === 'warn'">
+          {{ kpi.tag }}
+        </span>
+      </div>
+    }
+  </div>
+
+  <div class="cmd-body">
+
+    <!-- Fila principal -->
+    <div class="cmd-main">
+      <div class="cmd-panel" style="grid-column: span 2">
+        <div class="cmd-panel-label">Ingresos Recurrentes</div>
+        <div class="cmd-panel-title">Evolución MRR — últimos 12 meses vs. año anterior</div>
+        <div class="cmd-chart"><canvas #cmdRevChart></canvas></div>
+      </div>
+
+      <div class="cmd-panel">
+        <div class="cmd-panel-label">Actividad Reciente</div>
+        <div class="cmd-panel-title">Últimos eventos del sistema</div>
+        @for (item of feed; track item.time) {
+          <div class="cmd-feed-item">
+            <div class="cmd-feed-ico" [class]="item.type">{{ item.ico }}</div>
+            <div style="flex:1;min-width:0">
+              <div class="cmd-feed-txt">{{ item.txt }}</div>
+              <div class="cmd-feed-time">{{ item.time }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Fila inferior -->
+    <div class="cmd-bottom">
+      <div class="cmd-panel">
+        <div class="cmd-panel-label">Planes Activos</div>
+        <div class="cmd-panel-title">Distribución de suscripciones</div>
+        <div class="cmd-donut-grid">
+          <div class="cmd-donut"><canvas #cmdPlanChart></canvas></div>
+          <div>
+            @for (plan of plans; track plan.name) {
+              <div class="cmd-plan-row">
+                <div class="cmd-plan-dot" [style.background]="plan.color"></div>
+                <div class="cmd-plan-name">{{ plan.name }}</div>
+                <div class="cmd-plan-cnt">{{ plan.cnt }}</div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="cmd-panel">
+        <div class="cmd-panel-label">Nuevos Registros</div>
+        <div class="cmd-panel-title">Empresas por mes — último semestre</div>
+        <div class="cmd-bar-box"><canvas #cmdBarChart></canvas></div>
+      </div>
+
+      <div class="cmd-panel">
+        <div class="cmd-panel-label">Salud del Sistema</div>
+        <div class="cmd-panel-title">Métricas operacionales en tiempo real</div>
+        @for (item of health; track item.lbl) {
+          <div class="cmd-health-item">
+            <div class="cmd-health-lbl">
+              <span>{{ item.lbl }}</span>
+              <span class="cmd-health-val">{{ item.val }}</span>
+            </div>
+            <div class="cmd-track">
+              <div class="cmd-fill" [class]="item.cls" [style.width.%]="item.pct"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

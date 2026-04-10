@@ -1,46 +1,73 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { environment } from '../../../../../environments/environment';
-import { ApiResponse } from '../../../../core/models/api-response.model';
+import { BehaviorSubject } from 'rxjs';
 import { MenuItem } from 'primeng/api';
+
+const MENU_ITEMS: MenuItem[] = [
+    {
+        label: 'Inicio',
+        icon: 'pi pi-fw pi-home',
+        items: [
+            {
+                label: 'Dashboard',
+                icon: 'pi pi-home',
+                routerLink: ['/dashboard'],
+                description: 'Panel principal del administrador'
+            }
+        ]
+    },
+    {
+        label: 'Empresas',
+        icon: 'pi pi-fw pi-briefcase',
+        items: [
+            {
+                label: 'Listado de Empresas',
+                icon: 'pi pi-list',
+                routerLink: ['/companies'],
+                description: 'Gestión de empresas registradas'
+            }
+        ]
+    },
+    {
+        label: 'Usuarios',
+        icon: 'pi pi-fw pi-users',
+        items: [
+            {
+                label: 'Listado de Usuarios',
+                icon: 'pi pi-list',
+                routerLink: ['/users'],
+                description: 'Gestión de usuarios del sistema'
+            }
+        ]
+    },
+    {
+        label: 'Configuración',
+        icon: 'pi pi-fw pi-cog',
+        items: [
+            {
+                label: 'Plan de Suscripción',
+                icon: 'pi pi-credit-card',
+                routerLink: ['/subscription-plans'],
+                description: 'Configuración del plan y precios'
+            }
+        ]
+    }
+];
 
 @Injectable({
     providedIn: 'root'
 })
 export class MenuService {
-    private readonly baseUrl = `${environment.apiUrl}sys/menu`;
-    private menuItemsSignal = signal<MenuItem[]>([]);
+    private menuItemsSignal = signal<MenuItem[]>(MENU_ITEMS);
     private isLoadingSubject = new BehaviorSubject<boolean>(false);
 
     menuItems = this.menuItemsSignal.asReadonly();
     isLoading$ = this.isLoadingSubject.asObservable();
 
-    constructor(private http: HttpClient) {
-        this.loadMenuItems();
-    }
-
-    private loadMenuItems() {
-        this.isLoadingSubject.next(true);
-        this.getMenu().subscribe({
-            next: (response) => {
-                this.menuItemsSignal.set(response.data || []);
-                this.isLoadingSubject.next(false);
-            },
-            error: () => {
-                this.isLoadingSubject.next(false);
-            }
-        });
+    constructor() {
+        this.isLoadingSubject.next(false);
     }
 
     getMenuItems(): MenuItem[] {
         return this.menuItemsSignal();
-    }
-
-    getMenu(): Observable<ApiResponse<MenuItem[]>> {
-        if (environment.useMockApi) {
-            return this.http.get<ApiResponse<MenuItem[]>>('data/menu/menu.json');
-        }
-        return this.http.get<ApiResponse<MenuItem[]>>(this.baseUrl);
     }
 }

@@ -1,0 +1,227 @@
+<div class="bt-wrap">
+
+  <!-- Header -->
+  <div class="bt-header">
+    <div class="bt-title-row">
+      <div class="bt-accent-bar"></div>
+      <div>
+        <div class="bt-title">Dashboard · Quanta Admin</div>
+        <div class="bt-subtitle">Resumen general del sistema SaaS</div>
+      </div>
+    </div>
+    <div class="bt-header-pills">
+      <div class="bt-pill"><div class="bt-pill-dot"></div> Sistema operacional</div>
+    </div>
+  </div>
+
+  <!-- Bento Grid -->
+  <div class="bt-grid">
+
+    <!-- ① Hero: Empresas (col-2, row-2, pink) -->
+    <div class="bt-card hero col-2 row-2">
+      <div class="bt-eyebrow">Total empresas registradas</div>
+
+      @if (loadingCompanies()) {
+        <div class="bt-skeleton" style="margin-bottom:6px"></div>
+      } @else {
+        <div class="bt-num lg">{{ companiesCount() }}</div>
+      }
+
+      <div class="bt-sub">Compañías en el sistema</div>
+
+      <!-- Tipo legal breakdown -->
+      <div class="bt-legal-rows">
+        <div class="bt-legal-row">
+          <div class="bt-legal-dot" style="background:rgba(255,255,255,0.9)"></div>
+          <div class="bt-legal-label">Persona Natural</div>
+          <div class="bt-legal-bar-track">
+            <div class="bt-legal-bar-fill" style="background:rgba(255,255,255,0.9)"
+                 [style.width.%]="naturalPct()"></div>
+          </div>
+          <div class="bt-legal-count">{{ naturalCount() }}</div>
+        </div>
+        <div class="bt-legal-row">
+          <div class="bt-legal-dot" style="background:rgba(255,255,255,0.5)"></div>
+          <div class="bt-legal-label">Persona Jurídica</div>
+          <div class="bt-legal-bar-track">
+            <div class="bt-legal-bar-fill" style="background:rgba(255,255,255,0.5)"
+                 [style.width.%]="100 - naturalPct()"></div>
+          </div>
+          <div class="bt-legal-count">{{ juridicalCount() }}</div>
+        </div>
+      </div>
+
+      <!-- Onboarding progress -->
+      <div class="bt-onboard">
+        <div class="bt-onboard-header">
+          <span class="bt-onboard-label">ONBOARDING COMPLETADO</span>
+          <span class="bt-onboard-pct">{{ onboardingPct() }}%</span>
+        </div>
+        <div class="bt-onboard-track">
+          <div class="bt-onboard-fill" [style.width.%]="onboardingPct()"></div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:5px">
+          {{ onboardingDone() }} de {{ companiesCount() }} empresas
+        </div>
+      </div>
+    </div>
+
+    <!-- ② Usuarios totales -->
+    <div class="bt-card">
+      <div class="bt-eyebrow">Usuarios totales</div>
+      @if (loadingUsers()) {
+        <div class="bt-skeleton light"></div>
+      } @else {
+        <div class="bt-num">{{ usersCount() }}</div>
+      }
+      <div class="bt-sub">En el sistema</div>
+    </div>
+
+    <!-- ③ Usuarios activos -->
+    <div class="bt-card">
+      <div class="bt-eyebrow">Usuarios activos</div>
+      <div class="bt-num">{{ activeUsers() }}</div>
+      <div class="bt-sub">Estado activo</div>
+      <span class="bt-badge bb-pos">{{ activeRatio() }}% del total</span>
+    </div>
+
+    <!-- (row-2 del hero ocupa cols 1-2, ahora cols 3-4 row-2) -->
+
+    <!-- ④ Usuarios inactivos -->
+    <div class="bt-card">
+      <div class="bt-eyebrow">Usuarios inactivos</div>
+      <div class="bt-num">{{ inactiveUsers() }}</div>
+      <div class="bt-sub">Estado inactivo</div>
+      @if (inactiveUsers() > 0) {
+        <span class="bt-badge bb-neg">Requieren revisión</span>
+      }
+    </div>
+
+    <!-- ⑤ Onboarding completado -->
+    <div class="bt-card">
+      <div class="bt-eyebrow">Onboarding completo</div>
+      <div class="bt-num">{{ onboardingDone() }}</div>
+      <div class="bt-sub">de {{ companiesCount() }} empresas</div>
+      <span class="bt-badge bb-info">{{ onboardingPct() }}% completado</span>
+    </div>
+
+    <!-- ⑥ Distribución tipo legal (col-2) -->
+    <div class="bt-card col-2">
+      <div class="bt-eyebrow">Distribución por tipo legal</div>
+      @if (companiesCount() === 0) {
+        <div class="bt-empty">Sin datos disponibles</div>
+      } @else {
+        <div class="bt-chart-md"><canvas #btLegalCanvas></canvas></div>
+      }
+    </div>
+
+    <!-- ⑦ Plan de suscripción (col-2) -->
+    <div class="bt-card col-2">
+      @if (plan() === null) {
+        <div class="bt-eyebrow">Plan de suscripción</div>
+        <div class="bt-skeleton light" style="height:20px;width:140px;margin-bottom:14px"></div>
+        <div class="bt-skeleton light" style="height:60px;margin-bottom:10px"></div>
+      } @else {
+        <div class="bt-plan-header">
+          <div>
+            <div class="bt-plan-name">{{ plan()!.name }}</div>
+            <div class="bt-plan-desc">{{ plan()!.description }}</div>
+          </div>
+          @if (plan()!.isActive) {
+            <div class="bt-plan-active">
+              <div class="bt-plan-active-dot"></div> Activo
+            </div>
+          }
+        </div>
+        <div class="bt-trial">
+          Período de prueba: <span>{{ plan()!.trialDays }} días</span> ·
+          Moneda: <span>{{ plan()!.currency }}</span>
+        </div>
+        <div class="bt-plan-prices">
+          @if (adminPricing()) {
+            <div class="bt-price-card">
+              <div class="bt-price-label">Admin · Mensual</div>
+              <div class="bt-price-value">{{ adminPricing()!.monthlyPrice | number:'1.2-2' }}</div>
+              <div class="bt-price-period">{{ plan()!.currency }} / mes</div>
+            </div>
+          }
+          @if (opPricing()) {
+            <div class="bt-price-card">
+              <div class="bt-price-label">Operativo · Mensual</div>
+              <div class="bt-price-value">{{ opPricing()!.monthlyPrice | number:'1.2-2' }}</div>
+              <div class="bt-price-period">{{ plan()!.currency }} / mes</div>
+            </div>
+          }
+        </div>
+        @if (plan()!.commonFeatures.length > 0) {
+          <div class="bt-plan-features">
+            @for (feat of plan()!.commonFeatures.slice(0, 4); track feat) {
+              <div class="bt-feature-item">
+                <span class="bt-feature-check">✓</span>
+                <span>{{ feat }}</span>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ⑧ Empresas registradas (col-3) -->
+    <div class="bt-card col-3">
+      <div class="bt-eyebrow" style="margin-bottom:14px">Empresas registradas</div>
+      @if (recentCompanies().length === 0) {
+        <div class="bt-empty">
+          @if (loadingCompanies()) { Cargando empresas... } @else { Sin empresas registradas }
+        </div>
+      } @else {
+        <div class="bt-table-head">
+          <div class="bt-th">Nombre</div>
+          <div class="bt-th">Correo</div>
+          <div class="bt-th">Tipo</div>
+          <div class="bt-th">Onboarding</div>
+        </div>
+        @for (co of recentCompanies(); track co.id) {
+          <div class="bt-table-row">
+            <div class="bt-td bold">{{ co.companyName }}</div>
+            <div class="bt-td muted">{{ co.email }}</div>
+            <div class="bt-td">
+              <span class="bt-legal-chip" [class.lc-natural]="co.legalType === 'natural'"
+                                          [class.lc-juridical]="co.legalType === 'juridical'">
+                {{ co.legalType === 'natural' ? 'Natural' : 'Jurídica' }}
+              </span>
+            </div>
+            <div class="bt-td">
+              <span class="bt-status" [class.bs-active]="co.onBoardingComplete"
+                                      [class.bs-inactive]="!co.onBoardingComplete">
+                {{ co.onBoardingComplete ? 'Completo' : 'Pendiente' }}
+              </span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- ⑨ Usuarios del sistema (col-1) -->
+    <div class="bt-card">
+      <div class="bt-eyebrow" style="margin-bottom:14px">Usuarios del sistema</div>
+      @if (recentUsers().length === 0) {
+        <div class="bt-empty">Sin usuarios registrados</div>
+      } @else {
+        @for (user of recentUsers(); track user.id) {
+          <div class="bt-user-item">
+            <div class="bt-user-avatar">{{ initials(user) }}</div>
+            <div class="bt-user-info">
+              <div class="bt-user-name">{{ user.names }} {{ user.lastNames }}</div>
+              <div class="bt-user-type">{{ user.position || user.userType }}</div>
+            </div>
+            <span class="bt-status" [class.bs-active]="user.status === 'active'"
+                                    [class.bs-inactive]="user.status === 'inactive'">
+              {{ user.status === 'active' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        }
+      }
+    </div>
+
+  </div>
+</div>

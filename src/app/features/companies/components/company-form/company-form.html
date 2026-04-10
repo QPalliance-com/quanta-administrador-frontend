@@ -9,7 +9,7 @@
             </div>
             <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-100">
                 {{ isEditMode ? 'Editar compañía' : 'Nueva compañía' }}
-                <span *ngIf="isEditMode && companyName" class="text-surface-400 font-normal text-lg">· {{ companyName }}</span>
+                <span *ngIf="isEditMode && companyName()" class="text-surface-400 font-normal text-lg">· {{ companyName() }}</span>
             </h2>
         </div>
     </div>

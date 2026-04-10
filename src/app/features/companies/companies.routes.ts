@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { CompanyListComponent } from './pages/company-list/company-list';
 import { CompanyFormComponent } from './components/company-form/company-form';
 
-export const company360Routes: Routes = [
+export const companiesRoutes: Routes = [
     {
         path: '',
          component: CompanyListComponent,

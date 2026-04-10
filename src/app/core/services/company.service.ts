@@ -8,7 +8,7 @@ import { MessageService } from 'primeng/api';
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
-    private readonly baseUrl = `${environment.apiUrl}company360/companies`;
+    private readonly baseUrl = `${environment.companiesApiUrl}companies`;
 
     // Core signals for state management
     private companiesSignal = signal<Company[]>([]);
@@ -48,9 +48,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json')
-            : this.http.get<ApiResponse<Company[]>>(this.baseUrl);
+        const request = this.http.get<ApiResponse<Company[]>>(this.baseUrl);
 
         return request.pipe(
             map((response: ApiResponse<Company[]>) => {
@@ -74,21 +72,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
-                map((response: ApiResponse<Company[]>) => {
-                    const company = response.data.find(c => c.id === id);
-                    if (!company) {
-                        throw new Error(`Compañía con ID ${id} no encontrada`);
-                    }
-                    return {
-                        ...response,
-                        data: company,
-                        message: 'Información de compañía obtenida'
-                    } as ApiResponse<Company>;
-                })
-            )
-            : this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${id}`);
+        const request = this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${id}?recordStates=active`);
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {
@@ -106,9 +90,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company>>('data/company360/company.json')
-            : this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${this.extractSubdomain()}`);
+        const request = this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${this.extractSubdomain()}`);
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {
@@ -126,15 +108,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
-                map((response: ApiResponse<Company[]>) => ({
-                    ...response,
-                    data: { ...company, id: Date.now() } as Company,
-                    message: 'Compañía creada correctamente'
-                } as ApiResponse<Company>))
-            )
-            : this.http.post<ApiResponse<Company>>(this.baseUrl, company);
+        const request = this.http.post<ApiResponse<Company>>(this.baseUrl, company);
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {
@@ -159,15 +133,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
-                map((response: ApiResponse<Company[]>) => ({
-                    ...response,
-                    data: company,
-                    message: 'Compañía actualizada correctamente'
-                } as ApiResponse<Company>))
-            )
-            : this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${company.id}`, company);
+        const request = this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${company.id}`, company);
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {
@@ -197,22 +163,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
-                map((response: ApiResponse<Company[]>) => {
-                    const company = response.data.find(c => c.id === id);
-                    if (!company) {
-                        throw new Error(`Compañía con ID ${id} no encontrada`);
-                    }
-                    const updatedCompany = { ...company, ...changes };
-                    return {
-                        ...response,
-                        data: updatedCompany,
-                        message: 'Compañía actualizada correctamente'
-                    } as ApiResponse<Company>;
-                })
-            )
-            : this.http.patch<ApiResponse<Company>>(`${this.baseUrl}/${id}`, changes);
+        const request = this.http.patch<ApiResponse<Company>>(`${this.baseUrl}/${id}`, changes);
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {
@@ -242,22 +193,7 @@ export class CompanyService {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = environment.useMockApi
-            ? this.http.get<ApiResponse<Company[]>>('data/company360/companies.json').pipe(
-                map((response: ApiResponse<Company[]>) => {
-                    const company = response.data.find(c => c.id === id);
-                    if (!company) {
-                        throw new Error(`Compañía con ID ${id} no encontrada`);
-                    }
-                    return {
-                        success: true,
-                        message: 'Compañía eliminada correctamente',
-                        data: undefined,
-                        traceId: response.traceId
-                    } as ApiResponse<void>;
-                })
-            )
-            : this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`);
+        const request = this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`);
 
         return request.pipe(
             map((response: ApiResponse<void>) => {
@@ -285,9 +221,7 @@ export class CompanyService {
     // PUT - Update by subdomain
     updateCompanyBySubdomain(company: Company) {
         const subdomain = this.extractSubdomain();
-        return environment.useMockApi
-            ? this.http.put<ApiResponse<Company>>('data/company360/company.json', company)
-            : this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${subdomain}`, company);
+        return this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${subdomain}`, company);
     }
 
     // Utility method to set selected company

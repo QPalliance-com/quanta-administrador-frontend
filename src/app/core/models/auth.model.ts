@@ -15,8 +15,8 @@ export interface LoginRequest {
     password: string;
 }
 
-// Usuario logueado con información completa
-export interface LoggedUser extends User {
+// Usuario logueado con información completa o parcial
+export interface LoggedUser extends Partial<User> {
     token: string;
     expiredsAt: number;
 }

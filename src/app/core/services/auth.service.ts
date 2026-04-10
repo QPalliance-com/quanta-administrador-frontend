@@ -1,9 +1,9 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, tap, delay, switchMap } from 'rxjs/operators';
-import { LoginRequest, RefreshTokenResponse } from '../models/auth.model';
-import { LoginResponse, LoginData } from '../models/login-response.model';
+import { catchError, tap } from 'rxjs/operators';
+import { LoginRequest, RefreshTokenResponse, LoggedUser } from '../models/auth.model';
+import { LoginData } from '../models/login-response.model';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { MessageService } from 'primeng/api';
     providedIn: 'root'
 })
 export class AuthService {
-    private readonly baseUrl = `${environment.apiUrl}`;
+    private readonly baseUrl = `${environment.authApiUrl}`;
 
     // Core signals
     private sessionSignal = signal<LoginData | null>(null);
@@ -27,9 +27,6 @@ export class AuthService {
 
     // Computed properties
     user = computed(() => this.sessionSignal()?.userData || null);
-    company = computed(() => this.sessionSignal()?.userCompany || null);
-    permissions = computed(() => this.sessionSignal()?.userPermissions || []);
-    menu = computed(() => this.sessionSignal()?.userMenu || []);
     isAuthenticated = computed(() => {
         const session = this.sessionSignal();
         if (!session?.userData) return false;
@@ -37,10 +34,6 @@ export class AuthService {
         return session.userData.expiredsAt > now;
     });
     token = computed(() => this.sessionSignal()?.userData?.token || null);
-    displayName = computed(() => {
-        const user = this.user();
-        return user ? `${user.names} ${user.lastNames}`.trim() : '';
-    });
 
     // Keep BehaviorSubject for backward compatibility with interceptors
     private session$ = new BehaviorSubject<LoginData | null>(null);
@@ -57,31 +50,42 @@ export class AuthService {
     /**
      * Realiza login directo con email y password
      */
-    login(email: string, password: string): Observable<LoginResponse> {
+    login(email: string, password: string): Observable<ApiResponse<{ token: string; expiredAt: number; expiresAt?: number; userData?: LoggedUser }>> {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
         const req: LoginRequest = { email, password };
+        const payload = { data: req };
 
-        const obs = environment.useMockApi 
-            ? this.mock.login(req) 
-            : this.http.post<LoginResponse>(`${this.baseUrl}/admin/login`, req);
+        const obs = this.http.post<ApiResponse<{ token: string; expiredAt: number; expiresAt?: number; userData?: LoggedUser }>>(`${this.baseUrl}admin/login`, payload);
 
         return obs.pipe(
-            tap((response: LoginResponse) => {
+            tap((response) => {
                 this.loadingSignal.set(false);
                 if (response.success && response.data) {
-                    // Normaliza expiredsAt a número si viene como string
-                    if (response.data.userData && typeof response.data.userData.expiredsAt === 'string') {
-                        response.data.userData.expiredsAt = Math.floor(Date.parse(response.data.userData.expiredsAt) / 1000);
-                    }
-                    this.setSession(response.data);
+                    const expiresAt = response.data.expiredAt ?? response.data.expiresAt ?? 0;
+                    const expiredsAt = typeof expiresAt === 'string'
+                        ? Math.floor(Date.parse(expiresAt) / 1000)
+                        : Number(expiresAt);
+
+                    const userData: LoggedUser = {
+                        token: response.data.token,
+                        expiredsAt,
+                        ...(response.data.userData ?? {})
+                    };
+
+                    this.setSession({
+                        userCompany: null,
+                        userMenu: [],
+                        userPermissions: [],
+                        userData
+                    });
                     this.messageService.add({ 
                         severity: 'success', 
                         summary: 'Éxito', 
                         detail: 'Sesión iniciada correctamente',
                         life: 3000 
                     });
-                    this.router.navigate(['/']);
+                    this.router.navigate(['/dashboard']);
                 } else {
                     throw new Error(response.message || 'Login failed');
                 }
@@ -110,9 +114,7 @@ export class AuthService {
             return throwError(() => new Error('No hay token disponible'));
         }
 
-        const obs = environment.useMockApi 
-            ? this.mock.refreshToken() 
-            : this.http.post<ApiResponse<RefreshTokenResponse>>(`${this.baseUrl}/admin/refresh`, {});
+        const obs = this.http.post<ApiResponse<RefreshTokenResponse>>(`${this.baseUrl}refresh`, {});
 
         return obs.pipe(
             tap((response) => {
@@ -141,9 +143,7 @@ export class AuthService {
         
         this.clearSession();
 
-        const backendLogout$ = environment.useMockApi 
-            ? this.mock.logout() 
-            : this.http.post<ApiResponse<any>>(`${this.baseUrl}/admin/logout`, {});
+        const backendLogout$ = this.http.post<ApiResponse<any>>(`${this.baseUrl}logout`, {});
 
         return backendLogout$.pipe(
             tap(() => {
@@ -172,19 +172,19 @@ export class AuthService {
     /**
      * Verifica si el usuario tiene un permiso específico
      */
-    hasPermission(permissionCode: string): boolean {
-        const perms = this.permissions();
-        return !!perms.some((p) => p.code === permissionCode);
-    }
+    // hasPermission(permissionCode: string): boolean {
+    //     const perms = this.permissions();
+    //     return !!perms.some((p) => p.code === permissionCode);
+    // }
 
-    /**
-     * Verifica si el usuario tiene acceso a un módulo por prefijo de code
-     */
-    hasModuleAccess(modulePrefix: string): boolean {
-        const perms = this.permissions();
-        if (!perms) return false;
-        return perms.some((p) => p.code.startsWith(modulePrefix));
-    }
+    // /**
+    //  * Verifica si el usuario tiene acceso a un módulo por prefijo de code
+    //  */
+    // hasModuleAccess(modulePrefix: string): boolean {
+    //     const perms = this.permissions();
+    //     if (!perms) return false;
+    //     return perms.some((p) => p.code.startsWith(modulePrefix));
+    // }
 
     /**
      * Establece la sesión del usuario y actualiza el almacenamiento
@@ -229,35 +229,6 @@ export class AuthService {
     /**
      * Mocks para desarrollo
      */
-    private mock = {
-        login: (req: LoginRequest) => {
-            console.log('🔐 Mock login:', req);
-            
-            return this.http.get<any[]>('data/auth/test-credentials.json').pipe(
-                switchMap((credentials) => {
-                    const userConfig = credentials.find((c) => c.email === req.email);
-
-                    if (!userConfig || userConfig.status !== 'active') {
-                        return this.http.get<LoginResponse>('data/auth/login-error.json').pipe(delay(800));
-                    }
-
-                    // Validar password
-                    if (userConfig.password !== req.password) {
-                        return this.http.get<LoginResponse>('data/auth/login-error.json').pipe(delay(800));
-                    }
-
-                    return this.http.get<LoginResponse>('data/auth/login-success.json').pipe(delay(800));
-                }),
-                catchError(() => this.http.get<LoginResponse>('data/auth/login-error.json').pipe(delay(800)))
-            );
-        },
-        
-        refreshToken: () => 
-            this.http.get<ApiResponse<RefreshTokenResponse>>('data/auth/refresh-token-success.json')
-                .pipe(delay(500)),
-        
-        logout: () => 
-            this.http.get<ApiResponse<any>>('data/auth/logout-success.json')
-                .pipe(delay(300))
-    };
+    // No se usa mock en este servicio simplificado.
 }
+

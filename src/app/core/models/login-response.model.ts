@@ -5,7 +5,7 @@ import { ApiResponse } from './api-response.model';
 import { LoggedUser } from './auth.model';
 
 export interface LoginData {
-    userCompany: Company;
+    userCompany: Company | null;
     userMenu: AppMenu[];
     userPermissions: Permission[];
     userData: LoggedUser;

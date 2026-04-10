@@ -1,0 +1,74 @@
+<div class="ex-wrap">
+
+  <!-- Header -->
+  <div class="ex-header">
+    <div>
+      <div class="ex-greeting">Panel de administración · Quanta SaaS</div>
+      <div class="ex-title">Buenos días, Administrador.</div>
+    </div>
+    <div class="ex-date-badge">
+      <div class="ex-date-day">{{ dayNum }}</div>
+      <div class="ex-date-month">{{ monthLabel }}</div>
+    </div>
+  </div>
+
+  <!-- Hero KPI Row -->
+  <div class="ex-hero-row">
+    @for (kpi of kpis; track kpi.lbl) {
+      <div class="ex-hero-cell" [class.featured]="kpi.featured">
+        <div class="ex-cell-lbl">{{ kpi.lbl }}</div>
+        <div class="ex-cell-val" [class]="kpi.valCls">{{ kpi.val }}</div>
+        <span class="ex-cell-chip" [class]="kpi.chipCls">{{ kpi.chipTxt }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Chart + Plans -->
+  <div class="ex-chart-row">
+    <div class="ex-panel">
+      <div class="ex-panel-eyebrow">Tendencia de ingresos</div>
+      <div class="ex-panel-title">MRR — Últimos 12 meses</div>
+      <div class="ex-chart-md"><canvas #exRevCanvas></canvas></div>
+    </div>
+
+    <div class="ex-panel">
+      <div class="ex-panel-eyebrow">Distribución</div>
+      <div class="ex-panel-title">Por plan de suscripción</div>
+      @for (plan of plans; track plan.name) {
+        <div class="ex-plan-item">
+          <div class="ex-plan-bar" [style.background]="plan.color"></div>
+          <div class="ex-plan-info">
+            <div class="ex-plan-name">{{ plan.name }}</div>
+            <div class="ex-plan-sub">{{ plan.sub }}</div>
+          </div>
+          <div class="ex-plan-count">{{ plan.count }}</div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Recent Companies -->
+  <div class="ex-panel">
+    <div class="ex-panel-eyebrow">Registro reciente</div>
+    <div class="ex-panel-title">Últimas empresas incorporadas</div>
+    <div class="ex-table-head">
+      <div class="ex-table-row">
+        <div class="ex-th">Empresa</div>
+        <div class="ex-th">Plan</div>
+        <div class="ex-th">Estado</div>
+        <div class="ex-th">Fecha</div>
+      </div>
+    </div>
+    @for (co of companies; track co.name) {
+      <div class="ex-table-row">
+        <div class="ex-td bold">{{ co.name }}</div>
+        <div class="ex-td">
+          <span class="ex-plan-chip" [class]="'plan-' + co.plan">{{ co.plan }}</span>
+        </div>
+        <div class="ex-td" [class]="'status-' + co.status">{{ statusLabel(co.status) }}</div>
+        <div class="ex-date">{{ co.date }}</div>
+      </div>
+    }
+  </div>
+
+</div>
