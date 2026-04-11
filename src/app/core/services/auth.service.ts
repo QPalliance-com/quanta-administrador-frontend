@@ -154,7 +154,10 @@ export class AuthService {
                     detail: 'Se ha cerrado su sesión correctamente',
                     life: 3000 
                 });
-                this.router.navigate(['/auth/login']);
+                // Navegar a login después de un pequeño delay
+                setTimeout(() => {
+                    this.router.navigate(['/auth/login'], { replaceUrl: true });
+                }, 500);
             }),
             catchError((error) => {
                 console.error('❌ Error en logout:', error);
@@ -164,6 +167,10 @@ export class AuthService {
                     detail: 'Error al cerrar sesión',
                     life: 3000 
                 });
+                // Aún así navegar a login aunque falle el backend
+                setTimeout(() => {
+                    this.router.navigate(['/auth/login'], { replaceUrl: true });
+                }, 500);
                 return throwError(() => error);
             })
         );

@@ -1,0 +1,97 @@
+.loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-brand-ring {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.5);
+
+    .loader-card {
+        background: #ffffff;
+        border-radius: 1.125rem;
+        padding: 2rem 2.5rem;
+        box-shadow:
+            0 24px 64px rgba(0, 0, 0, 0.2),
+            0 4px 20px rgba(234, 92, 158, 0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.875rem;
+        min-width: 200px;
+    }
+
+    .loader-rings {
+        position: relative;
+        width: 56px;
+        height: 56px;
+    }
+
+    .ring-outer,
+    .ring-inner {
+        position: absolute;
+        border-radius: 50%;
+        border: 3px solid transparent;
+    }
+
+    .ring-outer {
+        width: 56px;
+        height: 56px;
+        top: 0;
+        left: 0;
+        border-top-color: #ea5c9e;
+        border-right-color: #ea5c9e;
+        animation: spin-cw 1.1s linear infinite;
+    }
+
+    .ring-inner {
+        width: 34px;
+        height: 34px;
+        top: 11px;
+        left: 11px;
+        border-top-color: #fbc02d;
+        border-left-color: #fbc02d;
+        animation: spin-ccw 0.85s linear infinite;
+    }
+
+    .loader-divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #f3e6ed, transparent);
+    }
+
+    .loader-brand-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: 0.45em;
+        color: #ea5c9e;
+        line-height: 1;
+        padding-right: 0.45em;
+    }
+
+    .loader-label {
+        font-size: 0.6875rem;
+        color: #9ca3af;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin-top: -0.25rem;
+    }
+}
+
+@keyframes spin-cw {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin-ccw {
+    to { transform: rotate(-360deg); }
+}

@@ -40,27 +40,25 @@
                     </small>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label for="legalType" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-                        Tipo de persona <span class="text-red-500">*</span>
+                    <label for="tenantSlug" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Slug del tenant <span class="text-red-500">*</span>
                     </label>
-                    <p-select
+                    <input
+                        pInputText
                         fluid
-                        inputId="legalType"
-                        formControlName="legalType"
-                        [options]="legalTypes"
-                        optionLabel="label"
-                        optionValue="value"
-                        showFilter
-                        placeholder="Seleccionar"
-                        [class.ng-invalid]="isInvalid('legalType')"
-                        [class.ng-dirty]="isInvalid('legalType')"
+                        id="tenantSlug"
+                        formControlName="tenantSlug"
+                        placeholder="auto-generado"
+                        [class.ng-invalid]="isInvalid('tenantSlug')"
+                        [class.ng-dirty]="isInvalid('tenantSlug')"
                     />
-                    <small *ngIf="isInvalid('legalType')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('legalType') }}
+                    <small *ngIf="isInvalid('tenantSlug')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('tenantSlug') }}
                     </small>
                 </div>
+            
                 <div class="flex flex-col gap-1">
-                    <label for="logo" class="text-sm font-medium text-surface-700 dark:text-surface-200">Logo</label>
+                    <label for="logo" class="text-sm font-medium text-surface-700 dark:text-surface-200">Logo <span class="text-red-500">*</span></label>
                     <p-fileupload
                         #logoUpload
                         mode="basic"
@@ -84,74 +82,64 @@
             </legend>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div class="flex flex-col gap-1">
-                    <label for="contactFirstName" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-                        Nombres <span class="text-red-500">*</span>
+                    <label for="names" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Nombres
                     </label>
                     <input
                         pInputText
                         fluid
-                        id="contactFirstName"
-                        formControlName="contactFirstName"
+                        id="names"
+                        formControlName="names"
                         placeholder="Nombre de pila"
-                        [class.ng-invalid]="isInvalid('contactFirstName')"
-                        [class.ng-dirty]="isInvalid('contactFirstName')"
+                        [class.ng-invalid]="isInvalid('names')"
+                        [class.ng-dirty]="isInvalid('names')"
                     />
-                    <small *ngIf="isInvalid('contactFirstName')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('contactFirstName') }}
+                    <small *ngIf="isInvalid('names')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('names') }}
                     </small>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label for="contactLastName" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-                        Apellidos <span class="text-red-500">*</span>
+                    <label for="lastNames" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Apellidos
                     </label>
                     <input
                         pInputText
                         fluid
-                        id="contactLastName"
-                        formControlName="contactLastName"
+                        id="lastNames"
+                        formControlName="lastNames"
                         placeholder="Apellidos"
-                        [class.ng-invalid]="isInvalid('contactLastName')"
-                        [class.ng-dirty]="isInvalid('contactLastName')"
                     />
-                    <small *ngIf="isInvalid('contactLastName')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('contactLastName') }}
-                    </small>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label for="contactEmail" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                    <label for="email" class="text-sm font-medium text-surface-700 dark:text-surface-200">
                         Correo electrónico <span class="text-red-500">*</span>
                     </label>
                     <input
                         pInputText
                         fluid
-                        id="contactEmail"
-                        formControlName="contactEmail"
+                        id="email"
+                        formControlName="email"
                         type="email"
                         placeholder="correo@empresa.com"
-                        [class.ng-invalid]="isInvalid('contactEmail')"
-                        [class.ng-dirty]="isInvalid('contactEmail')"
+                        [class.ng-invalid]="isInvalid('email')"
+                        [class.ng-dirty]="isInvalid('email')"
                     />
-                    <small *ngIf="isInvalid('contactEmail')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('contactEmail') }}
+                    <small *ngIf="isInvalid('email')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('email') }}
                     </small>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label for="contactPhone" class="text-sm font-medium text-surface-700 dark:text-surface-200">
-                        Teléfono <span class="text-red-500">*</span>
+                    <label for="phone" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Teléfono
                     </label>
                     <input
                         pInputText
                         fluid
-                        id="contactPhone"
-                        formControlName="contactPhone"
+                        id="phone"
+                        formControlName="phone"
                         type="tel"
                         placeholder="300 000 0000"
-                        [class.ng-invalid]="isInvalid('contactPhone')"
-                        [class.ng-dirty]="isInvalid('contactPhone')"
                     />
-                    <small *ngIf="isInvalid('contactPhone')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('contactPhone') }}
-                    </small>
                 </div>
             </div>
         </fieldset>
@@ -163,23 +151,23 @@
             </legend>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div class="flex flex-col gap-1">
-                    <label for="documentType" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                    <label for="identificationType" class="text-sm font-medium text-surface-700 dark:text-surface-200">
                         Tipo de identificación <span class="text-red-500">*</span>
                     </label>
                     <p-select
                         fluid
-                        inputId="documentType"
-                        formControlName="documentType"
+                        inputId="identificationType"
+                        formControlName="identificationType"
                         [options]="documentTypes"
                         optionLabel="label"
                         optionValue="value"
                         showFilter
                         placeholder="Seleccionar"
-                        [class.ng-invalid]="isInvalid('documentType')"
-                        [class.ng-dirty]="isInvalid('documentType')"
+                        [class.ng-invalid]="isInvalid('identificationType')"
+                        [class.ng-dirty]="isInvalid('identificationType')"
                     />
-                    <small *ngIf="isInvalid('documentType')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('documentType') }}
+                    <small *ngIf="isInvalid('identificationType')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('identificationType') }}
                     </small>
                 </div>
                 <div class="flex flex-col gap-1">
@@ -191,7 +179,6 @@
                         fluid
                         id="numberIdentification"
                         formControlName="numberIdentification"
-                        type="number"
                         placeholder="Ej. 900123456"
                         [class.ng-invalid]="isInvalid('numberIdentification')"
                         [class.ng-dirty]="isInvalid('numberIdentification')"
@@ -200,11 +187,11 @@
                         <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('numberIdentification') }}
                     </small>
                 </div>
-                <div *ngIf="form.get('documentType')?.value === 'NIT'" class="flex flex-col gap-1">
+                <div *ngIf="form.get('identificationType')?.value === 'NIT'" class="flex flex-col gap-1">
                     <label for="verificationDigit" class="text-sm font-medium text-surface-700 dark:text-surface-200">Dígito de verificación</label>
                     <input pInputText fluid id="verificationDigit" formControlName="verificationDigit" placeholder="0" />
                 </div>
-                <div class="flex flex-col gap-1">
+                <!-- <div class="flex flex-col gap-1">
                     <label for="taxRegime" class="text-sm font-medium text-surface-700 dark:text-surface-200">Régimen tributario</label>
                     <p-select
                         fluid
@@ -216,8 +203,8 @@
                         showFilter
                         placeholder="Seleccionar"
                     />
-                </div>
-                <div class="flex flex-col gap-1">
+                </div> -->
+                <!-- <div class="flex flex-col gap-1">
                     <label for="taxResponsibility" class="text-sm font-medium text-surface-700 dark:text-surface-200">Responsabilidad tributaria</label>
                     <p-select
                         fluid
@@ -229,8 +216,8 @@
                         showFilter
                         placeholder="Seleccionar"
                     />
-                </div>
-                <div class="flex flex-col gap-1">
+                </div> -->
+                <!-- <div class="flex flex-col gap-1">
                     <label for="sector" class="text-sm font-medium text-surface-700 dark:text-surface-200">Sector económico</label>
                     <p-select
                         fluid
@@ -242,8 +229,8 @@
                         showFilter
                         placeholder="Seleccionar"
                     />
-                </div>
-                <div class="flex flex-col gap-1">
+                </div> -->
+                <!-- <div class="flex flex-col gap-1">
                     <label for="currency" class="text-sm font-medium text-surface-700 dark:text-surface-200">
                         Moneda principal <span class="text-red-500">*</span>
                     </label>
@@ -255,12 +242,37 @@
                         optionLabel="label"
                         optionValue="value"
                         showFilter
-                        placeholder="Seleccionar"
-                        [class.ng-invalid]="isInvalid('currency')"
-                        [class.ng-dirty]="isInvalid('currency')"
+                        placeholder="Seleccionar"   
                     />
                     <small *ngIf="isInvalid('currency')" class="text-red-500 flex items-center gap-1">
                         <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('currency') }}
+                    </small>
+                </div> -->
+            </div>
+        </fieldset>
+
+        <!-- INTEGRACIÓN Y PROVEEDORES -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Integración y proveedores
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+               
+                <div class="flex flex-col gap-1">
+                    <label for="identifyProvider" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Proveedor de identidad <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="identifyProvider"
+                        formControlName="identifyProvider"
+                        placeholder="Ej. cognito, auth0"
+                        [class.ng-invalid]="isInvalid('identifyProvider')"
+                        [class.ng-dirty]="isInvalid('identifyProvider')"
+                    />
+                    <small *ngIf="isInvalid('identifyProvider')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('identifyProvider') }}
                     </small>
                 </div>
             </div>
@@ -274,7 +286,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <!-- RUT (PDF) -->
                 <div class="flex flex-col gap-1">
-                    <label for="rutFile" class="text-sm font-medium text-surface-700 dark:text-surface-200">RUT (PDF)</label>
+                    <label for="rutFile" class="text-sm font-medium text-surface-700 dark:text-surface-200">RUT (PDF) </label>
                     <p-fileupload
                         mode="basic"
                         name="rutFile"
@@ -285,38 +297,9 @@
                         [auto]="false"
                         fluid
                     />
-                    <a *ngIf="form.get('rutFileUrl')?.value" [href]="form.get('rutFileUrl')?.value" target="_blank" class="text-blue-600 dark:text-blue-400 underline text-sm">Ver archivo</a>
+                    <a *ngIf="form.get('rutUrl')?.value" [href]="form.get('rutUrl')?.value" target="_blank" class="text-blue-600 dark:text-blue-400 underline text-sm">Ver archivo</a>
                 </div>
-                <!-- Certificado de existencia -->
-                <div class="flex flex-col gap-1">
-                    <label for="certificateFile" class="text-sm font-medium text-surface-700 dark:text-surface-200">Certificado de existencia y representación legal</label>
-                    <p-fileupload
-                        mode="basic"
-                        name="certificateFile"
-                        accept="application/pdf"
-                        maxFileSize="5000000"
-                        chooseLabel="Seleccionar archivo"
-                        (onSelect)="onCertificateFileChange($event)"
-                        [auto]="false"
-                        fluid
-                    />
-                    <a *ngIf="form.get('certificateFileUrl')?.value" [href]="form.get('certificateFileUrl')?.value" target="_blank" class="text-blue-600 dark:text-blue-400 underline text-sm">Ver archivo</a>
-                </div>
-                <!-- Organigrama -->
-                <div class="flex flex-col gap-1">
-                    <label for="orgChartFile" class="text-sm font-medium text-surface-700 dark:text-surface-200">Organigrama (PDF)</label>
-                    <p-fileupload
-                        mode="basic"
-                        name="orgChartFile"
-                        accept="application/pdf"
-                        maxFileSize="5000000"
-                        chooseLabel="Seleccionar archivo"
-                        (onSelect)="onOrgChartFileChange($event)"
-                        [auto]="false"
-                        fluid
-                    />
-                    <a *ngIf="form.get('orgChartFileUrl')?.value" [href]="form.get('orgChartFileUrl')?.value" target="_blank" class="text-blue-600 dark:text-blue-400 underline text-sm">Ver archivo</a>
-                </div>
+              
             </div>
         </fieldset>
 
@@ -387,10 +370,7 @@
                     <label for="website" class="text-sm font-medium text-surface-700 dark:text-surface-200">Sitio web</label>
                     <input pInputText fluid id="website" formControlName="website" placeholder="https://ejemplo.com" />
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label for="collaboratorsCount" class="text-sm font-medium text-surface-700 dark:text-surface-200">Número de colaboradores</label>
-                    <input pInputText fluid id="collaboratorsCount" formControlName="collaboratorsCount" type="number" readonly />
-                </div>
+                
             </div>
         </fieldset>
 

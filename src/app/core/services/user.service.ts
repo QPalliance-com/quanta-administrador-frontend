@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
     providedIn: 'root'
 })
 export class UserService {
-    private readonly baseUrl = `${environment.systemApiUrl}users`;
+    private readonly baseUrl = `${environment.adminApiUrl}users`;
 
     constructor(private http: HttpClient) {}
 

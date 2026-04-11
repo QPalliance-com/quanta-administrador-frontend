@@ -1,3 +1,13 @@
-<div *ngIf="loading()" class="fixed inset-0 z-[9999] bg-black bg-opacity-40 flex items-center justify-center">
-    <p-progressSpinner strokeWidth="4" styleClass="w-12 h-12" />
+<div *ngIf="loading()" class="loader-overlay">
+    <div class="loader-brand-ring">
+        <div class="loader-card">
+            <div class="loader-rings">
+                <div class="ring-outer"></div>
+                <div class="ring-inner"></div>
+            </div>
+            <div class="loader-divider"></div>
+            <span class="loader-brand-name">QUANTA</span>
+            <span class="loader-label">Cargando</span>
+        </div>
+    </div>
 </div>

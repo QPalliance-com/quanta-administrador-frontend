@@ -4,8 +4,8 @@ export const dashboardRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./pages/option-c-aurora/option-c').then(
-        m => m.DashboardOptionCComponent
+      import('./pages/main-dashboard/main-dashboard').then(
+        m => m.MainDashboardComponent
       )
   }
 ];

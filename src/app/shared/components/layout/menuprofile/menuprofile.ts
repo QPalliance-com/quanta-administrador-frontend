@@ -1,5 +1,4 @@
 import { Component, computed, effect, ElementRef, inject, OnDestroy, Renderer2, signal } from '@angular/core';
-import { Store } from '@ngrx/store';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -9,7 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SkeletonModule } from 'primeng/skeleton';
-import * as AuthActions from '@/features/auth/state/actions/auth.actions';
+import { AuthService } from '@/core/services/auth.service';
 
 @Component({
     selector: '[app-menu-profile]',
@@ -33,13 +32,13 @@ import * as AuthActions from '@/features/auth/state/actions/auth.actions';
 export class MenuprofileComponent implements OnDestroy {
     private destroy$ = new Subject<void>();
     _layoutService = inject(LayoutService);
-    private store = inject(Store);
+    private authService = inject(AuthService);
 
     renderer = inject(Renderer2);
     el = inject(ElementRef);
 
     // Placeholder user data - will be replaced when AuthService is implemented
-    user$ = signal({ names: 'Admin', lastNames: 'User', imageUrl: 'assets/images/avatar.png', position: 'Administrador', id: 1 });
+    user$ = signal({ names: 'Admin', lastNames: 'User', imageUrl: 'https://ui-avatars.com/api/?name=Admin+User', position: 'Administrador', id: 1 });
     loading$ = signal(false);
 
     isHorizontal = computed(() => this._layoutService.isHorizontal() && this._layoutService.isDesktop());
@@ -96,9 +95,7 @@ export class MenuprofileComponent implements OnDestroy {
     }
 
     logout() {
-        console.log('🚪 Cerrando sesión desde menuprofile...');
-        // Despachar la acción de logout que manejará todo el proceso
-        this.store.dispatch(AuthActions.logout());
+        this.authService.logout().subscribe();
     }
 
     toggleMenu() {

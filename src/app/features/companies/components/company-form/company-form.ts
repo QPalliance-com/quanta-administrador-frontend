@@ -5,7 +5,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { FileUploadModule, UploadEvent } from 'primeng/fileupload';
 import { CheckboxModule } from 'primeng/checkbox';
-import { Company } from '@/core/models';
+import { Company, generateTenantSlug, CompanyRequest } from '@/core/models';
 import { DOCUMENT_TYPE_LABELS, DocumentType } from '@/core/enums/document-type.enum';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
@@ -79,15 +79,38 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.logoFile = file;
-            this.form.patchValue({ logoUrl: file.name });
+            this.fileToBase64(file).then((base64) => {
+                this.form.patchValue({ logoUrl: base64 });
+            });
         }
+    }
+
+    /**
+     * Convierte un archivo a base64
+     * @param file - Archivo a convertir
+     * @returns Promise con el string en base64
+     */
+    private fileToBase64(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                resolve(reader.result as string);
+            };
+            reader.onerror = (error) => {
+                console.error('Error converting file to base64:', error);
+                reject(error);
+            };
+        });
     }
 
     onRutFileChange(event: any): void {
         const file = event.files?.[0];
         if (file) {
             this.rutFileUrlFile = file;
-            this.form.patchValue({ rutFileUrl: file.name });
+            this.fileToBase64(file).then((base64) => {
+                this.form.patchValue({ rutUrl: base64 });
+            });
         }
     }
 
@@ -95,7 +118,9 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.certificateFileFile = file;
-            this.form.patchValue({ certificateFileUrl: file.name });
+            this.fileToBase64(file).then((base64) => {
+                this.form.patchValue({ certificateFile: base64 });
+            });
         }
     }
 
@@ -103,7 +128,9 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.orgChartFileFile = file;
-            this.form.patchValue({ orgChartFileUrl: file.name });
+            this.fileToBase64(file).then((base64) => {
+                this.form.patchValue({ orgChartFile: base64 });
+            });
         }
     }
 
@@ -178,27 +205,37 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             id: [null],
             logoUrl: [''],
             companyName: ['', Validators.required],
-            legalType: [null, Validators.required],
-            documentType: [null, Validators.required],
-            numberIdentification: [null, [Validators.required, Validators.min(1)]],
+            documentType: [null],
+            identificationType: [null, Validators.required],
+            numberIdentification: ['', [Validators.required, Validators.min(1)]],
             verificationDigit: [''],
-            contactFirstName: ['', Validators.required],
-            contactLastName: ['', Validators.required],
-            contactEmail: ['', [Validators.required, Validators.email]],
-            contactPhone: ['', Validators.required],
-            rutFileUrl: [''],
-            certificateFileUrl: [''],
-            taxRegime: [null],
-            taxResponsibility: [null],
-            sector: [''],
+            email: ['', [Validators.required, Validators.email]],
+            names: [''],
+            lastNames: [''],
+            phone: [''],
+            rutUrl: [''],
+            certificateFile: [''],
+            tenantSlug: ['', Validators.required],
             website: [''],
-            currency: [null, Validators.required],
-            orgChartFileUrl: [''],
+            providerCustomerPmId: ['PENDI'],
+            identifyProvider: ['', Validators.required],
+            orgChartFile: [''],
             address: ['', Validators.required],
             departmentId: [null, Validators.required],
             cityId: [null, Validators.required],
-            collaboratorsCount: [{ value: null, disabled: true }]
+            onBoardingComplete: [false]
         });
+
+        // Escuchar cambios en companyName para generar automáticamente tenantSlug
+        this.form
+            .get('companyName')
+            ?.valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
+            .subscribe((companyName) => {
+                if (companyName) {
+                    const slug = generateTenantSlug(companyName);
+                    this.form.patchValue({ tenantSlug: slug }, { emitEvent: false });
+                }
+            });
     }
 
     onUpload(event: UploadEvent): void {
@@ -219,26 +256,58 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             });
             return;
         }
-        const company: Company = this.form.value;
+
+        // Transformar datos del formulario a CompanyRequest
+        const formData = this.form.value;
+        const companyRequest: CompanyRequest = {
+            logoUrl: formData.logoUrl,
+            companyName: formData.companyName,
+            identificationType: formData.identificationType,
+            numberIdentification: formData.numberIdentification,
+            providerCustomerPmId: formData.providerCustomerPmId,
+            identifyProvider: formData.identifyProvider,
+            verificationDigit: formData.verificationDigit,
+            email: formData.email,
+            tenantSlug: formData.tenantSlug,
+            rutUrl: formData.rutUrl,
+            website: formData.website,
+            address: formData.address,
+            departmentId: formData.departmentId,
+            cityId: formData.cityId,
+            names: formData.names,
+            lastNames: formData.lastNames,
+            phone: formData.phone,
+            onBoardingComplete: formData.onBoardingComplete ?? false
+        };
+
+        // Agregar ID si está en modo edición
+        if (this.isEditMode && this.companyId) {
+            companyRequest.id = this.companyId;
+        }
+
         if (this.isEditMode) {
-            this.companyService.updateCompany(company)
+            this.companyService.updateCompany(companyRequest)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
-                    next: () => this.router.navigate(['/companies']),
+                    next: () => this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Compañía actualizada correctamente'
+                    }),
                     error: (err) => console.error('Error updating company', err)
                 });
         } else {
-            this.companyService.createCompany(company)
+            this.companyService.createCompany(companyRequest)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe({
-                    next: () => this.router.navigate(['/companies']),
+                    next: () => this.router.navigate(['/companies/list']),
                     error: (err) => console.error('Error creating company', err)
                 });
         }
     }
 
     cancel(): void {
-        this.router.navigate(['/companies']);
+        this.router.navigate(['/companies/list']);
     }
 
     ngOnDestroy(): void {

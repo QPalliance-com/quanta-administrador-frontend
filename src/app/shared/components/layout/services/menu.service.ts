@@ -22,7 +22,7 @@ const MENU_ITEMS: MenuItem[] = [
             {
                 label: 'Listado de Empresas',
                 icon: 'pi pi-list',
-                routerLink: ['/companies'],
+                routerLink: ['/companies/list'],
                 description: 'Gestión de empresas registradas'
             }
         ]
@@ -34,7 +34,7 @@ const MENU_ITEMS: MenuItem[] = [
             {
                 label: 'Listado de Usuarios',
                 icon: 'pi pi-list',
-                routerLink: ['/users'],
+                routerLink: ['/users/list'],
                 description: 'Gestión de usuarios del sistema'
             }
         ]

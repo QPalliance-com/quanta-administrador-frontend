@@ -1,14 +1,14 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { Company } from '../models/company.model';
+import { Company, CompanyRequest } from '../models/company.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { MessageService } from 'primeng/api';
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
-    private readonly baseUrl = `${environment.companiesApiUrl}companies`;
+    private readonly baseUrl = `${environment.adminApiUrl}companies`;
 
     // Core signals for state management
     private companiesSignal = signal<Company[]>([]);
@@ -104,11 +104,11 @@ export class CompanyService {
     }
 
     // POST - Create new company
-    createCompany(company: Omit<Company, 'id'>) {
+    createCompany(company: CompanyRequest) {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = this.http.post<ApiResponse<Company>>(this.baseUrl, company);
+        const request = this.http.post<ApiResponse<Company>>(this.baseUrl, { data: company });
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {
@@ -129,11 +129,11 @@ export class CompanyService {
     }
 
     // PUT - Update full company
-    updateCompany(company: Company) {
+    updateCompany(company: CompanyRequest) {
         this.loadingSignal.set(true);
         this.errorSignal.set(null);
 
-        const request = this.http.put<ApiResponse<Company>>(`${this.baseUrl}/${company.id}`, company);
+        const request = this.http.put<ApiResponse<Company>>(`${this.baseUrl}`, company);
 
         return request.pipe(
             map((response: ApiResponse<Company>) => {

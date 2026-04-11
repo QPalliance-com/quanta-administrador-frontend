@@ -144,15 +144,16 @@ export class AuthEffects {
                         life: 3000
                     });
                     
-                    // Navigate to login
-                    this.router.navigate(['/auth/login']);
+                    // Clear local storage and navigate to login
+                    localStorage.removeItem('auth_session');
+                    this.router.navigate(['/auth/login'], { replaceUrl: true });
                 })
             );
         },
         { dispatch: false }
     );
 
-    // Logout Failure - Show error
+    // Logout Failure - Show error and navigate
     logoutFailure$ = createEffect(
         () => {
             return this.actions$.pipe(
@@ -164,6 +165,10 @@ export class AuthEffects {
                         detail: error,
                         life: 5000
                     });
+                    
+                    // Even if backend fails, still navigate to login after clearing session
+                    localStorage.removeItem('auth_session');
+                    this.router.navigate(['/auth/login'], { replaceUrl: true });
                 })
             );
         },

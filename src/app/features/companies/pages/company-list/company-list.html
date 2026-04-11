@@ -53,7 +53,7 @@
         </ng-template>
 
         <ng-template pTemplate="body" let-company>
-            <tr class="cursor-pointer group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 border-l-2 border-l-transparent hover:border-l-primary" (click)="navigateToView(company.id)">
+            <tr class="cursor-pointer group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 border-l-2 border-l-transparent hover:border-l-primary" (click)="editCompany(company)">
                 <td>
                     <img *ngIf="company.logoUrl" [src]="company.logoUrl" alt="Logo" class="w-8 h-8 object-contain rounded" />
                 </td>
