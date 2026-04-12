@@ -199,7 +199,7 @@ export class AuthService {
     setSession(session: LoginData): void {
         this.sessionSignal.set(session);
         this.session$.next(session);
-        localStorage.setItem('auth_session', JSON.stringify(session));
+        sessionStorage.setItem('auth_session', JSON.stringify(session));
     }
 
     /**
@@ -209,7 +209,7 @@ export class AuthService {
         this.sessionSignal.set(null);
         this.errorSignal.set(null);
         this.session$.next(null);
-        localStorage.removeItem('auth_session');
+        sessionStorage.removeItem('auth_session');
     }
 
     /**
@@ -217,7 +217,7 @@ export class AuthService {
      */
     private initFromStorage(): void {
         try {
-            const stored = localStorage.getItem('auth_session');
+            const stored = sessionStorage.getItem('auth_session');
             if (stored) {
                 const session: LoginData = JSON.parse(stored);
                 // Verificar que la sesión no haya expirado
