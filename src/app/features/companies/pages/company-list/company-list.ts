@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -14,11 +14,13 @@ import { Company } from '@/core/models';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputIconModule } from 'primeng/inputicon';
 import { Router } from '@angular/router';
-import { CompanyService } from '@/core/services/company.service';
 import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { ExportToolbarComponent } from '@/shared/components/export-toolbar/export-toolbar';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { CompaniesActions } from '../../state/actions/companies.actions';
+import { selectAllCompanies, selectCompaniesLoading, selectSelectedCompany } from '../../state/selectors/companies.selectors';
 
 @Component({
     selector: 'app-company-list',
@@ -42,27 +44,22 @@ import { BehaviorSubject, Observable } from 'rxjs';
     providers: [MessageService, ConfirmationService],
     templateUrl: './company-list.html'
 })
-export class CompanyListComponent implements OnInit {
-    private companyService = inject(CompanyService);
+export class CompanyListComponent implements OnInit, OnDestroy {
+    private store = inject(Store);
     private confirmationService = inject(ConfirmationService);
-    private messageService = inject(MessageService);
     private router = inject(Router);
+    private destroy$ = new Subject<void>();
 
-    filterFields: string[] = [
-        'companyName',
-        'legalType',
-        'email'
-    ];
+    filterFields: string[] = ['companyName', 'legalType', 'email'];
     cols!: Column[];
     exportColumns!: ExportColumn[];
-    companies = this.companyService.companies;
-    companiesLoading = this.companyService.loading;
-    
-    displayViewDrawer = false;
+
+    companies$ = this.store.select(selectAllCompanies);
+    companiesLoading$ = this.store.select(selectCompaniesLoading);
     selectedCompany: Company | null = null;
+    displayViewDrawer = false;
     rowMenuItems: MenuItem[] = [];
-    error$: Observable<string | null> = new BehaviorSubject(null);
-    
+
     @ViewChild('companiesTable') companiesTable!: Table;
     @ViewChild('rowMenu') rowMenu!: Menu;
 
@@ -78,12 +75,17 @@ export class CompanyListComponent implements OnInit {
     };
 
     ngOnInit(): void {
-        this.companyService.loadCompanies().subscribe({
-            error: () => {
-                console.error('Error loading companies');
-            }
-        });
+        this.store.dispatch(CompaniesActions.loadCompanies());
         this.initializeColumns();
+
+        this.store.select(selectSelectedCompany)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((company) => {
+                if (company) {
+                    this.selectedCompany = company;
+                    this.displayViewDrawer = true;
+                }
+            });
     }
 
     private initializeColumns(): void {
@@ -106,23 +108,8 @@ export class CompanyListComponent implements OnInit {
 
     navigateToView(companyId: string | number): void {
         if (companyId) {
-            this.viewCompanyDetail(Number(companyId));
+            this.store.dispatch(CompaniesActions.loadCompany({ id: Number(companyId) }));
         }
-    }
-
-    private viewCompanyDetail(companyId: number): void {
-        this.selectedCompany = null;
-        this.companyService.loadCompanyById(companyId).subscribe({
-            next: (response) => {
-                if (response.success && response.data) {
-                    this.selectedCompany = response.data;
-                    this.displayViewDrawer = true;
-                }
-            },
-            error: () => {
-                this.error$ = new BehaviorSubject('No se pudo cargar el detalle de la compañía.');
-            }
-        });
     }
 
     navigateToEdit(companyId: string | number): void {
@@ -137,7 +124,7 @@ export class CompanyListComponent implements OnInit {
             {
                 label: 'Ver detalle',
                 icon: 'pi pi-eye',
-                command: () => this.viewCompanyDetail(company.id!)
+                command: () => this.navigateToView(company.id!)
             },
             {
                 label: 'Editar',
@@ -156,10 +143,9 @@ export class CompanyListComponent implements OnInit {
     }
 
     editCompany(company: Company | null): void {
-        if (!company) {
-            return;
+        if (company) {
+            this.router.navigate(['/companies/edit', company.id]);
         }
-        this.router.navigate(['/companies/edit', company.id]);
     }
 
     deleteCompany(company: Company): void {
@@ -171,16 +157,16 @@ export class CompanyListComponent implements OnInit {
             rejectLabel: 'No, cancelar',
             acceptButtonStyleClass: 'p-button-danger',
             accept: () => {
-                this.companyService.deleteCompany(company.id).subscribe({
-                    error: (err) => {
-                        console.error('Error deleting company:', err);
-                    }
-                });
+                this.store.dispatch(CompaniesActions.deleteCompany({ id: company.id }));
             }
         });
     }
 
-    exportTable(format: 'excel' | 'csv'): void {
-        this.messageService.add({ severity: 'success', summary: 'Exportación', detail: `Exportado como ${format.toUpperCase()}` });
+    exportTable(_format: 'excel' | 'csv'): void {}
+
+    ngOnDestroy(): void {
+        this.store.dispatch(CompaniesActions.clearSelectedCompany());
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 }

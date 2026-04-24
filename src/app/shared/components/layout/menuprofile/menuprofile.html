@@ -1,17 +1,29 @@
-<ng-container *ngIf="user$() as user">
-    <button (click)="toggleMenu()" pTooltip="Profile" [tooltipDisabled]="isTooltipDisabled()">
-        <img [src]="user?.imageUrl || 'assets/images/avatar.png'" alt="avatar" style="width: 32px; height: 32px" />
-        <span class="text-start">
-            <strong>{{ user?.names }} {{ user?.lastNames }}</strong>
-            <small>{{ user?.position || 'Usuario' }}</small>
+<ng-container *ngIf="loading(); else profileContent">
+    <button disabled class="cursor-default">
+        <p-skeleton shape="circle" size="2rem" styleClass="shrink-0" />
+        <span class="text-start flex flex-col gap-1">
+            <p-skeleton width="7rem" height="0.85rem" />
+            <p-skeleton width="5rem" height="0.75rem" />
         </span>
-        <i class="layout-menu-profile-toggler pi pi-fw" [ngClass]="{ 'pi-angle-down': menuProfilePosition() === 'start' || isHorizontal(), 'pi-angle-up': menuProfilePosition() === 'end' && !isHorizontal() }"></i>
     </button>
 </ng-container>
 
+<ng-template #profileContent>
+    <ng-container *ngIf="user() as user">
+        <button (click)="toggleMenu()" pTooltip="Profile" [tooltipDisabled]="isTooltipDisabled()">
+            <img [src]="avatarUrl()" alt="avatar" style="width: 32px; height: 32px" />
+            <span class="text-start">
+                <strong>{{ user.names }} {{ user.lastNames }}</strong>
+                <small>{{ user.position || 'Usuario' }}</small>
+            </span>
+            <i class="layout-menu-profile-toggler pi pi-fw" [ngClass]="{ 'pi-angle-down': menuProfilePosition() === 'start' || isHorizontal(), 'pi-angle-up': menuProfilePosition() === 'end' && !isHorizontal() }"></i>
+        </button>
+    </ng-container>
+</ng-template>
+
 <ul *ngIf="menuProfileActive()" [@menu]="isHorizontal() ? 'overlay' : 'inline'">
     <li pTooltip="Profile" [tooltipDisabled]="isTooltipDisabled()">
-        <button *ngIf="user$() as user" [routerLink]="['/settings/users/user-info', user.id]">
+        <button *ngIf="user() as user" [routerLink]="['/settings/users/user-info', user.id]">
             <i class="pi pi-user pi-fw"></i>
             <span>Perfil</span>
         </button>

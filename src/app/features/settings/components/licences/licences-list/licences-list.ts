@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
@@ -10,15 +10,17 @@ import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { TagModule } from 'primeng/tag';
 import { Licence } from '@/core/models';
-import { LicenceStateService } from '../../../state/services/licence-state.service';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToolbarModule } from 'primeng/toolbar';
 import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { RippleModule } from 'primeng/ripple';
 import { InputIconModule } from 'primeng/inputicon';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { Column, ExportColumn } from '@/core/models/table-options.model';
+import { Store } from '@ngrx/store';
+import { LicencesActions } from '../../../state/actions/licences.actions';
+import { selectAllLicences, selectLicencesLoading, selectSelectedLicence } from '../../../state/selectors/licences.selectors';
 
 @Component({
     standalone: true,
@@ -43,20 +45,22 @@ import { Column, ExportColumn } from '@/core/models/table-options.model';
     ],
     providers: [ConfirmationService, MessageService]
 })
-export class LicencesListComponent implements OnInit {
+export class LicencesListComponent implements OnInit, OnDestroy {
+    private store = inject(Store);
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
-    private messageService = inject(MessageService);
-    licenceStateService = inject(LicenceStateService);
+    private destroy$ = new Subject<void>();
 
     filterFields: string[] = ['licences', 'amountUsd', 'amountCop', 'currency'];
     cols!: Column[];
     exportColumns!: ExportColumn[];
 
-    displayViewDrawer = false;
+    licences$ = this.store.select(selectAllLicences);
+    loading$ = this.store.select(selectLicencesLoading);
+    error$ = this.store.select((state) => state.licences.error);
     selectedLicence: Licence | null = null;
+    displayViewDrawer = false;
     rowMenuItems: MenuItem[] = [];
-    error$: Observable<string | null> = new BehaviorSubject(null);
 
     @ViewChild('licencesTable') licencesTable!: Table;
     @ViewChild('rowMenu') rowMenu!: Menu;
@@ -69,13 +73,18 @@ export class LicencesListComponent implements OnInit {
         exchangeRate: 'Tasa de cambio USD/COP'
     };
 
-    licences$!: Observable<Licence[]>;
-
     ngOnInit(): void {
-        this.licenceStateService.loadLicences();
-        this.licences$ = new BehaviorSubject(this.licenceStateService.licences()).asObservable();
+        this.store.dispatch(LicencesActions.loadLicences());
         this.initializeColumns();
         this.initializeRowMenu();
+
+        this.store.select(selectSelectedLicence)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((licence) => {
+                if (licence) {
+                    this.selectedLicence = licence;
+                }
+            });
     }
 
     private initializeColumns(): void {
@@ -145,12 +154,18 @@ export class LicencesListComponent implements OnInit {
             header: 'Confirmar eliminación',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.licenceStateService.deleteLicence(licence.id);
+                this.store.dispatch(LicencesActions.deleteLicence({ id: licence.id }));
             }
         });
     }
 
     formatPlanName(name: string): string {
         return name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    ngOnDestroy(): void {
+        this.store.dispatch(LicencesActions.clearSelectedLicence());
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 }

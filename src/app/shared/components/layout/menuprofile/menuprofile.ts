@@ -1,4 +1,4 @@
-import { Component, computed, effect, ElementRef, inject, OnDestroy, Renderer2, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, Renderer2, signal } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AuthService } from '@/core/services/auth.service';
+import { UserService } from '@/core/services/user.service';
+import { User } from '@/core/models/user.model';
 
 @Component({
     selector: '[app-menu-profile]',
@@ -29,17 +31,23 @@ import { AuthService } from '@/core/services/auth.service';
         class: 'layout-menu-profile'
     }
 })
-export class MenuprofileComponent implements OnDestroy {
+export class MenuprofileComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
     _layoutService = inject(LayoutService);
     private authService = inject(AuthService);
+    private userService = inject(UserService);
 
     renderer = inject(Renderer2);
     el = inject(ElementRef);
 
-    // Placeholder user data - will be replaced when AuthService is implemented
-    user$ = signal({ names: 'Admin', lastNames: 'User', imageUrl: 'https://ui-avatars.com/api/?name=Admin+User', position: 'Administrador', id: 1 });
-    loading$ = signal(false);
+    user = signal<User | null>(null);
+    loading = signal(false);
+
+    avatarUrl = computed(() => {
+        const u = this.user();
+        if (!u) return 'assets/images/avatar.png';
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(`${u.names} ${u.lastNames}`)}&background=random`;
+    });
 
     isHorizontal = computed(() => this._layoutService.isHorizontal() && this._layoutService.isDesktop());
     menuProfileActive = computed(() => this._layoutService.layoutState().menuProfileActive);
@@ -65,6 +73,33 @@ export class MenuprofileComponent implements OnDestroy {
                 this.unbindOutsideClickListener();
             }
         });
+    }
+
+    ngOnInit(): void {
+        const token = this.authService.token();
+        if (!token) return;
+
+        const userId = this.extractUserIdFromToken(token);
+        if (!userId) return;
+
+        this.loading.set(true);
+        this.userService.getUser(userId).pipe(takeUntil(this.destroy$)).subscribe({
+            next: (response) => {
+                if (response.data) this.user.set(response.data as User);
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
+    }
+
+    private extractUserIdFromToken(token: string): number | null {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const id = payload.id ?? payload.sub ?? payload.userId ?? null;
+            return id !== null ? Number(id) : null;
+        } catch {
+            return null;
+        }
     }
 
     bindOutsideClickListener() {

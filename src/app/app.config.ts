@@ -12,6 +12,12 @@ import { appRoutes } from './app.routes';
 import { AppTheme } from './core/theme/theme.config';
 import { departmentCityReducer } from './core/state/reducers/department-city.reducer';
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
+import { usersReducer } from './features/users/state/reducers/users.reducer';
+import { UsersEffects } from './features/users/state/effects/users.effects';
+import { companiesReducer } from './features/companies/state/reducers/companies.reducer';
+import { CompaniesEffects } from './features/companies/state/effects/companies.effects';
+import { licencesReducer } from './features/settings/state/reducers/licences.reducer';
+import { LicencesEffects } from './features/settings/state/effects/licences.effects';
 import { LoaderInterceptor } from './core/interceptors/loading.interceptor';
 import { HttpErrorInterceptor } from './core/interceptors/http-error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -53,7 +59,10 @@ export const appConfig: ApplicationConfig = {
         // NgRx Store Configuration (only for departmentCity lookup data)
         provideStore(
             {
-                departmentCity: departmentCityReducer
+                departmentCity: departmentCityReducer,
+                users: usersReducer,
+                companies: companiesReducer,
+                licences: licencesReducer
             },
             {
                 runtimeChecks: {
@@ -68,7 +77,10 @@ export const appConfig: ApplicationConfig = {
 
         // NgRx Effects (only for departmentCity)
         provideEffects([
-            DepartmentCityEffects
+            DepartmentCityEffects,
+            UsersEffects,
+            CompaniesEffects,
+            LicencesEffects
         ]),
 
         // NgRx DevTools

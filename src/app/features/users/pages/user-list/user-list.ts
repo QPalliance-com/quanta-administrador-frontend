@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
 import { ConfirmationService, MessageService, MenuItem } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -14,11 +14,13 @@ import { User } from '@/core/models';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputIconModule } from 'primeng/inputicon';
 import { Router } from '@angular/router';
-import { UserService } from '@/core/services/user.service';
 import { Drawer } from 'primeng/drawer';
 import { Menu } from 'primeng/menu';
 import { ExportToolbarComponent } from '@/shared/components/export-toolbar/export-toolbar';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { UsersActions } from '../../state/actions/users.actions';
+import { selectAllUsers, selectUsersLoading, selectSelectedUser } from '../../state/selectors/users.selectors';
 
 @Component({
     selector: 'app-user-list',
@@ -42,20 +44,22 @@ import { BehaviorSubject, Observable } from 'rxjs';
     providers: [MessageService, ConfirmationService],
     templateUrl: './user-list.html'
 })
-export class UserListComponent implements OnInit {
-    private userService = inject(UserService);
+export class UserListComponent implements OnInit, OnDestroy {
+    private store = inject(Store);
     private confirmationService = inject(ConfirmationService);
-    private messageService = inject(MessageService);
     private router = inject(Router);
+    private destroy$ = new Subject<void>();
 
     filterFields: string[] = ['names', 'lastNames', 'email', 'phone', 'position', 'status'];
     cols!: Column[];
     exportColumns!: ExportColumn[];
 
-    displayViewDrawer = false;
+    users$ = this.store.select(selectAllUsers);
+    loading$ = this.store.select(selectUsersLoading);
     selectedUser: User | null = null;
+    displayViewDrawer = false;
     rowMenuItems: MenuItem[] = [];
-    error$: Observable<string | null> = new BehaviorSubject(null);
+    error$ = this.store.select((state) => state.users.error);
 
     @ViewChild('usersTable') usersTable!: Table;
     @ViewChild('rowMenu') rowMenu!: Menu;
@@ -69,18 +73,18 @@ export class UserListComponent implements OnInit {
         status: 'Estado del usuario'
     };
 
-    users$!: Observable<User[]>;
-
     ngOnInit(): void {
-        this.userService.getUsers().subscribe({
-            next: (response) => {
-                this.users$ = new BehaviorSubject(response.data).asObservable();
-            },
-            error: () => {
-                this.users$ = new BehaviorSubject<User[]>([]).asObservable();
-            }
-        });
+        this.store.dispatch(UsersActions.loadUsers());
         this.initializeColumns();
+
+        this.store.select(selectSelectedUser)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((user) => {
+                if (user) {
+                    this.selectedUser = user;
+                    this.displayViewDrawer = true;
+                }
+            });
     }
 
     private initializeColumns(): void {
@@ -105,12 +109,7 @@ export class UserListComponent implements OnInit {
 
     navigateToView(userId: number): void {
         if (userId) {
-            this.userService.getUser(userId).subscribe({
-                next: (response) => {
-                    this.selectedUser = response.data || null;
-                    this.displayViewDrawer = true;
-                }
-            });
+            this.store.dispatch(UsersActions.loadUser({ id: userId }));
         }
     }
 
@@ -154,24 +153,8 @@ export class UserListComponent implements OnInit {
 
     toggleUserStatus(user: User): void {
         const newStatus = user.status === 'active' ? 'inactive' : 'active';
-        this.userService.updateUserStatus(user.id, newStatus).subscribe({
-            next: () => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Éxito',
-                    detail: `Usuario ${newStatus === 'active' ? 'activado' : 'inactivado'}`
-                });
-                this.displayViewDrawer = false;
-                this.ngOnInit();
-            },
-            error: () => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'No se pudo cambiar el estado del usuario'
-                });
-            }
-        });
+        this.store.dispatch(UsersActions.updateUserStatus({ id: user.id, status: newStatus }));
+        this.displayViewDrawer = false;
     }
 
     deleteUser(user: User): void {
@@ -183,29 +166,17 @@ export class UserListComponent implements OnInit {
             rejectLabel: 'No, cancelar',
             acceptButtonStyleClass: 'p-button-danger',
             accept: () => {
-                this.userService.deleteUser(user.id).subscribe({
-                    next: () => {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Éxito',
-                            detail: 'Usuario eliminado correctamente'
-                        });
-                        this.displayViewDrawer = false;
-                        this.ngOnInit();
-                    },
-                    error: () => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'No se pudo eliminar el usuario'
-                        });
-                    }
-                });
+                this.store.dispatch(UsersActions.deleteUser({ id: user.id }));
+                this.displayViewDrawer = false;
             }
         });
     }
 
-    exportTable(format: 'excel' | 'csv'): void {
-        this.messageService.add({ severity: 'success', summary: 'Exportación', detail: `Exportado como ${format.toUpperCase()}` });
+    exportTable(_format: 'excel' | 'csv'): void {}
+
+    ngOnDestroy(): void {
+        this.store.dispatch(UsersActions.clearSelectedUser());
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 }

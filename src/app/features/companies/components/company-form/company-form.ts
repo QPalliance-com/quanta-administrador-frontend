@@ -10,14 +10,14 @@ import { DOCUMENT_TYPE_LABELS, DocumentType } from '@/core/enums/document-type.e
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { MessageService } from 'primeng/api';
 import { Store } from '@ngrx/store';
 import { DepartmentCityActions } from '@/core/state/actions/department-city.actions';
 import { selectAllDepartments, selectAllCities } from '@/core/state/selectors/department-city.selectors';
 import { Subject, filter, takeUntil, distinctUntilChanged } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CompanyService } from '@/core/services/company.service';
+import { CompaniesActions } from '../../state/actions/companies.actions';
+import { selectSelectedCompany, selectCompaniesLoading } from '../../state/selectors/companies.selectors';
 
 @Component({
     standalone: true,
@@ -28,13 +28,10 @@ import { CompanyService } from '@/core/services/company.service';
 export class CompanyFormComponent implements OnInit, OnDestroy {
     private fb = inject(FormBuilder);
     private store = inject(Store);
-    private messageService = inject(MessageService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
-    private companyService = inject(CompanyService);
     private destroy$ = new Subject<void>();
 
-    // Archivos cargados
     rutFileUrlFile: File | null = null;
     certificateFileFile: File | null = null;
     orgChartFileFile: File | null = null;
@@ -44,10 +41,11 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     isEditMode = false;
     companyName = signal<string>('');
     companyId!: number;
-    loading = this.companyService.loading;
+
+    loading$ = this.store.select(selectCompaniesLoading);
     departments$ = this.store.select(selectAllDepartments);
     cities$ = this.store.select(selectAllCities);
-    
+
     documentTypes = Object.values(DocumentType).map((type) => ({
         label: DOCUMENT_TYPE_LABELS[type],
         value: type
@@ -79,28 +77,16 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.logoFile = file;
-            this.fileToBase64(file).then((base64) => {
-                this.form.patchValue({ logoUrl: base64 });
-            });
+            this.fileToBase64(file).then((base64) => this.form.patchValue({ logoUrl: base64 }));
         }
     }
 
-    /**
-     * Convierte un archivo a base64
-     * @param file - Archivo a convertir
-     * @returns Promise con el string en base64
-     */
     private fileToBase64(file: File): Promise<string> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => {
-                resolve(reader.result as string);
-            };
-            reader.onerror = (error) => {
-                console.error('Error converting file to base64:', error);
-                reject(error);
-            };
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = (error) => reject(error);
         });
     }
 
@@ -108,9 +94,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.rutFileUrlFile = file;
-            this.fileToBase64(file).then((base64) => {
-                this.form.patchValue({ rutUrl: base64 });
-            });
+            this.fileToBase64(file).then((base64) => this.form.patchValue({ rutUrl: base64 }));
         }
     }
 
@@ -118,9 +102,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.certificateFileFile = file;
-            this.fileToBase64(file).then((base64) => {
-                this.form.patchValue({ certificateFile: base64 });
-            });
+            this.fileToBase64(file).then((base64) => this.form.patchValue({ certificateFile: base64 }));
         }
     }
 
@@ -128,9 +110,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.orgChartFileFile = file;
-            this.fileToBase64(file).then((base64) => {
-                this.form.patchValue({ orgChartFile: base64 });
-            });
+            this.fileToBase64(file).then((base64) => this.form.patchValue({ orgChartFile: base64 }));
         }
     }
 
@@ -141,54 +121,38 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
 
     getError(fieldName: string): string {
         const control = this.form.get(fieldName);
-        if (!control || !control.errors) {
-            return '';
-        }
+        if (!control || !control.errors) return '';
 
-        if (control.errors['required']) {
-            return 'Este campo es requerido';
-        }
-        if (control.errors['email']) {
-            return 'Ingresa un correo válido';
-        }
-        if (control.errors['min']) {
-            return `El valor mínimo es ${control.errors['min'].min}`;
-        }
-        if (control.errors['minlength']) {
+        if (control.errors['required']) return 'Este campo es requerido';
+        if (control.errors['email']) return 'Ingresa un correo válido';
+        if (control.errors['min']) return `El valor mínimo es ${control.errors['min'].min}`;
+        if (control.errors['minlength'])
             return `Mínimo ${control.errors['minlength'].requiredLength} caracteres`;
-        }
-        if (control.errors['maxlength']) {
+        if (control.errors['maxlength'])
             return `Máximo ${control.errors['maxlength'].requiredLength} caracteres`;
-        }
 
         return 'Este campo es inválido';
     }
 
     ngOnInit(): void {
         this.buildForm();
-        
-        // Detectar modo edición y cargar compañía
+
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.isEditMode = true;
             this.companyId = +id;
-            this.companyService.loadCompanyById(this.companyId)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                    next: (response) => {
-                        if (response.data) {
-                            this.companyName.set(response.data.companyName);
-                            this.form.patchValue(response.data);
-                        }
-                    },
-                    error: (err) => console.error('Error loading company', err)
+            this.store.dispatch(CompaniesActions.loadCompany({ id: this.companyId }));
+
+            this.store.select(selectSelectedCompany)
+                .pipe(filter(Boolean), takeUntil(this.destroy$))
+                .subscribe((company: Company) => {
+                    this.companyName.set(company.companyName);
+                    this.form.patchValue(company);
                 });
         }
 
-        // Cargar datos iniciales de departamentos
         this.store.dispatch(DepartmentCityActions.loadDepartments());
 
-        // Escuchar cambios de departamento para cargar ciudades
         this.form
             .get('departmentId')
             ?.valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
@@ -226,38 +190,29 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             onBoardingComplete: [false]
         });
 
-        // Escuchar cambios en companyName para generar automáticamente tenantSlug
         this.form
             .get('companyName')
             ?.valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
             .subscribe((companyName) => {
                 if (companyName) {
-                    const slug = generateTenantSlug(companyName);
-                    this.form.patchValue({ tenantSlug: slug }, { emitEvent: false });
+                    this.form.patchValue(
+                        { tenantSlug: generateTenantSlug(companyName) },
+                        { emitEvent: false }
+                    );
                 }
             });
     }
 
-    onUpload(event: UploadEvent): void {
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Success',
-            detail: 'File Uploaded with Basic Mode'
-        });
-    }
+    onUpload(_event: UploadEvent): void {}
 
     onSubmit(): void {
         if (this.form.invalid) {
             Object.keys(this.form.controls).forEach((key) => {
-                const control = this.form.get(key);
-                if (control?.invalid) {
-                    control.markAsTouched();
-                }
+                this.form.get(key)?.markAsTouched();
             });
             return;
         }
 
-        // Transformar datos del formulario a CompanyRequest
         const formData = this.form.value;
         const companyRequest: CompanyRequest = {
             logoUrl: formData.logoUrl,
@@ -280,29 +235,11 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             onBoardingComplete: formData.onBoardingComplete ?? false
         };
 
-        // Agregar ID si está en modo edición
         if (this.isEditMode && this.companyId) {
             companyRequest.id = this.companyId;
-        }
-
-        if (this.isEditMode) {
-            this.companyService.updateCompany(companyRequest)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                    next: () => this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Compañía actualizada correctamente'
-                    }),
-                    error: (err) => console.error('Error updating company', err)
-                });
+            this.store.dispatch(CompaniesActions.updateCompany({ company: companyRequest }));
         } else {
-            this.companyService.createCompany(companyRequest)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                    next: () => this.router.navigate(['/companies/list']),
-                    error: (err) => console.error('Error creating company', err)
-                });
+            this.store.dispatch(CompaniesActions.createCompany({ company: companyRequest }));
         }
     }
 

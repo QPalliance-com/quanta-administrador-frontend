@@ -1,10 +1,11 @@
+<ng-container *ngIf="companies$ | async as companies">
 <div class="card">
     <p-toolbar styleClass="mb-6">
         <ng-template #start>
             <p-button label="Nueva compañía" icon="pi pi-plus" (onClick)="openNew()" />
         </ng-template>
         <ng-template #end>
-            <app-export-toolbar *ngIf="companies().length > 0" [exportData]="companies()" [exportColumns]="cols" exportFileName="compañías" (exportFormat)="exportTable($event)" />
+            <app-export-toolbar *ngIf="companies.length > 0" [exportData]="companies" [exportColumns]="cols" exportFileName="compañías" (exportFormat)="exportTable($event)" />
         </ng-template>
     </p-toolbar>
 
@@ -12,10 +13,9 @@
     <p-menu #rowMenu [popup]="true" [model]="rowMenuItems" appendTo="body" />
 
     <p-table
-        *ngIf="companies().length > 0 || !companiesLoading()"
         #companiesTable
-        [value]="companies()"
-        [loading]="companiesLoading()"
+        [value]="companies"
+        [loading]="(companiesLoading$ | async) ?? false"
         [paginator]="true"
         [globalFilterFields]="filterFields"
         [rows]="15"
@@ -33,7 +33,7 @@
                 <div class="flex items-center gap-3">
                     <span class="font-semibold text-xl">Compañías</span>
                     <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
-                        {{ companies().length }} registros
+                        {{ companies.length }} registros
                     </span>
                 </div>
                 <input pInputText type="text" (input)="onGlobalFilter(companiesTable, $event)" placeholder="Buscar..." class="text-sm" />
@@ -87,11 +87,8 @@
             </tr>
         </ng-template>
     </p-table>
-
-    <div *ngIf="error$ | async as error" class="text-red-500 text-sm text-center py-2">
-        {{ error }}
-    </div>
 </div>
+</ng-container>
 
 <p-confirmdialog />
 

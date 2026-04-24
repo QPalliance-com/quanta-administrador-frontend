@@ -7,10 +7,12 @@ import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
-import { Subject } from 'rxjs';
+import { Subject, filter, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Licence } from '@/core/models';
-import { LicenceStateService } from '../../../state/services/licence-state.service';
+import { Store } from '@ngrx/store';
+import { LicencesActions } from '../../../state/actions/licences.actions';
+import { selectSelectedLicence, selectLicencesLoading } from '../../../state/selectors/licences.selectors';
 
 @Component({
     standalone: true,
@@ -29,16 +31,17 @@ import { LicenceStateService } from '../../../state/services/licence-state.servi
 })
 export class LicenceFormComponent implements OnInit, OnDestroy {
     private fb = inject(FormBuilder);
-    private messageService = inject(MessageService);
+    private store = inject(Store);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
-    licenceStateService = inject(LicenceStateService);
     private destroy$ = new Subject<void>();
 
     form!: FormGroup;
     isEditMode = false;
     licenceName = signal<string>('');
     licenceId!: number;
+
+    loading$ = this.store.select(selectLicencesLoading);
 
     currencies = [
         { label: 'USD', value: 'USD' },
@@ -59,20 +62,15 @@ export class LicenceFormComponent implements OnInit, OnDestroy {
         if (id && id !== 'new') {
             this.isEditMode = true;
             this.licenceId = +id;
+            this.store.dispatch(LicencesActions.loadLicence({ id: this.licenceId }));
 
-            const currentLicence = this.licenceStateService.selectedLicence();
-            if (currentLicence) {
-                this.licenceName.set(currentLicence.licences);
-                this.form.patchValue(currentLicence);
-            } else {
-                this.licenceStateService.getLicence(this.licenceId);
-            }
+            this.store.select(selectSelectedLicence)
+                .pipe(filter(Boolean), takeUntil(this.destroy$))
+                .subscribe((licence: Licence) => {
+                    this.licenceName.set(licence.licences);
+                    this.form.patchValue(licence);
+                });
         }
-    }
-
-    ngOnDestroy(): void {
-        this.destroy$.next();
-        this.destroy$.complete();
     }
 
     private buildForm(): void {
@@ -92,19 +90,12 @@ export class LicenceFormComponent implements OnInit, OnDestroy {
 
     getError(fieldName: string): string {
         const control = this.form.get(fieldName);
-        if (!control || !control.errors) {
-            return '';
-        }
+        if (!control || !control.errors) return '';
 
-        if (control.errors['required']) {
-            return 'Este campo es requerido';
-        }
-        if (control.errors['minlength']) {
+        if (control.errors['required']) return 'Este campo es requerido';
+        if (control.errors['minlength'])
             return `Mínimo ${control.errors['minlength'].requiredLength} caracteres`;
-        }
-        if (control.errors['min']) {
-            return `El valor mínimo es ${control.errors['min'].min}`;
-        }
+        if (control.errors['min']) return `El valor mínimo es ${control.errors['min'].min}`;
 
         return 'Este campo es inválido';
     }
@@ -112,10 +103,7 @@ export class LicenceFormComponent implements OnInit, OnDestroy {
     onSubmit(): void {
         if (this.form.invalid) {
             Object.keys(this.form.controls).forEach((key) => {
-                const control = this.form.get(key);
-                if (control?.invalid) {
-                    control.markAsTouched();
-                }
+                this.form.get(key)?.markAsTouched();
             });
             return;
         }
@@ -123,18 +111,18 @@ export class LicenceFormComponent implements OnInit, OnDestroy {
         const licence: Licence = this.form.value;
 
         if (this.isEditMode) {
-            this.licenceStateService.updateLicence(this.licenceId, licence);
-            
+            this.store.dispatch(LicencesActions.updateLicence({ id: this.licenceId, licence }));
         } else {
-            this.licenceStateService.createLicence(licence);
-            setTimeout(() => {
-                this.router.navigate(['/settings/licences/list']);
-            }, 1500);
+            this.store.dispatch(LicencesActions.createLicence({ licence }));
         }
     }
 
     cancel(): void {
         this.router.navigate(['/settings/licences/list']);
     }
-}
 
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+}
