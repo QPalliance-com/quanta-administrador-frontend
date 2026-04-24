@@ -6,7 +6,6 @@ import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import * as XLSX from 'xlsx';
 
 @Component({
     selector: 'app-export-toolbar',
@@ -23,14 +22,10 @@ export class ExportToolbarComponent {
     @Input() exportFileName: string = 'export';
     /** Columnas con label en español, recibidas del padre */
     @Input() exportColumns: { field: string; header: string }[] = [];
-    /** Evento que emite el formato seleccionado ('excel' | 'csv') */
-    @Output() exportFormat = new EventEmitter<'excel' | 'csv'>();
+    @Output() exportFormat = new EventEmitter<'csv'>();
 
-    exportFormats = [
-        { label: 'Excel', value: 'excel' },
-        { label: 'CSV', value: 'csv' }
-    ];
-    selectedExportFormat: 'excel' | 'csv' | null = null;
+    exportFormats = [{ label: 'CSV', value: 'csv' }];
+    selectedExportFormat: 'csv' | null = null;
 
     // Modal de exportación
     exportDialogVisible = false;
@@ -111,11 +106,7 @@ export class ExportToolbarComponent {
      */
     onExport() {
         if (this.selectedExportFormat) {
-            if (this.selectedExportFormat === 'csv') {
-                this.exportToCsv(this.previewData, this.exportFileName);
-            } else if (this.selectedExportFormat === 'excel') {
-                this.exportToExcel(this.previewData, this.exportFileName);
-            }
+            this.exportToCsv(this.previewData, this.exportFileName);
             this.exportFormat.emit(this.selectedExportFormat);
             this.exportSuccess = true;
             setTimeout(() => {
@@ -148,20 +139,5 @@ export class ExportToolbarComponent {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    }
-
-    /** Exporta los datos filtrados a Excel usando xlsx y los labels en español de cols/exportColumns */
-    exportToExcel(data: any[], fileName: string) {
-        if (!data || !data.length) return;
-        // Usa el orden y los labels de las columnas seleccionadas
-        const columns = this.selectedColumnDefs.length > 0 ? this.selectedColumnDefs : this.columns;
-        const header = columns.map((col) => col.label);
-        const fields = columns.map((col) => col.field);
-        // Construye los datos con el orden de columnas y header en español
-        const exportData = [header, ...data.map((row) => fields.map((col) => row[col]))];
-        const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos');
-        XLSX.writeFile(workbook, `${fileName}.xlsx`);
     }
 }
