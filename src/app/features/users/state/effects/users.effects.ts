@@ -65,7 +65,7 @@ export class UsersEffects {
                         summary: 'Éxito',
                         detail: 'Usuario creado correctamente'
                     });
-                    this.router.navigate(['/users']);
+                    this.router.navigate(['/users/list']);
                 })
             ),
         { dispatch: false }
@@ -95,7 +95,6 @@ export class UsersEffects {
                         summary: 'Éxito',
                         detail: 'Usuario actualizado correctamente'
                     });
-                    this.router.navigate(['/users']);
                 })
             ),
         { dispatch: false }
