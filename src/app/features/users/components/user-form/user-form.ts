@@ -10,7 +10,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '@/core/services/user.service';
-import { User } from '@/core/models';
+import { roleTypeProfile, roleTypeProfileLabels, User } from '@/core/models';
 
 @Component({
     standalone: true,
@@ -31,11 +31,10 @@ export class UserFormComponent implements OnInit, OnDestroy {
     userName = signal<string>('');
     userId!: number;
 
-    roles = [
-        { label: 'Administrador', value: 'admin' },
-        { label: 'Supervisor', value: 'supervisor' },
-        { label: 'Operario', value: 'user' }
-    ];
+    roleTypeProfiles = Object.values(roleTypeProfile).map((model) => ({
+        label: roleTypeProfileLabels[model],
+        value: model
+    }));
 
     statuses = [
         { label: 'Activo', value: 'active' },
@@ -77,14 +76,12 @@ export class UserFormComponent implements OnInit, OnDestroy {
             names: ['', Validators.required],
             lastNames: ['', Validators.required],
             username: ['', [Validators.required, Validators.minLength(3)]],
+            password: [''],
             email: ['', [Validators.required, Validators.email]],
             phone: ['', Validators.required],
             status: ['active', Validators.required],
-            roleId: [null, Validators.required],
-            userType: [''],
-            position: [''],
-            imageUrl: [''],
-            language: ['es']
+            roleTypeProfile: ['user', Validators.required],
+            position: ['', Validators.required]
         });
     }
 

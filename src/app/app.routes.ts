@@ -37,6 +37,11 @@ export const appRoutes: Routes = [
                 path: 'users', 
                 data: { breadcrumb: 'Usuarios' }, 
                 loadChildren: () => import('./features/users/users.routes').then((m) => m.usersRoutes) 
+            },
+            { 
+                path: 'settings', 
+                data: { breadcrumb: 'Configuración' }, 
+                loadChildren: () => import('./features/settings/settings.routes').then((m) => m.SETTINGS_ROUTES) 
             }
         ]
     },

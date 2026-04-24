@@ -9,4 +9,5 @@ export * from './department-city.service';
 
 // Business Domain Services
 export * from './company.service';
+export * from './licence.service';
 export * from './user.service';

@@ -44,10 +44,10 @@ const MENU_ITEMS: MenuItem[] = [
         icon: 'pi pi-fw pi-cog',
         items: [
             {
-                label: 'Plan de Suscripción',
+                label: 'Licencias',
                 icon: 'pi pi-credit-card',
-                routerLink: ['/subscription-plans'],
-                description: 'Configuración del plan y precios'
+                routerLink: ['/settings/licences/list'],
+                description: 'Configuración de las licencias de suscripción del sistema'
             }
         ]
     }

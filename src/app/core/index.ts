@@ -11,6 +11,7 @@ export * from './services';
 
 // Enums
 export * from './enums/document-type.enum';
+export * from './enums/licence-type.enum';
 export * from './enums/material-distribution.enum';
 export * from './enums/material-reception-status.enum';
 export * from './enums/order-data.enum';

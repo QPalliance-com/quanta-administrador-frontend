@@ -1,0 +1,151 @@
+<div class="card flex flex-col gap-6 w-full">
+    <!-- Header dinámico según modo -->
+    <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-0.5">
+            <div 
+                class="flex items-center gap-2 text-surface-400 text-sm mb-1 cursor-pointer hover:text-primary transition-colors"
+                (click)="cancel()"
+            >
+                <i class="pi pi-arrow-left text-xs"></i>
+                <span>Planes de Suscripción</span>
+            </div>
+            <h2 class="text-2xl font-semibold text-surface-900 dark:text-surface-100">
+                {{ isEditMode ? 'Editar plan' : 'Nuevo plan' }}
+                <span *ngIf="isEditMode && licenceName()" class="text-surface-400 font-normal text-lg">
+                    · {{ licenceName() }}
+                </span>
+            </h2>
+        </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+        <!-- INFORMACIÓN BÁSICA -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Información del Plan
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="licences" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Tipo de Plan <span class="text-red-500">*</span>
+                    </label>
+                    <p-select
+                        fluid
+                        inputId="licences"
+                        formControlName="licences"
+                        [options]="licenceTypes"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Seleccionar plan"
+                        [class.ng-invalid]="isInvalid('licences')"
+                        [class.ng-dirty]="isInvalid('licences')"
+                    />
+                    <small *ngIf="isInvalid('licences')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('licences') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="currency" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Moneda <span class="text-red-500">*</span>
+                    </label>
+                    <p-select
+                        fluid
+                        inputId="currency"
+                        formControlName="currency"
+                        [options]="currencies"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Seleccionar moneda"
+                        [class.ng-invalid]="isInvalid('currency')"
+                        [class.ng-dirty]="isInvalid('currency')"
+                    />
+                    <small *ngIf="isInvalid('currency')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('currency') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- MONTOS Y TASA DE CAMBIO -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Precios
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="amountUsd" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Monto USD <span class="text-red-500">*</span>
+                    </label>
+                    <p-inputNumber
+                        inputId="amountUsd"
+                        formControlName="amountUsd"
+                        [min]="0"
+                        mode="decimal"
+                        [minFractionDigits]="2"
+                        [maxFractionDigits]="2"
+                        placeholder="0.00"
+                        [class.ng-invalid]="isInvalid('amountUsd')"
+                        [class.ng-dirty]="isInvalid('amountUsd')"
+                    />
+                    <small *ngIf="isInvalid('amountUsd')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('amountUsd') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="amountCop" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Monto COP <span class="text-red-500">*</span>
+                    </label>
+                    <p-inputNumber
+                        inputId="amountCop"
+                        formControlName="amountCop"
+                        [min]="0"
+                        mode="decimal"
+                        [minFractionDigits]="0"
+                        [maxFractionDigits]="0"
+                        placeholder="0"
+                        [class.ng-invalid]="isInvalid('amountCop')"
+                        [class.ng-dirty]="isInvalid('amountCop')"
+                    />
+                    <small *ngIf="isInvalid('amountCop')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('amountCop') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1 md:col-span-2">
+                    <label for="exchangeRate" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Tasa de Cambio <span class="text-red-500">*</span>
+                    </label>
+                    <p-inputNumber
+                        inputId="exchangeRate"
+                        formControlName="exchangeRate"
+                        [min]="0"
+                        mode="decimal"
+                        [minFractionDigits]="6"
+                        [maxFractionDigits]="6"
+                        placeholder="0.000000"
+                        [class.ng-invalid]="isInvalid('exchangeRate')"
+                        [class.ng-dirty]="isInvalid('exchangeRate')"
+                    />
+                    <small class="text-surface-500 text-xs">
+                        Tasa de cambio USD a COP (ej: 0.000238)
+                    </small>
+                    <small *ngIf="isInvalid('exchangeRate')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('exchangeRate') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- BOTONES -->
+        <div class="flex items-center justify-between pt-2 border-t border-surface-100 dark:border-surface-800">
+            <small class="text-surface-400 flex items-center gap-1">
+                <span class="text-red-500">*</span> Campos requeridos
+            </small>
+            <div class="flex gap-3">
+                <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
+                <p-button label="Guardar" icon="pi pi-check" type="submit" [disabled]="form.invalid" />
+            </div>
+        </div>
+    </form>
+</div>
+
+<p-toast />

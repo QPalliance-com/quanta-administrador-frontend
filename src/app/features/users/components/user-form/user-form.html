@@ -31,7 +31,7 @@
                         fluid
                         id="names"
                         formControlName="names"
-                        placeholder="Nombre de pila"
+                        placeholder="Nombres"
                         [class.ng-invalid]="isInvalid('names')"
                         [class.ng-dirty]="isInvalid('names')"
                     />
@@ -110,7 +110,7 @@
                 Credenciales
             </legend>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <div class="flex flex-col gap-1 md:col-span-2">
+                <div class="flex flex-col gap-1">
                     <label for="username" class="text-sm font-medium text-surface-700 dark:text-surface-200">
                         Usuario <span class="text-red-500">*</span>
                     </label>
@@ -128,6 +128,27 @@
                         <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('username') }}
                     </small>
                 </div>
+                <div class="flex flex-col gap-1">
+                    <label for="password" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Contraseña <span *ngIf="!isEditMode" class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="password"
+                        formControlName="password"
+                        type="password"
+                        placeholder="●●●●●●●●"
+                        [class.ng-invalid]="isInvalid('password')"
+                        [class.ng-dirty]="isInvalid('password')"
+                    />
+                    <small *ngIf="isEditMode" class="text-surface-400 text-xs">
+                        Dejar en blanco para mantener contraseña actual
+                    </small>
+                    <small *ngIf="isInvalid('password')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('password') }}
+                    </small>
+                </div>
             </div>
         </fieldset>
 
@@ -138,23 +159,23 @@
             </legend>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div class="flex flex-col gap-1">
-                    <label for="roleId" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                    <label for="roleTypeProfile" class="text-sm font-medium text-surface-700 dark:text-surface-200">
                         Rol <span class="text-red-500">*</span>
                     </label>
                     <p-select
                         fluid
-                        inputId="roleId"
-                        formControlName="roleId"
-                        [options]="roles"
+                        inputId="roleTypeProfile"
+                        formControlName="roleTypeProfile"
+                        [options]="roleTypeProfiles"
                         optionLabel="label"
                         optionValue="value"
                         showFilter
                         placeholder="Seleccionar rol"
-                        [class.ng-invalid]="isInvalid('roleId')"
-                        [class.ng-dirty]="isInvalid('roleId')"
+                        [class.ng-invalid]="isInvalid('roleTypeProfile')"
+                        [class.ng-dirty]="isInvalid('roleTypeProfile')"
                     />
-                    <small *ngIf="isInvalid('roleId')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('roleId') }}
+                    <small *ngIf="isInvalid('roleTypeProfile')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('roleTypeProfile') }}
                     </small>
                 </div>
                 <div class="flex flex-col gap-1">
@@ -174,6 +195,23 @@
                     />
                     <small *ngIf="isInvalid('status')" class="text-red-500 flex items-center gap-1">
                         <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('status') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1 md:col-span-2">
+                    <label for="position" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Posición <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="position"
+                        formControlName="position"
+                        placeholder="ej: Gerente, Supervisor, Operario"
+                        [class.ng-invalid]="isInvalid('position')"
+                        [class.ng-dirty]="isInvalid('position')"
+                    />
+                    <small *ngIf="isInvalid('position')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('position') }}
                     </small>
                 </div>
             </div>

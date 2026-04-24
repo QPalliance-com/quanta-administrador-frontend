@@ -116,7 +116,7 @@ export class UserListComponent implements OnInit {
 
     navigateToEdit(userId: number): void {
         if (userId) {
-            this.router.navigate(['/settings/users/edit', userId]);
+            this.router.navigate(['/users/edit', userId]);
         }
     }
 

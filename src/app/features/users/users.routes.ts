@@ -5,7 +5,7 @@ import { UserFormComponent } from './components/user-form/user-form';
 export const usersRoutes: Routes = [
    
     {
-        path: '',
+        path: 'list',
         component: UserListComponent,
         data: { breadcrumb: 'Usuarios' }
     },

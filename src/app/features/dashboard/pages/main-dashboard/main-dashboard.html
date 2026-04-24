@@ -212,7 +212,7 @@
             <div class="bt-user-avatar">{{ initials(user) }}</div>
             <div class="bt-user-info">
               <div class="bt-user-name">{{ user.names }} {{ user.lastNames }}</div>
-              <div class="bt-user-type">{{ user.position || user.userType }}</div>
+              <div class="bt-user-type">{{ user.position }}</div>
             </div>
             <span class="bt-status" [class.bs-active]="user.status === 'active'"
                                     [class.bs-inactive]="user.status === 'inactive'">
