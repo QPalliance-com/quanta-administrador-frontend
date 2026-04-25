@@ -18,6 +18,8 @@ import { companiesReducer } from './features/companies/state/reducers/companies.
 import { CompaniesEffects } from './features/companies/state/effects/companies.effects';
 import { licencesReducer } from './features/settings/state/reducers/licences.reducer';
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
+import { authReducer } from './features/auth/state/reducers/auth.reducer';
+import { AuthEffects } from './features/auth/state/effects/auth.effects';
 import { LoaderInterceptor } from './core/interceptors/loading.interceptor';
 import { HttpErrorInterceptor } from './core/interceptors/http-error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -59,6 +61,7 @@ export const appConfig: ApplicationConfig = {
         // NgRx Store Configuration (only for departmentCity lookup data)
         provideStore(
             {
+                auth: authReducer,
                 departmentCity: departmentCityReducer,
                 users: usersReducer,
                 companies: companiesReducer,
@@ -77,6 +80,7 @@ export const appConfig: ApplicationConfig = {
 
         // NgRx Effects (only for departmentCity)
         provideEffects([
+            AuthEffects,
             DepartmentCityEffects,
             UsersEffects,
             CompaniesEffects,

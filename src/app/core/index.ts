@@ -27,6 +27,9 @@ export * from './enums/type-product.enum';
 export * from './interceptors/http-error.interceptor';
 export * from './interceptors/loading.interceptor';
 
+// Pipes
+export * from './pipes/location-name.pipe';
+
 // State
 export * from './state/actions/department-city.actions';
 export * from './state/effects/department-city.effects';

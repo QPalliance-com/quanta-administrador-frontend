@@ -153,8 +153,12 @@
                 <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.address || '—' }}</span>
             </div>
             <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Departamento / Ciudad</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedCompany.departmentId || '—' }} / {{ selectedCompany.cityId || '—' }}</span>
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Departamento</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ (selectedCompany.departmentId | locationName: 'department') | async }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="text-xs text-surface-400 uppercase tracking-wide">Ciudad</span>
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ (selectedCompany.cityId | locationName: 'city') | async }}</span>
             </div>
         </div>
 

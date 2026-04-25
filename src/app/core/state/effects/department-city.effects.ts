@@ -1,30 +1,56 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
 import { DepartmentCityService } from '@/core/services/department-city.service';
-import { DepartmentCityActions } from '../actions/department-city.actions';
-import { catchError, map, mergeMap, of, tap } from 'rxjs';
-import { MessageService } from 'primeng/api';
+import { DepartmentCityActions, initLocationData } from '../actions/department-city.actions';
+import { selectDepartmentsLoaded, selectCitiesLoaded } from '../selectors/department-city.selectors';
+import { catchError, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
 @Injectable()
 export class DepartmentCityEffects {
     private actions$ = inject(Actions);
+    private store = inject(Store);
     private departmentCityService = inject(DepartmentCityService);
-    private messageService = inject(MessageService);
+
+    initLocationData$ = createEffect(() => {
+        return this.actions$.pipe(
+            ofType(initLocationData),
+            withLatestFrom(
+                this.store.select(selectDepartmentsLoaded),
+                this.store.select(selectCitiesLoaded)
+            ),
+            switchMap(([, departmentsLoaded, citiesLoaded]) => {
+                const actions = [];
+                if (!departmentsLoaded) actions.push(DepartmentCityActions.loadDepartments());
+                if (!citiesLoaded) actions.push(DepartmentCityActions.loadAllCities());
+                return actions;
+            })
+        );
+    });
 
     loadDepartments$ = createEffect(() => {
         return this.actions$.pipe(
             ofType(DepartmentCityActions.loadDepartments),
             mergeMap(() =>
                 this.departmentCityService.getDepartments().pipe(
-                    map((departments) => DepartmentCityActions.loadDepartmentsSuccess({ departments })),
-                    catchError((error) => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'Error al cargar los departamentos'
-                        });
-                        return of(DepartmentCityActions.loadDepartmentsFailure({ error: error.message }));
-                    })
+                    map((response) => DepartmentCityActions.loadDepartmentsSuccess({ departments: response.data })),
+                    catchError((error) =>
+                        of(DepartmentCityActions.loadDepartmentsFailure({ error: error.message }))
+                    )
+                )
+            )
+        );
+    });
+
+    loadAllCities$ = createEffect(() => {
+        return this.actions$.pipe(
+            ofType(DepartmentCityActions.loadAllCities),
+            mergeMap(() =>
+                this.departmentCityService.getAllCities().pipe(
+                    map((response) => DepartmentCityActions.loadAllCitiesSuccess({ cities: response.data })),
+                    catchError((error) =>
+                        of(DepartmentCityActions.loadAllCitiesFailure({ error: error.message }))
+                    )
                 )
             )
         );
@@ -35,48 +61,15 @@ export class DepartmentCityEffects {
             ofType(DepartmentCityActions.loadCities),
             mergeMap(({ departmentId }) =>
                 this.departmentCityService.getCitiesByDepartment(departmentId).pipe(
-                    map((cities) => DepartmentCityActions.loadCitiesSuccess({ cities })),
-                    catchError((error) => {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: 'Error al cargar las ciudades'
-                        });
-                        return of(DepartmentCityActions.loadCitiesFailure({ error: error.message }));
-                    })
+                    map((response) => {
+                        const cities = response.data.map((c) => ({ ...c, departmentId: Number(departmentId) }));
+                        return DepartmentCityActions.loadCitiesSuccess({ cities });
+                    }),
+                    catchError((error) =>
+                        of(DepartmentCityActions.loadCitiesFailure({ error: error.message }))
+                    )
                 )
             )
         );
     });
-
-    // Toasts de éxito
-    loadDepartmentsSuccessToast$ = createEffect(
-        () =>
-            this.actions$.pipe(
-                ofType(DepartmentCityActions.loadDepartmentsSuccess),
-                tap(() => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Departamentos cargados correctamente'
-                    });
-                })
-            ),
-        { dispatch: false }
-    );
-
-    loadCitiesSuccessToast$ = createEffect(
-        () =>
-            this.actions$.pipe(
-                ofType(DepartmentCityActions.loadCitiesSuccess),
-                tap(() => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Ciudades cargadas correctamente'
-                    });
-                })
-            ),
-        { dispatch: false }
-    );
 }

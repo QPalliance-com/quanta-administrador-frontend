@@ -21,6 +21,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { CompaniesActions } from '../../state/actions/companies.actions';
 import { selectAllCompanies, selectCompaniesLoading, selectSelectedCompany } from '../../state/selectors/companies.selectors';
+import { LocationNamePipe } from '@/core/pipes/location-name.pipe';
 
 @Component({
     selector: 'app-company-list',
@@ -39,7 +40,8 @@ import { selectAllCompanies, selectCompaniesLoading, selectSelectedCompany } fro
         ConfirmDialogModule,
         Drawer,
         Menu,
-        ExportToolbarComponent
+        ExportToolbarComponent,
+        LocationNamePipe
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './company-list.html'
@@ -142,10 +144,10 @@ export class CompanyListComponent implements OnInit, OnDestroy {
         this.rowMenu.toggle(event);
     }
 
-    editCompany(company: Company | null): void {
-        if (company) {
+    editCompany(company: Company): void {
+       
             this.router.navigate(['/companies/edit', company.id]);
-        }
+       
     }
 
     deleteCompany(company: Company): void {

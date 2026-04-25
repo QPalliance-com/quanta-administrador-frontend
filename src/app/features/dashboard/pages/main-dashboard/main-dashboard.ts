@@ -4,13 +4,15 @@ import {
   inject, computed, effect
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { Store } from '@ngrx/store';
 import Chart from 'chart.js/auto';
 
-import { CompanyService }          from '../../../../core/services/company.service';
-import { UserService }             from '../../../../core/services/user.service';
-import { SubscriptionPlanService } from '../../../../core/services/subscription-plan.service';
+import { selectAllCompanies, selectCompaniesLoading } from '@/features/companies/state/selectors/companies.selectors';
+import { selectAllUsers, selectUsersLoading } from '@/features/users/state/selectors/users.selectors';
+import { CompaniesActions } from '@/features/companies/state/actions/companies.actions';
+import { UsersActions } from '@/features/users/state/actions/users.actions';
+import { SubscriptionPlanService } from '@/core/services/subscription-plan.service';
+import { SubscriptionPlan, UserPricing } from '@/core/models/subscription-plan.model';
 
 @Component({
   selector: 'app-main-dashboard',
@@ -21,22 +23,17 @@ import { SubscriptionPlanService } from '../../../../core/services/subscription-
   styleUrl: './main-dashboard.scss'
 })
 export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  private companyService = inject(CompanyService);
-  private userService    = inject(UserService);
+  private store = inject(Store);
   private subPlanService = inject(SubscriptionPlanService);
 
   // ── Companies ──────────────────────────────────────────────────────────────
-  companies        = this.companyService.companies;
-  companiesCount   = this.companyService.companiesCount;
-  loadingCompanies = this.companyService.loading;
+  companies        = this.store.selectSignal(selectAllCompanies);
+  loadingCompanies = this.store.selectSignal(selectCompaniesLoading);
+  companiesCount   = computed(() => this.companies().length);
 
   // ── Users ──────────────────────────────────────────────────────────────────
-  private usersRes$ = toSignal(
-    this.userService.getUsers().pipe(catchError(() => of(null))),
-    { initialValue: null }
-  );
-  loadingUsers  = computed(() => this.usersRes$() === null);
-  users         = computed(() => this.usersRes$()?.data ?? []);
+  users         = this.store.selectSignal(selectAllUsers);
+  loadingUsers  = this.store.selectSignal(selectUsersLoading);
   usersCount    = computed(() => this.users().length);
   activeUsers   = computed(() => this.users().filter(u => u.status === 'active').length);
   inactiveUsers = computed(() => this.users().filter(u => u.status === 'inactive').length);
@@ -46,13 +43,9 @@ export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy 
   });
 
   // ── Subscription plan ──────────────────────────────────────────────────────
-  private planRes$ = toSignal(
-    this.subPlanService.getPlan().pipe(catchError(() => of(null))),
-    { initialValue: null }
-  );
-  plan         = computed(() => this.planRes$()?.data ?? null);
-  adminPricing = computed(() => this.plan()?.userPricing.find(p => p.userType === 'ADMIN') ?? null);
-  opPricing    = computed(() => this.plan()?.userPricing.find(p => p.userType === 'OPERATIVE') ?? null);
+  plan         = computed(() => null as SubscriptionPlan | null); // TODO: Implementar state para subscription plan
+  adminPricing = computed(() => this.plan()?.userPricing.find((p: UserPricing) => p.userType === 'ADMIN') ?? null);
+  opPricing    = computed(() => this.plan()?.userPricing.find((p: UserPricing) => p.userType === 'OPERATIVE') ?? null);
 
   // ── Derived company metrics ────────────────────────────────────────────────
   naturalCount    = computed(() => this.companies().filter(c => c.legalType === 'natural').length);
@@ -84,7 +77,8 @@ export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngOnInit(): void {
-    this.companyService.loadCompanies().subscribe();
+    this.store.dispatch(CompaniesActions.loadCompanies());
+    this.store.dispatch(UsersActions.loadUsers());
   }
 
   ngAfterViewInit(): void {

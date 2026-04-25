@@ -11,9 +11,9 @@ import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Store } from '@ngrx/store';
-import { DepartmentCityActions } from '@/core/state/actions/department-city.actions';
-import { selectAllDepartments, selectAllCities } from '@/core/state/selectors/department-city.selectors';
-import { Subject, filter, takeUntil, distinctUntilChanged } from 'rxjs';
+import { initLocationData } from '@/core/state/actions/department-city.actions';
+import { selectAllDepartments, selectCitiesByDepartment } from '@/core/state/selectors/department-city.selectors';
+import { Observable, Subject, filter, of, startWith, switchMap, takeUntil, distinctUntilChanged } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompaniesActions } from '../../state/actions/companies.actions';
@@ -44,7 +44,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
 
     loading$ = this.store.select(selectCompaniesLoading);
     departments$ = this.store.select(selectAllDepartments);
-    cities$ = this.store.select(selectAllCities);
+    cities$!: Observable<{ id: number; name: string; departmentId: number }[]>;
 
     documentTypes = Object.values(DocumentType).map((type) => ({
         label: DOCUMENT_TYPE_LABELS[type],
@@ -151,16 +151,21 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                 });
         }
 
-        this.store.dispatch(DepartmentCityActions.loadDepartments());
+        this.store.dispatch(initLocationData());
+
+        this.cities$ = this.form.get('departmentId')!.valueChanges.pipe(
+            startWith(this.form.get('departmentId')!.value),
+            distinctUntilChanged(),
+            switchMap((departmentId) =>
+                departmentId ? this.store.select(selectCitiesByDepartment(departmentId)) : of([])
+            )
+        );
 
         this.form
             .get('departmentId')
             ?.valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
-            .subscribe((departmentId) => {
-                if (departmentId) {
-                    this.store.dispatch(DepartmentCityActions.loadCities({ departmentId }));
-                    this.form.patchValue({ cityId: null }, { emitEvent: false });
-                }
+            .subscribe(() => {
+                this.form.patchValue({ cityId: null }, { emitEvent: false });
             });
     }
 

@@ -4,25 +4,27 @@ import { RouterOutlet } from '@angular/router';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { MessageModule } from 'primeng/message';
 import { ButtonModule } from 'primeng/button';
-import { AuthService } from '../../../core/services/auth.service';
+import { Store } from '@ngrx/store';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { selectAuthLoading, selectAuthError } from '../state/selectors/auth.selectors';
 
 @Component({
     selector: 'app-auth-layout',
     standalone: true,
     imports: [
-        CommonModule, 
-        RouterOutlet, 
-        ProgressBarModule, 
-        MessageModule, 
+        CommonModule,
+        RouterOutlet,
+        ProgressBarModule,
+        MessageModule,
         ButtonModule
     ],
     templateUrl: './auth-layout.component.html',
     styleUrl: './auth-layout.component.scss'
 })
 export class AuthLayoutComponent {
-    private authService = inject(AuthService);
-    
-    error = this.authService.error;
-    loading = this.authService.loading;
+    private store = inject(Store);
+
+    loading = toSignal(this.store.select(selectAuthLoading), { initialValue: false });
+    error = toSignal(this.store.select(selectAuthError), { initialValue: null });
     currentYear = new Date().getFullYear();
 }

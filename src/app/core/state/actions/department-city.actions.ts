@@ -1,5 +1,7 @@
-import { createActionGroup, emptyProps, props } from '@ngrx/store';
+import { createAction, createActionGroup, emptyProps, props } from '@ngrx/store';
 import { Department, City } from '@/core/models/department-city.model';
+
+export const initLocationData = createAction('[Department/City] Init Location Data');
 
 export const DepartmentCityActions = createActionGroup({
     source: 'Department/City',
@@ -9,7 +11,12 @@ export const DepartmentCityActions = createActionGroup({
         'Load Departments Success': props<{ departments: Department[] }>(),
         'Load Departments Failure': props<{ error: string }>(),
 
-        // Load Cities by Department
+        // Load All Cities (carga completa al iniciar sesión)
+        'Load All Cities': emptyProps(),
+        'Load All Cities Success': props<{ cities: City[] }>(),
+        'Load All Cities Failure': props<{ error: string }>(),
+
+        // Load Cities by Department (acumula sin reemplazar)
         'Load Cities': props<{ departmentId: number | string }>(),
         'Load Cities Success': props<{ cities: City[] }>(),
         'Load Cities Failure': props<{ error: string }>()

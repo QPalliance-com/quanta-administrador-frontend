@@ -1,19 +1,23 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { ApiResponse } from '@/core/models/api-response.model';
+import { Department, City } from '@/core/models/department-city.model';
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class DepartmentCityService {
-    constructor(private httpClient: HttpClient) {}
+    private http = inject(HttpClient);
+    private readonly baseUrl = environment.adminApiUrl;
 
     getDepartments() {
-        return this.httpClient.get<any[]>('https://api-colombia.com/api/v1/Department');
+        return this.http.get<ApiResponse<Department[]>>(`${this.baseUrl}departments`);
     }
+
     getCitiesByDepartment(idDepartment: number | string) {
-        return this.httpClient.get<any[]>(`https://api-colombia.com/api/v1/Department/${idDepartment}/cities`);
+        return this.http.get<ApiResponse<City[]>>(`${this.baseUrl}cities/department/${idDepartment}`);
     }
+
     getAllCities() {
-        return this.httpClient.get<any[]>('https://api-colombia.com/api/v1/City');
+        return this.http.get<ApiResponse<City[]>>(`${this.baseUrl}cities`);
     }
 }
