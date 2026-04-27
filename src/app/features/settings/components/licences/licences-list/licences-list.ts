@@ -91,10 +91,8 @@ export class LicencesListComponent implements OnInit, OnDestroy {
         this.cols = [
             { field: 'licences', header: 'Tipo de Plan', customExportHeader: 'Tipo de Plan' },
             { field: 'amountUsd', header: 'Monto USD', customExportHeader: 'Monto USD' },
-            { field: 'amountCop', header: 'Monto COP', customExportHeader: 'Monto COP' },
             { field: 'currency', header: 'Moneda', customExportHeader: 'Moneda' },
-            { field: 'exchangeRate', header: 'Tasa de Cambio', customExportHeader: 'Tasa de Cambio' }
-        ];
+             ];
         this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
     }
 

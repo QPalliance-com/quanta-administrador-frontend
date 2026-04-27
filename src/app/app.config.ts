@@ -20,6 +20,8 @@ import { licencesReducer } from './features/settings/state/reducers/licences.red
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
 import { authReducer } from './features/auth/state/reducers/auth.reducer';
 import { AuthEffects } from './features/auth/state/effects/auth.effects';
+import { dashboardReducer } from './features/dashboard/state/reducers/dashboard.reducer';
+import { DashboardEffects } from './features/dashboard/state/effects/dashboard.effects';
 import { LoaderInterceptor } from './core/interceptors/loading.interceptor';
 import { HttpErrorInterceptor } from './core/interceptors/http-error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -65,7 +67,8 @@ export const appConfig: ApplicationConfig = {
                 departmentCity: departmentCityReducer,
                 users: usersReducer,
                 companies: companiesReducer,
-                licences: licencesReducer
+                licences: licencesReducer,
+                dashboard: dashboardReducer
             },
             {
                 runtimeChecks: {
@@ -84,7 +87,8 @@ export const appConfig: ApplicationConfig = {
             DepartmentCityEffects,
             UsersEffects,
             CompaniesEffects,
-            LicencesEffects
+            LicencesEffects,
+            DashboardEffects
         ]),
 
         // NgRx DevTools

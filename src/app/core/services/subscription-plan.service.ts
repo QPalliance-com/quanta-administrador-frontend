@@ -10,7 +10,7 @@ import { SubscriptionPlan, UpdateSubscriptionPlanRequest } from '../models/subsc
 })
 export class SubscriptionPlanService {
     private http = inject(HttpClient);
-    private readonly baseUrl = `${environment.adminApiUrl}subscription-plan`;
+    private readonly baseUrl = `${environment.adminApiUrl}subscription/plan`;
 
     // Obtener el plan único del sistema
     getPlan(): Observable<ApiResponse<SubscriptionPlan>> {

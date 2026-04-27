@@ -9,10 +9,10 @@ import Chart from 'chart.js/auto';
 
 import { selectAllCompanies, selectCompaniesLoading } from '@/features/companies/state/selectors/companies.selectors';
 import { selectAllUsers, selectUsersLoading } from '@/features/users/state/selectors/users.selectors';
+import { selectSubscriptionPlan, selectLoadingPlan, selectAdminPricing, selectOperativePricing } from '@/features/dashboard/state/selectors/dashboard.selectors';
 import { CompaniesActions } from '@/features/companies/state/actions/companies.actions';
 import { UsersActions } from '@/features/users/state/actions/users.actions';
-import { SubscriptionPlanService } from '@/core/services/subscription-plan.service';
-import { SubscriptionPlan, UserPricing } from '@/core/models/subscription-plan.model';
+import { DashboardActions } from '@/features/dashboard/state/actions/dashboard.actions';
 
 @Component({
   selector: 'app-main-dashboard',
@@ -24,7 +24,6 @@ import { SubscriptionPlan, UserPricing } from '@/core/models/subscription-plan.m
 })
 export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private store = inject(Store);
-  private subPlanService = inject(SubscriptionPlanService);
 
   // ── Companies ──────────────────────────────────────────────────────────────
   companies        = this.store.selectSignal(selectAllCompanies);
@@ -43,9 +42,10 @@ export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy 
   });
 
   // ── Subscription plan ──────────────────────────────────────────────────────
-  plan         = computed(() => null as SubscriptionPlan | null); // TODO: Implementar state para subscription plan
-  adminPricing = computed(() => this.plan()?.userPricing.find((p: UserPricing) => p.userType === 'ADMIN') ?? null);
-  opPricing    = computed(() => this.plan()?.userPricing.find((p: UserPricing) => p.userType === 'OPERATIVE') ?? null);
+  plan = this.store.selectSignal(selectSubscriptionPlan);
+  loadingPlan = this.store.selectSignal(selectLoadingPlan);
+  adminPricing = this.store.selectSignal(selectAdminPricing);
+  opPricing = this.store.selectSignal(selectOperativePricing);
 
   // ── Derived company metrics ────────────────────────────────────────────────
   naturalCount    = computed(() => this.companies().filter(c => c.legalType === 'natural').length);
@@ -79,6 +79,7 @@ export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy 
   ngOnInit(): void {
     this.store.dispatch(CompaniesActions.loadCompanies());
     this.store.dispatch(UsersActions.loadUsers());
+    this.store.dispatch(DashboardActions.loadSubscriptionPlan());
   }
 
   ngAfterViewInit(): void {
