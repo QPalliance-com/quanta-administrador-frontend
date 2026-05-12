@@ -192,7 +192,11 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             address: ['', Validators.required],
             departmentId: [null, Validators.required],
             cityId: [null, Validators.required],
-            onBoardingComplete: [false]
+            onBoardingComplete: [false],
+            postalCode: [''],
+            fullNameBilling: [''],
+            emailBilling: ['', Validators.email],
+            contactPhoneBilling: ['']
         });
 
         this.form
@@ -237,7 +241,11 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             names: formData.names,
             lastNames: formData.lastNames,
             phone: formData.phone,
-            onBoardingComplete: formData.onBoardingComplete ?? false
+            onBoardingComplete: formData.onBoardingComplete ?? false,
+            postalCode: formData.postalCode || undefined,
+            fullNameBilling: formData.fullNameBilling || undefined,
+            emailBilling: formData.emailBilling || undefined,
+            contactPhoneBilling: formData.contactPhoneBilling || undefined
         };
 
         if (this.isEditMode && this.companyId) {
