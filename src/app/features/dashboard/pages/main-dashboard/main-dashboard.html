@@ -115,60 +115,7 @@
       }
     </div>
 
-    <!-- ⑦ Plan de suscripción (col-2) -->
-    <div class="bt-card col-2">
-      @if (loadingPlan()) {
-        <div class="bt-eyebrow">Plan de suscripción</div>
-        <div class="bt-skeleton light" style="height:20px;width:140px;margin-bottom:14px"></div>
-        <div class="bt-skeleton light" style="height:60px;margin-bottom:10px"></div>
-        <div class="bt-skeleton light" style="height:40px;margin-bottom:10px"></div>
-      } @else if (plan()) {
-        <div class="bt-plan-header">
-          <div>
-            <div class="bt-plan-name">{{ plan()!.name }}</div>
-            <div class="bt-plan-desc">{{ plan()!.description }}</div>
-          </div>
-          @if (plan()!.isActive) {
-            <div class="bt-plan-active">
-              <div class="bt-plan-active-dot"></div> Activo
-            </div>
-          }
-        </div>
-        <div class="bt-trial">
-          Período de prueba: <span>{{ plan()!.trialDays }} días</span> ·
-          Moneda: <span>{{ plan()!.currency }}</span>
-        </div>
-        <div class="bt-plan-prices">
-          @if (adminPricing()) {
-            <div class="bt-price-card">
-              <div class="bt-price-label">Admin · Mensual</div>
-              <div class="bt-price-value">{{ adminPricing()!.monthlyPrice | number:'1.2-2' }}</div>
-              <div class="bt-price-period">{{ plan()!.currency }} / mes</div>
-            </div>
-          }
-          @if (opPricing()) {
-            <div class="bt-price-card">
-              <div class="bt-price-label">Operativo · Mensual</div>
-              <div class="bt-price-value">{{ opPricing()!.monthlyPrice | number:'1.2-2' }}</div>
-              <div class="bt-price-period">{{ plan()!.currency }} / mes</div>
-            </div>
-          }
-        </div>
-        @if (plan()!.commonFeatures.length > 0) {
-          <div class="bt-plan-features">
-            @for (feat of plan()!.commonFeatures.slice(0, 4); track feat) {
-              <div class="bt-feature-item">
-                <span class="bt-feature-check">✓</span>
-                <span>{{ feat }}</span>
-              </div>
-            }
-          </div>
-        }
-      } @else {
-        <div class="bt-eyebrow">Plan de suscripción</div>
-        <div class="bt-empty">No hay plan disponible</div>
-      }
-    </div>
+
 
     <!-- ⑧ Empresas registradas (col-3) -->
     <div class="bt-card col-3">
