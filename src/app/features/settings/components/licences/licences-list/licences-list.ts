@@ -17,7 +17,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { Column } from '@/core/models/table-options.model';
 import { Store } from '@ngrx/store';
 import { LicencesActions } from '../../../state/actions/licences.actions';
-import { selectAllLicences, selectLicencesLoading, selectSelectedLicence } from '../../../state/selectors/licences.selectors';
 import { selectAllLicences, selectLicencesLoading, selectLicencesError } from '../../../state/selectors/licences.selectors';
 
 @Component({
