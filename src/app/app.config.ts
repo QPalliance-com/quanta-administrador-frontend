@@ -18,6 +18,8 @@ import { companiesReducer } from './features/companies/state/reducers/companies.
 import { CompaniesEffects } from './features/companies/state/effects/companies.effects';
 import { licencesReducer } from './features/settings/state/reducers/licences.reducer';
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
+import { holidaysReducer } from './features/settings/state/reducers/holidays.reducer';
+import { HolidaysEffects } from './features/settings/state/effects/holidays.effects';
 import { authReducer } from './features/auth/state/reducers/auth.reducer';
 import { AuthEffects } from './features/auth/state/effects/auth.effects';
 import { dashboardReducer } from './features/dashboard/state/reducers/dashboard.reducer';
@@ -68,6 +70,7 @@ export const appConfig: ApplicationConfig = {
                 users: usersReducer,
                 companies: companiesReducer,
                 licences: licencesReducer,
+                holidays: holidaysReducer,
                 dashboard: dashboardReducer
             },
             {
@@ -88,6 +91,7 @@ export const appConfig: ApplicationConfig = {
             UsersEffects,
             CompaniesEffects,
             LicencesEffects,
+            HolidaysEffects,
             DashboardEffects
         ]),
 

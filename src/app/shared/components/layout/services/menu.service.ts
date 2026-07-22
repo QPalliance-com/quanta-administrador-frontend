@@ -48,6 +48,12 @@ const MENU_ITEMS: MenuItem[] = [
                 icon: 'pi pi-credit-card',
                 routerLink: ['/settings/licences/list'],
                 description: 'Configuración de las licencias de suscripción del sistema'
+            },
+            {
+                label: 'Días No Laborables',
+                icon: 'pi pi-calendar-plus',
+                routerLink: ['/settings/holidays/list'],
+                description: 'Calendario de festivos nacionales para efectos de costeo'
             }
         ]
     }
