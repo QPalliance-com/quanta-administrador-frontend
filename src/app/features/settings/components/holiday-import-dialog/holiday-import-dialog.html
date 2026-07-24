@@ -1,0 +1,93 @@
+<p-dialog
+    [visible]="visible"
+    (visibleChange)="onDialogVisibleChange($event)"
+    [modal]="true"
+    [style]="{ width: '700px' }"
+    header="Importar festivos desde CSV"
+    [closable]="!submitting"
+    [dismissableMask]="!submitting"
+    [closeOnEscape]="!submitting"
+>
+    <div class="flex flex-col gap-4">
+        <p-message *ngIf="errorBanner" severity="error" [text]="errorBanner" styleClass="w-full" />
+        <p-message *ngIf="resultSummary" severity="success" [text]="resultSummary" styleClass="w-full" />
+
+        <ng-container *ngIf="rows.length === 0">
+            <div
+                class="flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-lg py-10 px-4 text-center cursor-pointer transition-colors"
+                [class.border-primary]="isDragging"
+                [class.bg-primary-50]="isDragging"
+                [class.dark:bg-primary-950]="isDragging"
+                [class.border-surface-300]="!isDragging"
+                [class.dark:border-surface-600]="!isDragging"
+                (click)="fileInput.click()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave()"
+                (drop)="onDrop($event)"
+            >
+                <i class="pi pi-cloud-upload text-3xl text-surface-400"></i>
+                <span class="font-medium">Arrastra tu archivo aquí o haz clic para seleccionarlo</span>
+                <span class="text-sm text-surface-400">
+                    El archivo debe tener dos columnas: fecha (YYYY-MM-DD) y nombre. Máximo 366 filas.
+                </span>
+                <input #fileInput type="file" accept=".csv" class="hidden" (change)="onFileSelected($event)" (click)="$event.stopPropagation()" />
+            </div>
+
+            <button pButton label="Descargar plantilla CSV" icon="pi pi-download" [text]="true" size="small" class="self-start" (click)="downloadTemplate()"></button>
+        </ng-container>
+
+        <ng-container *ngIf="rows.length > 0">
+            <div class="flex items-center justify-between text-sm text-surface-500">
+                <span><i class="pi pi-file"></i> {{ fileName }} — {{ rows.length }} filas</span>
+                <button pButton label="Elegir otro archivo" icon="pi pi-refresh" [text]="true" size="small" (click)="resetState()" [disabled]="submitting"></button>
+            </div>
+
+            <p-table [value]="rows" [scrollable]="true" scrollHeight="280px" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">#</th>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th style="width: 6rem">Estado</th>
+                        <th>Detalle</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-row>
+                    <tr>
+                        <td>{{ row.row }}</td>
+                        <td>{{ row.holidayDate }}</td>
+                        <td>{{ row.name }}</td>
+                        <td>
+                            <p-tag
+                                [value]="row.status === 'ok' ? 'OK' : row.status === 'error' ? 'Error' : 'Conflicto'"
+                                [severity]="row.status === 'ok' ? 'success' : row.status === 'error' ? 'danger' : 'warn'"
+                            />
+                        </td>
+                        <td class="text-sm text-surface-500">{{ row.detail || '—' }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <p-message *ngIf="hasBlockingErrors" severity="error" styleClass="w-full">
+                Corrija los errores y vuelva a subir el archivo.
+            </p-message>
+
+            <div *ngIf="hasConflicts" class="flex items-center gap-2">
+                <p-checkbox [(ngModel)]="overwrite" [binary]="true" inputId="overwrite" />
+                <label for="overwrite" class="text-sm">Sobrescribir festivos existentes</label>
+            </div>
+        </ng-container>
+    </div>
+
+    <ng-template #footer>
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" [disabled]="submitting" (onClick)="close()" />
+        <p-button
+            *ngIf="rows.length > 0"
+            [label]="hasConflicts ? 'Sobrescribir e importar' : 'Importar'"
+            icon="pi pi-upload"
+            [loading]="submitting"
+            [disabled]="hasBlockingErrors || (hasConflicts && !overwrite)"
+            (onClick)="submitImport()"
+        />
+    </ng-template>
+</p-dialog>

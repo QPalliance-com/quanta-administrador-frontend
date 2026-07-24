@@ -15,6 +15,7 @@ export * from './table-options.model';
 
 // Business Domain Models
 export * from './company.model';
+export * from './holiday.model';
 export * from './licence.model';
 export * from './subscription-plan.model';
 export * from './user.model';

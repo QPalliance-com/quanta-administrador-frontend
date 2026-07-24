@@ -3,21 +3,19 @@ import {
   ViewChild, ElementRef, ViewEncapsulation,
   inject, computed, effect
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import Chart from 'chart.js/auto';
 
 import { selectAllCompanies, selectCompaniesLoading } from '@/features/companies/state/selectors/companies.selectors';
 import { selectAllUsers, selectUsersLoading } from '@/features/users/state/selectors/users.selectors';
-import { selectSubscriptionPlan, selectLoadingPlan, selectAdminPricing, selectOperativePricing } from '@/features/dashboard/state/selectors/dashboard.selectors';
 import { CompaniesActions } from '@/features/companies/state/actions/companies.actions';
 import { UsersActions } from '@/features/users/state/actions/users.actions';
-import { DashboardActions } from '@/features/dashboard/state/actions/dashboard.actions';
 
 @Component({
   selector: 'app-main-dashboard',
   standalone: true,
-  imports: [CommonModule, DecimalPipe],
+  imports: [CommonModule],
   templateUrl: './main-dashboard.html',
   encapsulation: ViewEncapsulation.None,
   styleUrl: './main-dashboard.scss'
@@ -41,11 +39,7 @@ export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy 
     return t > 0 ? Math.round((this.activeUsers() / t) * 100) : 0;
   });
 
-  // ── Subscription plan ──────────────────────────────────────────────────────
-  plan = this.store.selectSignal(selectSubscriptionPlan);
-  loadingPlan = this.store.selectSignal(selectLoadingPlan);
-  adminPricing = this.store.selectSignal(selectAdminPricing);
-  opPricing = this.store.selectSignal(selectOperativePricing);
+
 
   // ── Derived company metrics ────────────────────────────────────────────────
   naturalCount    = computed(() => this.companies().filter(c => c.legalType === 'natural').length);
@@ -78,8 +72,7 @@ export class MainDashboardComponent implements OnInit, AfterViewInit, OnDestroy 
 
   ngOnInit(): void {
     this.store.dispatch(CompaniesActions.loadCompanies());
-    this.store.dispatch(UsersActions.loadUsers());
-    this.store.dispatch(DashboardActions.loadSubscriptionPlan());
+    this.store.dispatch(UsersActions.loadUsers());// Carga las licencias para mostrar en el dashboard o usarlas en otros cálculos futuros
   }
 
   ngAfterViewInit(): void {

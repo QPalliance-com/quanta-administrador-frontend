@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { SettingsComponent } from './settings';
 import { LicencesListComponent } from './components/licences/licences-list/licences-list';
-import { LicenceFormComponent } from './components/licences/licence-form/licence-form';
+import { HolidaysListComponent } from './pages/holidays-list/holidays-list';
 
 export const SETTINGS_ROUTES: Routes = [
     {
@@ -14,10 +14,15 @@ export const SETTINGS_ROUTES: Routes = [
                     {
                         path: 'list',
                         component: LicencesListComponent
-                    },
+                    }
+                ]
+            },
+            {
+                path: 'holidays',
+                children: [
                     {
-                        path: ':id',
-                        component: LicenceFormComponent
+                        path: 'list',
+                        component: HolidaysListComponent
                     }
                 ]
             }

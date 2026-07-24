@@ -1,11 +1,4 @@
 <div class="card">
-    <p-toolbar styleClass="mb-6">
-        <ng-template #start>
-            <p-button label="Nuevo plan" icon="pi pi-plus" (onClick)="openNew()" />
-        </ng-template>
-    </p-toolbar>
-
-    <!-- Menú flotante compartido para acciones de fila -->
     <p-menu #rowMenu [popup]="true" [model]="rowMenuItems" appendTo="body" />
 
     <p-table
@@ -27,9 +20,9 @@
         <ng-template #caption>
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="font-semibold text-xl">Planes de Suscripción</span>
+                    <span class="font-semibold text-xl">Licencias</span>
                     <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
-                        {{ (licences$ | async)?.length || 0 }} registros
+                        {{ licences.length }} registros
                     </span>
                 </div>
                 <input pInputText type="text" (input)="onGlobalFilter(licencesTable, $event)" placeholder="Buscar..." class="text-sm" />
@@ -49,11 +42,9 @@
         </ng-template>
 
         <ng-template pTemplate="body" let-licence>
-            <tr class="cursor-pointer group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 border-l-2 border-l-transparent hover:border-l-primary" (click)="navigateToEdit(licence.id)">
+            <tr class="group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 border-l-2 border-l-transparent hover:border-l-primary">
                 <td>
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium">{{ formatPlanName(licence.licences) }}</span>
-                    </div>
+                    <span class="font-medium">{{ formatPlanName(licence.licences) }}</span>
                 </td>
                 <td>
                     <span class="font-semibold text-primary">${{ licence.amountUsd | number: '1.2-2' }}</span>
@@ -83,7 +74,6 @@
                 <td [attr.colspan]="cols.length + 1" class="text-center text-surface-400 py-12">
                     <i class="pi pi-inbox text-4xl mb-3 block"></i>
                     <span>No hay planes registrados.</span>
-                    <button pButton label="Crear primer plan" icon="pi pi-plus" [text]="true" class="mt-2 block mx-auto" (click)="openNew()"></button>
                 </td>
             </tr>
         </ng-template>
@@ -94,48 +84,48 @@
     </div>
 </div>
 
-<p-confirmdialog />
+<p-dialog
+    [(visible)]="displayPriceDialog"
+    [modal]="true"
+    [style]="{ width: '360px' }"
+    [header]="'Actualizar precio — ' + (selectedLicence ? formatPlanName(selectedLicence.licences) : '')"
+    [draggable]="false"
+    [resizable]="false"
+>
+    <form [formGroup]="priceForm" (ngSubmit)="submitPrice()" class="flex flex-col gap-4 pt-2">
+        <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium text-surface-700 dark:text-surface-200">Precio USD</label>
+            <p-inputNumber
+                formControlName="amount"
+                mode="currency"
+                currency="USD"
+                locale="en-US"
+                [minFractionDigits]="2"
+                [min]="0"
+                class="w-full"
+                [ngClass]="{ 'ng-invalid ng-dirty': priceForm.get('amount')?.invalid && priceForm.get('amount')?.touched }"
+            />
+            <small *ngIf="priceForm.get('amount')?.invalid && priceForm.get('amount')?.touched" class="text-red-500">
+                Ingresa un monto válido
+            </small>
+        </div>
+    </form>
 
-<!-- Drawer lateral de detalle -->
-<p-drawer [(visible)]="displayViewDrawer" position="right" [style]="{ width: '420px' }" [modal]="true">
-    <ng-template #header>
-        <span class="font-semibold text-base flex items-center gap-2">
-            <i class="pi pi-credit-card text-primary"></i>
-            Detalle del plan
-        </span>
+    <ng-template #footer>
+        <p-button
+            label="Cancelar"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="displayPriceDialog = false"
+        />
+        <p-button
+            label="Guardar"
+            icon="pi pi-check"
+            [loading]="(loading$ | async) ?? false"
+            [disabled]="priceForm.invalid"
+            (onClick)="submitPrice()"
+        />
     </ng-template>
-
-    <div *ngIf="selectedLicence" class="flex flex-col gap-5 pt-2">
-        <div class="flex flex-col gap-1 pb-4 border-b border-surface-100 dark:border-surface-800">
-            <span class="text-xl font-bold text-surface-900 dark:text-surface-100">{{ formatPlanName(selectedLicence.licences) }}</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Monto USD</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">${{ selectedLicence.amountUsd | number: '1.2-2' }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Monto COP</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedLicence.amountCop | number: '1.0-0' }} COP</span>
-            </div>
-            <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Moneda</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedLicence.currency }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-                <span class="text-xs text-surface-400 uppercase tracking-wide">Tasa de Cambio</span>
-                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">{{ selectedLicence.exchangeRate | number: '1.6-6' }}</span>
-            </div>
-        </div>
-
-        <div class="flex gap-2 pt-4 border-t border-surface-100 dark:border-surface-800 mt-auto">
-            <button pButton label="Editar" icon="pi pi-pencil" class="flex-1" (click)="navigateToEdit(selectedLicence.id); displayViewDrawer = false"></button>
-            <button pButton label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="displayViewDrawer = false"></button>
-        </div>
-    </div>
-</p-drawer>
+</p-dialog>
 
 <p-toast />
-<p-confirmDialog />
-

@@ -11,39 +11,13 @@ import { environment } from '../../../environments/environment';
 export class LicenceService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.adminApiUrl}subscription/plans`;
+    private pricingUrl = `${environment.adminApiUrl}role-type-pricings`;
 
-    /**
-     * Obtiene todos los planes de suscripción/licencias
-     */
     getLicences(): Observable<ApiResponse<Licence[]>> {
         return this.http.get<ApiResponse<Licence[]>>(this.apiUrl);
     }
 
-    /**
-     * Obtiene un plan de suscripción por ID
-     */
-    getLicence(id: number): Observable<ApiResponse<Licence>> {
-        return this.http.get<ApiResponse<Licence>>(`${this.apiUrl}/${id}`);
-    }
-
-    /**
-     * Crea un nuevo plan de suscripción
-     */
-    createLicence(licence: Licence): Observable<ApiResponse<Licence>> {
-        return this.http.post<ApiResponse<Licence>>(this.apiUrl, licence);
-    }
-
-    /**
-     * Actualiza un plan de suscripción existente
-     */
-    updateLicence(id: number, licence: Licence): Observable<ApiResponse<Licence>> {
-        return this.http.put<ApiResponse<Licence>>(`${this.apiUrl}/${id}`, licence);
-    }
-
-    /**
-     * Elimina un plan de suscripción
-     */
-    deleteLicence(id: number): Observable<ApiResponse<null>> {
-        return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
+    updateLicencePrice(id: number, amount: number): Observable<ApiResponse<unknown>> {
+        return this.http.put<ApiResponse<unknown>>(this.pricingUrl, { id, data: { amount } });
     }
 }

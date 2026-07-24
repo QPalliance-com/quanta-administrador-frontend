@@ -28,6 +28,7 @@ export * from './interceptors/http-error.interceptor';
 export * from './interceptors/loading.interceptor';
 
 // Pipes
+export * from './pipes/date-colombia.pipe';
 export * from './pipes/location-name.pipe';
 
 // State

@@ -32,7 +32,7 @@ export class UsersEffects {
             ofType(UsersActions.loadUser),
             mergeMap(({ id }) =>
                 this.userService.getUser(id).pipe(
-                    map((response) => UsersActions.loadUserSuccess({ user: response.data as any })),
+                    map((response) => UsersActions.loadUserSuccess({ user: response.data })),
                     catchError((error) =>
                         of(UsersActions.loadUserFailure({ error: error.message }))
                     )
