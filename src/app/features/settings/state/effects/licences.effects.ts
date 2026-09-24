@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of, tap } from 'rxjs';
 import { MessageService } from 'primeng/api';
@@ -11,7 +10,6 @@ export class LicencesEffects {
     private actions$ = inject(Actions);
     private licenceService = inject(LicenceService);
     private messageService = inject(MessageService);
-    private router = inject(Router);
 
     loadLicences$ = createEffect(() =>
         this.actions$.pipe(
@@ -27,103 +25,29 @@ export class LicencesEffects {
         )
     );
 
-    loadLicence$ = createEffect(() =>
+    updateLicencePrice$ = createEffect(() =>
         this.actions$.pipe(
-            ofType(LicencesActions.loadLicence),
-            mergeMap(({ id }) =>
-                this.licenceService.getLicence(id).pipe(
-                    map((response) => LicencesActions.loadLicenceSuccess({ licence: response.data })),
+            ofType(LicencesActions.updateLicencePrice),
+            mergeMap(({ id, amount }) =>
+                this.licenceService.updateLicencePrice(id, amount).pipe(
+                    map(() => LicencesActions.updateLicencePriceSuccess({ id, amount })),
                     catchError((error) =>
-                        of(LicencesActions.loadLicenceFailure({ error: error.message }))
+                        of(LicencesActions.updateLicencePriceFailure({ error: error.message }))
                     )
                 )
             )
         )
     );
 
-    createLicence$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(LicencesActions.createLicence),
-            mergeMap(({ licence }) =>
-                this.licenceService.createLicence(licence).pipe(
-                    map((response) => LicencesActions.createLicenceSuccess({ licence: response.data })),
-                    catchError((error) =>
-                        of(LicencesActions.createLicenceFailure({ error: error.message }))
-                    )
-                )
-            )
-        )
-    );
-
-    createLicenceSuccess$ = createEffect(
+    updateLicencePriceSuccess$ = createEffect(
         () =>
             this.actions$.pipe(
-                ofType(LicencesActions.createLicenceSuccess),
+                ofType(LicencesActions.updateLicencePriceSuccess),
                 tap(() => {
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Éxito',
-                        detail: 'Licencia creada correctamente'
-                    });
-                    this.router.navigate(['/settings/licences/list']);
-                })
-            ),
-        { dispatch: false }
-    );
-
-    updateLicence$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(LicencesActions.updateLicence),
-            mergeMap(({ id, licence }) =>
-                this.licenceService.updateLicence(id, licence).pipe(
-                    map((response) => LicencesActions.updateLicenceSuccess({ licence: response.data })),
-                    catchError((error) =>
-                        of(LicencesActions.updateLicenceFailure({ error: error.message }))
-                    )
-                )
-            )
-        )
-    );
-
-    updateLicenceSuccess$ = createEffect(
-        () =>
-            this.actions$.pipe(
-                ofType(LicencesActions.updateLicenceSuccess),
-                tap(() => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Licencia actualizada correctamente'
-                    });
-                    this.router.navigate(['/settings/licences/list']);
-                })
-            ),
-        { dispatch: false }
-    );
-
-    deleteLicence$ = createEffect(() =>
-        this.actions$.pipe(
-            ofType(LicencesActions.deleteLicence),
-            mergeMap(({ id }) =>
-                this.licenceService.deleteLicence(id).pipe(
-                    map(() => LicencesActions.deleteLicenceSuccess({ id })),
-                    catchError((error) =>
-                        of(LicencesActions.deleteLicenceFailure({ error: error.message }))
-                    )
-                )
-            )
-        )
-    );
-
-    deleteLicenceSuccess$ = createEffect(
-        () =>
-            this.actions$.pipe(
-                ofType(LicencesActions.deleteLicenceSuccess),
-                tap(() => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Licencia eliminada correctamente'
+                        detail: 'Precio actualizado correctamente'
                     });
                 })
             ),
@@ -135,10 +59,7 @@ export class LicencesEffects {
             this.actions$.pipe(
                 ofType(
                     LicencesActions.loadLicencesFailure,
-                    LicencesActions.loadLicenceFailure,
-                    LicencesActions.createLicenceFailure,
-                    LicencesActions.updateLicenceFailure,
-                    LicencesActions.deleteLicenceFailure
+                    LicencesActions.updateLicencePriceFailure
                 ),
                 tap(({ error }) => {
                     this.messageService.add({

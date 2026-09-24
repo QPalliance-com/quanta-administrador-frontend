@@ -1,0 +1,152 @@
+<div class="card">
+    <p-toolbar styleClass="mb-6">
+        <ng-template #start>
+            <p-button label="Agregar festivo" icon="pi pi-plus" (onClick)="openCreateDrawer()" />
+            <p-button label="Importar CSV" icon="pi pi-upload" severity="secondary" [outlined]="true" class="ml-2" (onClick)="openImportDialog()" />
+        </ng-template>
+        <ng-template #end>
+            <div class="flex items-center gap-1">
+                <button
+                    pButton
+                    icon="pi pi-chevron-left"
+                    severity="secondary"
+                    [text]="true"
+                    [rounded]="true"
+                    size="small"
+                    (click)="previousYear()"
+                    pTooltip="Año anterior"
+                    tooltipPosition="top"
+                ></button>
+                <span class="font-medium text-lg w-16 text-center">{{ currentYear }}</span>
+                <button
+                    pButton
+                    icon="pi pi-chevron-right"
+                    severity="secondary"
+                    [text]="true"
+                    [rounded]="true"
+                    size="small"
+                    (click)="nextYear()"
+                    pTooltip="Año siguiente"
+                    tooltipPosition="top"
+                ></button>
+            </div>
+        </ng-template>
+    </p-toolbar>
+
+    <p-message *ngIf="alertLowCount$ | async" severity="warn" styleClass="w-full mb-4">
+        El calendario del año {{ currentYear }} tiene menos de 5 días no laborables activos. Recuerda mantenerlo actualizado para que el costeo sea preciso.
+    </p-message>
+
+    <p-selectbutton
+        class="mb-4 inline-block"
+        [options]="filterOptions"
+        [(ngModel)]="statusFilter"
+        (onChange)="onFilterChange($event.value)"
+        optionLabel="label"
+        optionValue="value"
+    />
+
+    <!-- Menú flotante compartido para acciones de fila -->
+    <p-menu #rowMenu [popup]="true" [model]="rowMenuItems" appendTo="body" />
+
+    <ng-container *ngIf="error$ | async as error; else tableTpl">
+        <p-message severity="error" styleClass="w-full">
+            <div class="flex items-center justify-between gap-3 w-full">
+                <span>{{ error }}</span>
+                <button pButton label="Reintentar" icon="pi pi-refresh" size="small" severity="secondary" [outlined]="true" (click)="retry()"></button>
+            </div>
+        </p-message>
+    </ng-container>
+
+    <ng-template #tableTpl>
+        <p-table
+            *ngIf="holidays$ | async as holidays"
+            #holidaysTable
+            [value]="holidays"
+            [loading]="(loading$ | async) ?? false"
+            [paginator]="holidays.length > 15"
+            [globalFilterFields]="filterFields"
+            [rows]="15"
+            [resizableColumns]="true"
+            [scrollable]="true"
+            scrollHeight="flex"
+            [showCurrentPageReport]="true"
+            [tableStyle]="{ 'min-width': '40rem' }"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+            [sortField]="'holidayDate'"
+            [sortOrder]="1"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template #caption>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="font-semibold text-xl">Días No Laborables</span>
+                        <span
+                            *ngIf="totalActiveInYear$ | async as total"
+                            class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300"
+                        >
+                            {{ total }} activos en {{ currentYear }}
+                        </span>
+                    </div>
+                    <input pInputText type="text" (input)="onGlobalFilter(holidaysTable, $event)" placeholder="Buscar..." class="text-sm" />
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="holidayDate">Fecha <p-sortIcon field="holidayDate" /></th>
+                    <th pSortableColumn="name">Nombre <p-sortIcon field="name" /></th>
+                    <th>País</th>
+                    <th pSortableColumn="isActive">Estado <p-sortIcon field="isActive" /></th>
+                    <th style="width: 3rem"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-holiday>
+                <tr
+                    class="cursor-pointer group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10 border-l-2 border-l-transparent hover:border-l-primary"
+                    [class.opacity-60]="!holiday.isActive"
+                    (click)="openEditDrawer(holiday)"
+                >
+                    <td>{{ holiday.holidayDate | dateColombia }}</td>
+                    <td class="font-medium">{{ holiday.name }}</td>
+                    <td><p-tag value="CO" severity="info" /></td>
+                    <td>
+                        <p-tag [value]="holiday.isActive ? 'Activo' : 'Inactivo'" [severity]="holiday.isActive ? 'success' : 'secondary'" />
+                    </td>
+                    <td class="text-center">
+                        <button
+                            pButton
+                            icon="pi pi-ellipsis-v"
+                            severity="secondary"
+                            [text]="true"
+                            [rounded]="true"
+                            size="small"
+                            class="opacity-0 group-hover/row:opacity-100 transition-opacity"
+                            (click)="openRowMenu($event, holiday)"
+                            pTooltip="Más opciones"
+                            tooltipPosition="left"
+                        ></button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="text-center text-surface-400 py-12">
+                        <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                        <span>No hay días no laborables registrados para {{ currentYear }}.</span>
+                        <button pButton label="Agregar primer festivo" icon="pi pi-plus" [text]="true" class="mt-2 block mx-auto" (click)="openCreateDrawer()"></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </ng-template>
+</div>
+
+<app-holiday-drawer [visible]="displayDrawer" [mode]="drawerMode" [holiday]="selectedHoliday" (closed)="displayDrawer = false" />
+
+<app-holiday-import-dialog [(visible)]="displayImportDialog" />
+
+<p-confirmdialog />
+<p-toast />

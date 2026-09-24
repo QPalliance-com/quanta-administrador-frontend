@@ -374,6 +374,70 @@
             </div>
         </fieldset>
 
+        <!-- DATOS DE FACTURACIÓN -->
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Datos de facturación
+            </legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="fullNameBilling" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Nombre completo para facturación
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="fullNameBilling"
+                        formControlName="fullNameBilling"
+                        placeholder="Nombre que aparece en reportes"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="emailBilling" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Correo de facturación
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="emailBilling"
+                        formControlName="emailBilling"
+                        type="email"
+                        placeholder="facturacion@empresa.com"
+                        [class.ng-invalid]="isInvalid('emailBilling')"
+                        [class.ng-dirty]="isInvalid('emailBilling')"
+                    />
+                    <small *ngIf="isInvalid('emailBilling')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('emailBilling') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="contactPhoneBilling" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Teléfono de contacto para facturación
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="contactPhoneBilling"
+                        formControlName="contactPhoneBilling"
+                        type="tel"
+                        placeholder="300 000 0000"
+                    />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="postalCode" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Código postal
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="postalCode"
+                        formControlName="postalCode"
+                        placeholder="Ej. 110111"
+                    />
+                </div>
+            </div>
+        </fieldset>
+
         <!-- BOTONES -->
         <div class="flex items-center justify-between pt-2 border-t border-surface-100 dark:border-surface-800">
             <small class="text-surface-400 flex items-center gap-1">

@@ -56,6 +56,11 @@ export interface CompanyRequest {
     lastNames?: string;
     phone?: string;
     onBoardingComplete: boolean;
+     postalCode?: string;
+    fullNameBilling?: string; // nombre completo para facturación, se imprime en reportes
+    emailBilling?: string; // email para facturación, se imprime en reportes
+    contactPhoneBilling?: string; // teléfono de contacto para facturación, se imprime en reportes
+    collaboratorsCount?: number; // asignado automáticamente desde Talento Humano
 }
 
 /**

@@ -17,7 +17,7 @@ export class UserService {
         return this.http.get<ApiResponse<User[]>>(this.baseUrl);
     }
 
-    getUser(id: number): Observable<ApiResponse<User | undefined>> {
+    getUser(id: number): Observable<ApiResponse<User>> {
         return this.http.get<ApiResponse<User>>(`${this.baseUrl}/${id}`);
     }
 

@@ -5,7 +5,6 @@ import { LicencesActions } from '../actions/licences.actions';
 
 export interface LicencesState {
     licences: EntityState<Licence>;
-    selectedLicence: Licence | null;
     loading: boolean;
     error: string | null;
 }
@@ -14,7 +13,6 @@ export const licencesAdapter: EntityAdapter<Licence> = createEntityAdapter<Licen
 
 export const initialState: LicencesState = {
     licences: licencesAdapter.getInitialState(),
-    selectedLicence: null,
     loading: false,
     error: null
 };
@@ -30,40 +28,13 @@ export const licencesReducer = createReducer(
     })),
     on(LicencesActions.loadLicencesFailure, (state, { error }) => ({ ...state, error, loading: false })),
 
-    on(LicencesActions.loadLicence, (state) => ({ ...state, loading: true, error: null })),
-    on(LicencesActions.loadLicenceSuccess, (state, { licence }) => ({
+    on(LicencesActions.updateLicencePrice, (state) => ({ ...state, loading: true, error: null })),
+    on(LicencesActions.updateLicencePriceSuccess, (state, { id, amount }) => ({
         ...state,
-        selectedLicence: licence,
+        licences: licencesAdapter.updateOne({ id, changes: { amountUsd: amount } }, state.licences),
         loading: false
     })),
-    on(LicencesActions.loadLicenceFailure, (state, { error }) => ({ ...state, error, loading: false })),
+    on(LicencesActions.updateLicencePriceFailure, (state, { error }) => ({ ...state, error, loading: false })),
 
-    on(LicencesActions.createLicence, (state) => ({ ...state, loading: true, error: null })),
-    on(LicencesActions.createLicenceSuccess, (state, { licence }) => ({
-        ...state,
-        licences: licencesAdapter.addOne(licence, state.licences),
-        loading: false
-    })),
-    on(LicencesActions.createLicenceFailure, (state, { error }) => ({ ...state, error, loading: false })),
-
-    on(LicencesActions.updateLicence, (state) => ({ ...state, loading: true, error: null })),
-    on(LicencesActions.updateLicenceSuccess, (state, { licence }) => ({
-        ...state,
-        licences: licencesAdapter.updateOne({ id: licence.id, changes: licence }, state.licences),
-        selectedLicence: state.selectedLicence?.id === licence.id ? licence : state.selectedLicence,
-        loading: false
-    })),
-    on(LicencesActions.updateLicenceFailure, (state, { error }) => ({ ...state, error, loading: false })),
-
-    on(LicencesActions.deleteLicence, (state) => ({ ...state, loading: true, error: null })),
-    on(LicencesActions.deleteLicenceSuccess, (state, { id }) => ({
-        ...state,
-        licences: licencesAdapter.removeOne(id, state.licences),
-        selectedLicence: state.selectedLicence?.id === id ? null : state.selectedLicence,
-        loading: false
-    })),
-    on(LicencesActions.deleteLicenceFailure, (state, { error }) => ({ ...state, error, loading: false })),
-
-    on(LicencesActions.clearSelectedLicence, (state) => ({ ...state, selectedLicence: null })),
     on(LicencesActions.clearError, (state) => ({ ...state, error: null }))
 );

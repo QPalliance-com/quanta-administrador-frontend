@@ -10,6 +10,8 @@ import { RouterModule } from '@angular/router';
 import { SkeletonModule } from 'primeng/skeleton';
 import { AuthService } from '@/core/services/auth.service';
 import { UserService } from '@/core/services/user.service';
+import { Store } from '@ngrx/store';
+import * as AuthActions from '@/features/auth/state/actions/auth.actions';
 import { User } from '@/core/models/user.model';
 
 @Component({
@@ -36,6 +38,7 @@ export class MenuprofileComponent implements OnInit, OnDestroy {
     _layoutService = inject(LayoutService);
     private authService = inject(AuthService);
     private userService = inject(UserService);
+    private store = inject(Store);
 
     renderer = inject(Renderer2);
     el = inject(ElementRef);
@@ -130,7 +133,7 @@ export class MenuprofileComponent implements OnInit, OnDestroy {
     }
 
     logout() {
-        this.authService.logout().subscribe();
+        this.store.dispatch(AuthActions.logout());
     }
 
     toggleMenu() {

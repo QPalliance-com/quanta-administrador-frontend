@@ -113,7 +113,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
     }
 
     cancel(): void {
-        this.router.navigate(['/users']);
+        this.router.navigate(['/users/list']);
     }
 
     ngOnDestroy(): void {
