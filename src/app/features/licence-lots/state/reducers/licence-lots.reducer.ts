@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
-import { LicenceLot, ProfileSummary } from '@/core/models';
+import { LicenceLot, ProfileSummary, PseCheckoutResult } from '@/core/models';
 import { LicenceLotsActions } from '../actions/licence-lots.actions';
 
 export interface LicenceLotsState {
@@ -8,7 +8,9 @@ export interface LicenceLotsState {
     profileSummary: ProfileSummary[];
     companyId: number | null;
     loading: boolean;
-    saving: boolean; // mutaciones (crear, agregar, extender, migrar, generar link)
+    saving: boolean; // mutaciones (crear, agregar, extender, migrar)
+    pseCheckout: PseCheckoutResult | null; // último link PSE generado, se limpia al abrir el drawer
+    pseLoading: boolean;
     error: string | null;
 }
 
@@ -20,6 +22,8 @@ export const initialState: LicenceLotsState = {
     companyId: null,
     loading: false,
     saving: false,
+    pseCheckout: null,
+    pseLoading: false,
     error: null
 };
 
@@ -61,5 +65,10 @@ export const licenceLotsReducer = createReducer(
         LicenceLotsActions.scheduleMigrationSuccess,
         LicenceLotsActions.scheduleMigrationFailure,
         (state) => ({ ...state, saving: false })
-    )
+    ),
+
+    on(LicenceLotsActions.generatePseLink, (state) => ({ ...state, pseLoading: true, pseCheckout: null })),
+    on(LicenceLotsActions.generatePseLinkSuccess, (state, { result }) => ({ ...state, pseLoading: false, pseCheckout: result })),
+    on(LicenceLotsActions.generatePseLinkFailure, (state) => ({ ...state, pseLoading: false })),
+    on(LicenceLotsActions.clearPseLink, (state) => ({ ...state, pseCheckout: null }))
 );

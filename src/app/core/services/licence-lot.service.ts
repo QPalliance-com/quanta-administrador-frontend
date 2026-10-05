@@ -9,7 +9,9 @@ import {
     CreatedLicenceLot,
     ExtendLicenceLotDto,
     ExtendLicenceLotResult,
+    GeneratePseLinkDto,
     LicenceLotList,
+    PseCheckoutResult,
     ScheduleMigrationDto,
     ScheduleMigrationResult
 } from '@/core/models';
@@ -40,6 +42,10 @@ export class LicenceLotService {
 
     extend(companyId: number, lotId: number, payload: ExtendLicenceLotDto): Observable<ApiResponse<ExtendLicenceLotResult>> {
         return this.http.put<ApiResponse<ExtendLicenceLotResult>>(`${this.lotsUrl(companyId)}/${lotId}/extend`, { data: payload });
+    }
+
+    generatePseCheckout(companyId: number, payload: GeneratePseLinkDto): Observable<ApiResponse<PseCheckoutResult>> {
+        return this.http.post<ApiResponse<PseCheckoutResult>>(`${this.lotsUrl(companyId)}/checkout-pse`, { data: payload });
     }
 
     scheduleMigration(companyId: number, lotId: number, payload: ScheduleMigrationDto): Observable<ApiResponse<ScheduleMigrationResult>> {

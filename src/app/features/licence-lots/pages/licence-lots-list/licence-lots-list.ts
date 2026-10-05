@@ -33,6 +33,7 @@ import { LotActivationDrawerComponent } from '../../components/lot-activation-dr
 import { AddLicencesDrawerComponent } from '../../components/add-licences-drawer/add-licences-drawer';
 import { ExtendLotDialogComponent } from '../../components/extend-lot-dialog/extend-lot-dialog';
 import { MigrationDialogComponent } from '../../components/migration-dialog/migration-dialog';
+import { PseLinkDrawerComponent } from '../../components/pse-link-drawer/pse-link-drawer';
 import { PROFILE_LABELS, PROFILE_OPTIONS, STATUS_META, daysLeftClass, usagePercent } from '../../utils/licence-lot.utils';
 
 type StatusFilter = LicenceLotStatus | 'all';
@@ -63,7 +64,8 @@ type ProfileFilter = LicenceProfile | 'all';
         LotActivationDrawerComponent,
         AddLicencesDrawerComponent,
         ExtendLotDialogComponent,
-        MigrationDialogComponent
+        MigrationDialogComponent,
+        PseLinkDrawerComponent
     ],
     providers: [MessageService, ConfirmationService]
 })
@@ -96,6 +98,7 @@ export class LicenceLotsListComponent implements OnInit {
     displayAddLicencesDrawer = false;
     displayExtendDialog = false;
     displayMigrationDialog = false;
+    displayPseDrawer = false;
     selectedLot: LicenceLot | null = null;
     rowMenuItems: MenuItem[] = [];
 
@@ -116,6 +119,7 @@ export class LicenceLotsListComponent implements OnInit {
     loading$ = this.store.select(selectLicenceLotsLoading);
     error$ = this.store.select(selectLicenceLotsError);
     company$ = this.store.select(selectCompanyById(this.companyId));
+    billingEmail$ = this.company$.pipe(map((company) => company?.emailBilling || company?.email || null));
 
     ngOnInit(): void {
         this.store.dispatch(CatalogsActions.load());
@@ -136,6 +140,10 @@ export class LicenceLotsListComponent implements OnInit {
 
     openActivationDrawer(): void {
         this.displayActivationDrawer = true;
+    }
+
+    openPseDrawer(): void {
+        this.displayPseDrawer = true;
     }
 
     openAddLicencesDrawer(): void {

@@ -1,4 +1,4 @@
-import { createActionGroup, props } from '@ngrx/store';
+import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import {
     AddLicencesDto,
     AddLicencesResult,
@@ -6,7 +6,9 @@ import {
     CreatedLicenceLot,
     ExtendLicenceLotDto,
     ExtendLicenceLotResult,
+    GeneratePseLinkDto,
     LicenceLotList,
+    PseCheckoutResult,
     ScheduleMigrationDto,
     ScheduleMigrationResult
 } from '@/core/models';
@@ -32,6 +34,11 @@ export const LicenceLotsActions = createActionGroup({
 
         'Schedule Migration': props<{ companyId: number; lotId: number; payload: ScheduleMigrationDto }>(),
         'Schedule Migration Success': props<{ companyId: number; result: ScheduleMigrationResult }>(),
-        'Schedule Migration Failure': props<{ error: string }>()
+        'Schedule Migration Failure': props<{ error: string }>(),
+
+        'Generate Pse Link': props<{ companyId: number; payload: GeneratePseLinkDto }>(),
+        'Generate Pse Link Success': props<{ result: PseCheckoutResult }>(),
+        'Generate Pse Link Failure': props<{ error: string }>(),
+        'Clear Pse Link': emptyProps()
     }
 });

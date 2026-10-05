@@ -135,3 +135,17 @@ export interface ScheduleMigrationResult {
     scheduledMigrationTo: PaymentTypeRef;
     effectiveAt: string;
 }
+
+export interface GeneratePseLinkDto {
+    roleTypeProfile: LicenceProfile;
+    userCount: number;
+    periodCatalogId: number;
+}
+
+export interface PseCheckoutResult {
+    paymentUrl: string;
+    preferenceId: string;
+    totalAmount: number;
+    discountApplied: number;
+    period: PeriodRef;
+}

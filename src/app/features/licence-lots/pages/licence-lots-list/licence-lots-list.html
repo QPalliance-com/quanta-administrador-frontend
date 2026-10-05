@@ -3,6 +3,7 @@
         <ng-template #start>
             <p-button label="Activar licencia" icon="pi pi-plus" (onClick)="openActivationDrawer()" />
             <p-button label="Agregar licencias" icon="pi pi-user-plus" severity="secondary" [outlined]="true" class="ml-2" (onClick)="openAddLicencesDrawer()" />
+            <p-button label="Generar link PSE" icon="pi pi-link" severity="secondary" [outlined]="true" class="ml-2" (onClick)="openPseDrawer()" />
         </ng-template>
         <ng-template #end>
             <p-button label="Volver a compañías" icon="pi pi-arrow-left" severity="secondary" [text]="true" routerLink="/companies/list" />
@@ -178,7 +179,14 @@
 
 <app-add-licences-drawer [visible]="displayAddLicencesDrawer" [companyId]="companyId" (closed)="displayAddLicencesDrawer = false" />
 
-<app-extend-lot-dialog [visible]="displayExtendDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
+<app-pse-link-drawer
+    [visible]="displayPseDrawer"
+    [companyId]="companyId"
+    [recipientEmail]="billingEmail$ | async"
+    (closed)="displayPseDrawer = false"
+/>
+
+<app-extend-lot-dialog[visible]="displayExtendDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
 
 <app-migration-dialog [visible]="displayMigrationDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayMigrationDialog = false" />
 

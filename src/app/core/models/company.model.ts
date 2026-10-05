@@ -10,6 +10,7 @@ export interface Company {
     numberIdentification: string;
     verificationDigit: string;
     email: string;
+    emailBilling?: string; // email para facturación
     rutFileUrl?: string; // archivo cargado
     rutUrl?: string;
     certificateFile?: string; // certificado de existencia y representación legal

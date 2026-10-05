@@ -1,0 +1,143 @@
+<p-drawer [visible]="visible" (visibleChange)="onVisibleChange($event)" position="right" [modal]="true" [style]="{ width: '550px' }">
+    <ng-template #header>
+        <span class="font-semibold text-base flex items-center gap-2">
+            <i class="pi pi-link text-primary"></i>
+            Generar link de pago PSE
+        </span>
+    </ng-template>
+
+    <div class="flex flex-col gap-5 pt-2 h-full">
+        <p-message *ngIf="inlineError" severity="error" [text]="inlineError" styleClass="w-full" />
+
+        <!-- Resultado: reemplaza al formulario una vez generado el link -->
+        <ng-container *ngIf="checkout$ | async as checkout; else formTpl">
+            <p-message severity="success" styleClass="w-full">Link generado. Compártelo con el cliente para que complete el pago.</p-message>
+
+            <section class="flex flex-col gap-2" aria-label="Enlace de pago">
+                <span class="text-sm font-medium text-surface-700 dark:text-surface-200">Enlace de pago</span>
+                <a
+                    [href]="checkout.paymentUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary underline break-all text-sm"
+                >{{ checkout.paymentUrl }}</a>
+                <div class="flex flex-wrap gap-2">
+                    <p-button
+                        [label]="copied ? 'Copiado' : 'Copiar link'"
+                        [icon]="copied ? 'pi pi-check' : 'pi pi-copy'"
+                        severity="secondary"
+                        [outlined]="true"
+                        type="button"
+                        (onClick)="copyLink(checkout.paymentUrl)"
+                    />
+                    <a
+                        *ngIf="mailtoHref(checkout.paymentUrl, form.value.roleTypeProfile ? profileLabels[form.value.roleTypeProfile] : '') as href"
+                        pButton
+                        [href]="href"
+                        label="Enviar por email"
+                        icon="pi pi-envelope"
+                        class="p-button-secondary p-button-outlined"
+                    ></a>
+                </div>
+                <span class="sr-only" role="status" aria-live="polite">{{ copied ? 'Enlace copiado al portapapeles' : '' }}</span>
+            </section>
+
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm border border-surface-200 dark:border-surface-700 rounded-xl p-4 m-0">
+                <dt class="text-surface-600 dark:text-surface-300">Monto total</dt>
+                <dd class="m-0 font-semibold text-right">{{ formatCop(checkout.totalAmount) }}</dd>
+
+                <ng-container *ngIf="checkout.discountApplied > 0">
+                    <dt class="text-surface-600 dark:text-surface-300">Descuento aplicado</dt>
+                    <dd class="m-0 font-medium text-right">{{ checkout.discountApplied }}%</dd>
+                </ng-container>
+
+                <dt class="text-surface-600 dark:text-surface-300">Periodo</dt>
+                <dd class="m-0 font-medium text-right">{{ checkout.period.displayName }} ({{ checkout.period.durationDays }} días)</dd>
+            </dl>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-100 dark:border-surface-800 mt-auto">
+                <p-button label="Generar otro link" severity="secondary" [outlined]="true" type="button" (onClick)="generateAnother()" />
+                <p-button label="Cerrar" icon="pi pi-times" type="button" (onClick)="cancel()" />
+            </div>
+        </ng-container>
+
+        <ng-template #formTpl>
+            <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5 h-full">
+                <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+                    <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">Licencias a pagar</legend>
+                    <div class="flex flex-col gap-4 mt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1">
+                                <label for="roleTypeProfile" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                                    Perfil <span class="text-red-500">*</span>
+                                </label>
+                                <p-select
+                                    fluid
+                                    inputId="roleTypeProfile"
+                                    formControlName="roleTypeProfile"
+                                    [options]="profileOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Seleccionar perfil"
+                                    appendTo="body"
+                                    [class.ng-invalid]="isInvalid('roleTypeProfile')"
+                                    [class.ng-dirty]="isInvalid('roleTypeProfile')"
+                                />
+                                <small *ngIf="isInvalid('roleTypeProfile')" class="text-red-500 flex items-center gap-1">
+                                    <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('roleTypeProfile') }}
+                                </small>
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <label for="userCount" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                                    Cantidad de usuarios <span class="text-red-500">*</span>
+                                </label>
+                                <p-inputnumber
+                                    fluid
+                                    inputId="userCount"
+                                    formControlName="userCount"
+                                    [min]="1"
+                                    [showButtons]="true"
+                                    [class.ng-invalid]="isInvalid('userCount')"
+                                    [class.ng-dirty]="isInvalid('userCount')"
+                                />
+                                <small *ngIf="isInvalid('userCount')" class="text-red-500 flex items-center gap-1">
+                                    <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('userCount') }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-1">
+                            <label for="periodCatalogId" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                                Periodo <span class="text-red-500">*</span>
+                            </label>
+                            <p-select
+                                fluid
+                                inputId="periodCatalogId"
+                                formControlName="periodCatalogId"
+                                [options]="(periods$ | async) ?? []"
+                                optionLabel="displayName"
+                                optionValue="id"
+                                placeholder="Seleccionar periodo"
+                                appendTo="body"
+                                [class.ng-invalid]="isInvalid('periodCatalogId')"
+                                [class.ng-dirty]="isInvalid('periodCatalogId')"
+                            />
+                            <small *ngIf="isInvalid('periodCatalogId')" class="text-red-500 flex items-center gap-1">
+                                <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('periodCatalogId') }}
+                            </small>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="flex items-center justify-between pt-2 border-t border-surface-100 dark:border-surface-800 mt-auto">
+                    <small class="text-surface-500 flex items-center gap-1"><span class="text-red-500">*</span> Campos requeridos</small>
+                    <div class="flex gap-2">
+                        <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
+                        <p-button label="Generar link" icon="pi pi-link" type="submit" [loading]="(loading$ | async) ?? false" />
+                    </div>
+                </div>
+            </form>
+        </ng-template>
+    </div>
+</p-drawer>

@@ -144,7 +144,22 @@ export class LicenceLotsEffects {
         )
     );
 
-    // Los errores de creación, agregado, extensión y migración se muestran dentro del drawer/dialog, no como toast
+    // Generar el link no crea ningún lote, así que no hay listado que recargar
+    generatePseLink$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.generatePseLink),
+            exhaustMap(({ companyId, payload }) =>
+                this.licenceLotService.generatePseCheckout(companyId, payload).pipe(
+                    map((response) => LicenceLotsActions.generatePseLinkSuccess({ result: response.data })),
+                    catchError((error: HttpErrorResponse) =>
+                        of(LicenceLotsActions.generatePseLinkFailure({ error: this.extractError(error) }))
+                    )
+                )
+            )
+        )
+    );
+
+    // Los errores de creación, agregado, extensión, migración y link PSE se muestran dentro del drawer/dialog, no como toast
     failure$ = createEffect(
         () =>
             this.actions$.pipe(
