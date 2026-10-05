@@ -50,7 +50,7 @@ export class PseLinkDrawerComponent implements OnChanges, OnDestroy {
     @Output() closed = new EventEmitter<void>();
 
     readonly profileOptions = PROFILE_OPTIONS;
-    readonly profileLabels = PROFILE_LABELS;
+    readonly profileLabels: Record<string, string> = PROFILE_LABELS;
     periods$ = this.store.select(selectPeriods);
     checkout$ = this.store.select(selectPseCheckout);
     loading$ = this.store.select(selectPseLoading);

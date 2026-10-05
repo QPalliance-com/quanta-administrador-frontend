@@ -50,7 +50,7 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
     private store = inject(Store);
     private destroy$ = new Subject<void>();
 
-    readonly profileLabels = PROFILE_LABELS;
+    readonly profileLabels: Record<string, string> = PROFILE_LABELS;
     readonly urgencyMeta = URGENCY_META;
     readonly daysLeftClass = daysLeftClass;
     readonly skeletonRows = Array.from({ length: 4 });

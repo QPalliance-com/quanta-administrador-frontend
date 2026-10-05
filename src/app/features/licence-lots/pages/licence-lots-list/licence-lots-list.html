@@ -154,7 +154,7 @@
                                 size="small"
                                 class="opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 transition-opacity"
                                 [attr.aria-label]="'Acciones del lote ' + lot.id"
-                                (click)="openRowMenu(, lot)"
+                                (click)="openRowMenu($event, lot)"
                                 pTooltip="Más opciones"
                                 tooltipPosition="left"
                             ></button>
@@ -186,7 +186,7 @@
     (closed)="displayPseDrawer = false"
 />
 
-<app-extend-lot-dialog[visible]="displayExtendDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
+<app-extend-lot-dialog [visible]="displayExtendDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
 
 <app-migration-dialog [visible]="displayMigrationDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayMigrationDialog = false" />
 

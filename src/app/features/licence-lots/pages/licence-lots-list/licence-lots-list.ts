@@ -34,7 +34,14 @@ import { AddLicencesDrawerComponent } from '../../components/add-licences-drawer
 import { ExtendLotDialogComponent } from '../../components/extend-lot-dialog/extend-lot-dialog';
 import { MigrationDialogComponent } from '../../components/migration-dialog/migration-dialog';
 import { PseLinkDrawerComponent } from '../../components/pse-link-drawer/pse-link-drawer';
-import { PROFILE_LABELS, PROFILE_OPTIONS, STATUS_META, daysLeftClass, usagePercent } from '../../utils/licence-lot.utils';
+import {
+    PROFILE_LABELS,
+    PROFILE_OPTIONS,
+    STATUS_META,
+    TagSeverity,
+    daysLeftClass,
+    usagePercent
+} from '../../utils/licence-lot.utils';
 
 type StatusFilter = LicenceLotStatus | 'all';
 type ProfileFilter = LicenceProfile | 'all';
@@ -77,8 +84,9 @@ export class LicenceLotsListComponent implements OnInit {
 
     companyId = Number(this.route.snapshot.paramMap.get('companyId'));
 
-    readonly profileLabels = PROFILE_LABELS;
-    readonly statusMeta = STATUS_META;
+    // Se ensanchan a string: en la tabla `let-lot` es `any` y strict templates no deja indexar un Record<union>
+    readonly profileLabels: Record<string, string> = PROFILE_LABELS;
+    readonly statusMeta: Record<string, { label: string; severity: TagSeverity }> = STATUS_META;
     readonly daysLeftClass = daysLeftClass;
     readonly usagePercent = usagePercent;
     readonly skeletonRows = Array.from({ length: 5 });
