@@ -50,7 +50,38 @@ export class LicenceLotsEffects {
         )
     );
 
-    // Los errores de creación se muestran dentro del drawer, no como toast
+    addLicences$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.addLicences),
+            exhaustMap(({ companyId, payload }) =>
+                this.licenceLotService.addLicences(companyId, payload).pipe(
+                    map((response) => LicenceLotsActions.addLicencesSuccess({ companyId, result: response.data })),
+                    catchError((error: HttpErrorResponse) =>
+                        of(LicenceLotsActions.addLicencesFailure({ error: this.extractError(error) }))
+                    )
+                )
+            )
+        )
+    );
+
+    addLicencesSuccess$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.addLicencesSuccess),
+            tap(({ result }) =>
+                this.messageService.add({
+                    severity: 'success',
+                    summary: result.action === 'merged' ? 'Licencias agregadas' : 'Nuevo lote creado',
+                    detail:
+                        result.action === 'merged'
+                            ? `Se agregaron ${(result.newUserCount ?? 0) - (result.previousUserCount ?? 0)} licencias al lote #${result.lotId}`
+                            : `Se creó el lote #${result.lotId} con ${result.userCount} licencias porque el periodo difiere del lote vigente`
+                })
+            ),
+            map(({ companyId }) => LicenceLotsActions.loadList({ companyId }))
+        )
+    );
+
+    // Los errores de creación y de agregado se muestran dentro del drawer, no como toast
     failure$ = createEffect(
         () =>
             this.actions$.pipe(

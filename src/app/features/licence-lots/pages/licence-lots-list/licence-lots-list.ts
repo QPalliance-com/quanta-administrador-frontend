@@ -29,6 +29,7 @@ import {
     selectProfileSummary
 } from '../../state/selectors/licence-lots.selectors';
 import { LotActivationDrawerComponent } from '../../components/lot-activation-drawer/lot-activation-drawer';
+import { AddLicencesDrawerComponent } from '../../components/add-licences-drawer/add-licences-drawer';
 import { PROFILE_LABELS, PROFILE_OPTIONS, STATUS_META, daysLeftClass, usagePercent } from '../../utils/licence-lot.utils';
 
 type StatusFilter = LicenceLotStatus | 'all';
@@ -55,7 +56,8 @@ type ProfileFilter = LicenceProfile | 'all';
         TooltipModule,
         ConfirmDialogModule,
         DateColombiaPipe,
-        LotActivationDrawerComponent
+        LotActivationDrawerComponent,
+        AddLicencesDrawerComponent
     ],
     providers: [MessageService, ConfirmationService]
 })
@@ -85,6 +87,7 @@ export class LicenceLotsListComponent implements OnInit {
     statusFilter: StatusFilter = 'all';
     profileFilter: ProfileFilter = 'all';
     displayActivationDrawer = false;
+    displayAddLicencesDrawer = false;
 
     // El filtrado es del lado del cliente: el store conserva todos los lotes de la empresa,
     // que es lo que necesita F03 para detectar si hay un lote fusionable.
@@ -121,6 +124,10 @@ export class LicenceLotsListComponent implements OnInit {
 
     openActivationDrawer(): void {
         this.displayActivationDrawer = true;
+    }
+
+    openAddLicencesDrawer(): void {
+        this.displayAddLicencesDrawer = true;
     }
 
     onStatusChange(value: StatusFilter): void {

@@ -1,4 +1,4 @@
-import type { LicenceLotStatus, LicenceProfile } from '@/core/models';
+import type { LicenceLot, LicenceLotStatus, LicenceProfile } from '@/core/models';
 
 export type TagSeverity = 'success' | 'warn' | 'danger' | 'secondary';
 
@@ -49,4 +49,21 @@ export function toIsoDate(date: Date): string {
 /** Misma regla del backend: fecha fin = fecha inicio + duración del periodo en días. */
 export function addDays(date: Date, days: number): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+/** Regla opción C: se fusiona con un lote vigente del mismo perfil y el mismo periodo. */
+export function findMergeableLot(
+    lots: LicenceLot[],
+    profile: LicenceProfile | null,
+    periodId: number | null
+): LicenceLot | null {
+    if (!profile || !periodId) return null;
+    return (
+        lots.find(
+            (lot) =>
+                lot.roleTypeProfile === profile &&
+                lot.period.id === periodId &&
+                (lot.status === 'active' || lot.status === 'expiring')
+        ) ?? null
+    );
 }

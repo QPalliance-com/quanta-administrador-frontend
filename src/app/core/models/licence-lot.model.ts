@@ -82,3 +82,27 @@ export interface CreatedLicenceLot {
     paymentType: PaymentTypeRef;
     period: PeriodRef;
 }
+
+export interface AddLicencesDto {
+    roleTypeProfile: LicenceProfile;
+    quantityToAdd: number;
+    paymentTypeCatalogId: number;
+    periodCatalogId: number;
+    amountCharged: number | null;
+    paymentReference: string | null;
+}
+
+export type AddLicencesAction = 'merged' | 'new_lot';
+
+/** `merged`: trae previous/newUserCount y proratedAmount. `new_lot`: trae userCount, startDate y reason. */
+export interface AddLicencesResult {
+    action: AddLicencesAction;
+    lotId: number;
+    endDate: string;
+    previousUserCount?: number;
+    newUserCount?: number;
+    proratedAmount?: number;
+    userCount?: number;
+    startDate?: string;
+    reason?: string;
+}
