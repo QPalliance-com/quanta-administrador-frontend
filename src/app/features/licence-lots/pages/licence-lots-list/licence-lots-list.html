@@ -1,0 +1,154 @@
+<div class="card">
+    <p-toolbar styleClass="mb-6">
+        <ng-template #end>
+            <p-button label="Volver a compañías" icon="pi pi-arrow-left" severity="secondary" [text]="true" routerLink="/companies/list" />
+        </ng-template>
+    </p-toolbar>
+
+    <ng-container *ngIf="error$ | async as error; else contentTpl">
+        <p-message severity="error" styleClass="w-full">
+            <div class="flex items-center justify-between gap-3 w-full">
+                <span>{{ error }}</span>
+                <button pButton label="Reintentar" icon="pi pi-refresh" size="small" severity="secondary" [outlined]="true" (click)="load()"></button>
+            </div>
+        </p-message>
+    </ng-container>
+
+    <ng-template #contentTpl>
+        <!-- Resumen de uso por perfil -->
+        <section
+            *ngIf="summary$ | async as summary"
+            aria-label="Resumen de licencias por perfil"
+            class="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-surface-200 dark:divide-surface-700 border border-surface-200 dark:border-surface-700 rounded-xl mb-6"
+        >
+            <div *ngFor="let item of summary" class="flex flex-col gap-2 p-4">
+                <div class="flex items-baseline justify-between gap-2">
+                    <span class="text-sm font-medium text-surface-600 dark:text-surface-300">{{ profileLabels[item.profile] }}</span>
+                    <span class="text-sm text-surface-600 dark:text-surface-300">
+                        <span class="text-xl font-semibold text-surface-900 dark:text-surface-50">{{ item.inUse }}</span>
+                        de {{ item.totalLicences }} en uso
+                    </span>
+                </div>
+                <div
+                    class="h-1.5 w-full rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden"
+                    role="progressbar"
+                    [attr.aria-valuenow]="usagePercent(item.inUse, item.totalLicences)"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    [attr.aria-label]="'Uso de licencias ' + profileLabels[item.profile]"
+                >
+                    <div
+                        class="h-full rounded-full transition-[width] duration-200 ease-out"
+                        [ngClass]="usagePercent(item.inUse, item.totalLicences) >= 90 ? 'bg-orange-500' : 'bg-primary'"
+                        [style.width.%]="usagePercent(item.inUse, item.totalLicences)"
+                    ></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skeleton con las mismas columnas de la tabla -->
+        <div *ngIf="(loading$ | async) && !(totalLots$ | async); else tableTpl" class="overflow-x-auto" aria-busy="true">
+            <table class="w-full" style="min-width: 60rem">
+                <tbody>
+                    <tr *ngFor="let row of skeletonRows" class="border-b border-surface-100 dark:border-surface-800">
+                        <td *ngFor="let col of skeletonCols" class="p-3"><p-skeleton height="1.25rem" /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <ng-template #tableTpl>
+            <p-table
+                *ngIf="lots$ | async as lots"
+                #lotsTable
+                [value]="lots"
+                [loading]="(loading$ | async) ?? false"
+                [paginator]="lots.length > 15"
+                [globalFilterFields]="['roleTypeProfile', 'paymentType.displayName', 'period.displayName']"
+                [rows]="15"
+                [scrollable]="true"
+                scrollHeight="flex"
+                [showCurrentPageReport]="true"
+                [tableStyle]="{ 'min-width': '60rem' }"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+                [sortField]="'endDate'"
+                [sortOrder]="1"
+                styleClass="p-datatable-sm"
+            >
+                <ng-template #caption>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="font-semibold text-xl">Licencias</span>
+                            <span *ngIf="company$ | async as company" class="text-sm text-surface-600 dark:text-surface-300">{{ company.companyName }}</span>
+                            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
+                                {{ lots.length }} lotes
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p-select
+                                [options]="statusOptions"
+                                [(ngModel)]="statusFilter"
+                                (onChange)="onStatusChange($event.value)"
+                                optionLabel="label"
+                                optionValue="value"
+                                ariaLabel="Filtrar por estado"
+                                size="small"
+                                appendTo="body"
+                            />
+                            <p-select
+                                [options]="profileOptions"
+                                [(ngModel)]="profileFilter"
+                                (onChange)="onProfileChange($event.value)"
+                                optionLabel="label"
+                                optionValue="value"
+                                ariaLabel="Filtrar por perfil"
+                                size="small"
+                                appendTo="body"
+                            />
+                            <input pInputText type="text" (input)="onGlobalFilter(lotsTable, $event)" placeholder="Buscar..." class="text-sm" />
+                        </div>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="roleTypeProfile">Perfil <p-sortIcon field="roleTypeProfile" /></th>
+                        <th pSortableColumn="userCount">Usuarios <p-sortIcon field="userCount" /></th>
+                        <th>Forma de pago</th>
+                        <th>Periodo</th>
+                        <th pSortableColumn="startDate">Inicio <p-sortIcon field="startDate" /></th>
+                        <th pSortableColumn="endDate">Vencimiento <p-sortIcon field="endDate" /></th>
+                        <th pSortableColumn="daysRemaining">Días restantes <p-sortIcon field="daysRemaining" /></th>
+                        <th>Estado</th>
+                        <th>Migración</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-lot>
+                    <tr class="group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10">
+                        <td class="font-medium">{{ profileLabels[lot.roleTypeProfile] }}</td>
+                        <td>{{ lot.userCount }}</td>
+                        <td>{{ lot.paymentType.displayName }}</td>
+                        <td>{{ lot.period.displayName }}</td>
+                        <td>{{ lot.startDate | dateColombia }}</td>
+                        <td>{{ lot.endDate | dateColombia }}</td>
+                        <td class="font-semibold tabular-nums" [ngClass]="daysLeftClass(lot.daysRemaining)">{{ lot.daysRemaining }}</td>
+                        <td><p-tag [value]="statusMeta[lot.status].label" [severity]="statusMeta[lot.status].severity" /></td>
+                        <td>{{ lot.scheduledMigrationTo?.displayName ?? '—' }}</td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="9" class="text-center text-surface-500 py-12">
+                            <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                            <span>{{ (totalLots$ | async) ? 'Ningún lote coincide con los filtros.' : 'Esta empresa no tiene lotes de licencia.' }}</span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </ng-template>
+    </ng-template>
+</div>
+
+<p-toast />

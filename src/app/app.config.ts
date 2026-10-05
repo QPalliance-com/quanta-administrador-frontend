@@ -20,6 +20,10 @@ import { licencesReducer } from './features/settings/state/reducers/licences.red
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
 import { holidaysReducer } from './features/settings/state/reducers/holidays.reducer';
 import { HolidaysEffects } from './features/settings/state/effects/holidays.effects';
+import { licenceLotsReducer } from './features/licence-lots/state/reducers/licence-lots.reducer';
+import { LicenceLotsEffects } from './features/licence-lots/state/effects/licence-lots.effects';
+import { catalogsReducer } from './features/licence-lots/state/reducers/catalogs.reducer';
+import { CatalogsEffects } from './features/licence-lots/state/effects/catalogs.effects';
 import { authReducer } from './features/auth/state/reducers/auth.reducer';
 import { AuthEffects } from './features/auth/state/effects/auth.effects';
 import { dashboardReducer } from './features/dashboard/state/reducers/dashboard.reducer';
@@ -71,6 +75,8 @@ export const appConfig: ApplicationConfig = {
                 companies: companiesReducer,
                 licences: licencesReducer,
                 holidays: holidaysReducer,
+                licenceLots: licenceLotsReducer,
+                catalogs: catalogsReducer,
                 dashboard: dashboardReducer
             },
             {
@@ -92,6 +98,8 @@ export const appConfig: ApplicationConfig = {
             CompaniesEffects,
             LicencesEffects,
             HolidaysEffects,
+            LicenceLotsEffects,
+            CatalogsEffects,
             DashboardEffects
         ]),
 
