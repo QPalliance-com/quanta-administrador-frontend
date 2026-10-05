@@ -18,5 +18,6 @@ export * from './company.model';
 export * from './holiday.model';
 export * from './licence.model';
 export * from './licence-lot.model';
+export * from './license-config.model';
 export * from './subscription-plan.model';
 export * from './user.model';

@@ -50,6 +50,12 @@ const MENU_ITEMS: MenuItem[] = [
                 description: 'Configuración de las licencias de suscripción del sistema'
             },
             {
+                label: 'Gracia y Alertas',
+                icon: 'pi pi-bell',
+                routerLink: ['/settings/licences/config'],
+                description: 'Periodo de gracia y alertas de vencimiento de licencias'
+            },
+            {
                 label: 'Días No Laborables',
                 icon: 'pi pi-calendar-plus',
                 routerLink: ['/settings/holidays/list'],

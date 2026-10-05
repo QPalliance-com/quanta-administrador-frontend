@@ -1,0 +1,137 @@
+<div class="flex flex-col gap-6">
+    <!-- Configuración global -->
+    <section class="card" aria-labelledby="global-config-title">
+        <div class="flex flex-col gap-1 mb-5">
+            <h2 id="global-config-title" class="font-semibold text-xl m-0">Configuración global</h2>
+            <p class="text-sm text-surface-600 dark:text-surface-300 m-0 max-w-prose">
+                Se aplica a todas las empresas que no tengan una configuración propia. Las alertas se envían cuando faltan estos días para que venza un lote.
+            </p>
+        </div>
+
+        <form [formGroup]="globalForm" (ngSubmit)="saveGlobal()" class="flex flex-col gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="flex flex-col gap-1">
+                    <label for="alertDays1" class="text-sm font-medium text-surface-700 dark:text-surface-200">Primera alerta (días antes)</label>
+                    <p-inputnumber fluid inputId="alertDays1" formControlName="alertDays1" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('alertDays1') || orderInvalid" [class.ng-dirty]="isInvalid('alertDays1') || orderInvalid" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="alertDays2" class="text-sm font-medium text-surface-700 dark:text-surface-200">Segunda alerta (días antes)</label>
+                    <p-inputnumber fluid inputId="alertDays2" formControlName="alertDays2" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('alertDays2') || orderInvalid" [class.ng-dirty]="isInvalid('alertDays2') || orderInvalid" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="alertDays3" class="text-sm font-medium text-surface-700 dark:text-surface-200">Alerta urgente (días antes)</label>
+                    <p-inputnumber fluid inputId="alertDays3" formControlName="alertDays3" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('alertDays3') || orderInvalid" [class.ng-dirty]="isInvalid('alertDays3') || orderInvalid" />
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="gracePeriodDays" class="text-sm font-medium text-surface-700 dark:text-surface-200">Periodo de gracia (días)</label>
+                    <p-inputnumber fluid inputId="gracePeriodDays" formControlName="gracePeriodDays" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('gracePeriodDays')" [class.ng-dirty]="isInvalid('gracePeriodDays')" />
+                </div>
+            </div>
+
+            <small *ngIf="orderInvalid" class="text-red-500 flex items-center gap-1" role="alert">
+                <i class="pi pi-exclamation-circle text-xs"></i>{{ alertOrderMessage }}
+            </small>
+
+            <div class="flex justify-end">
+                <p-button
+                    label="Guardar configuración global"
+                    icon="pi pi-check"
+                    type="submit"
+                    [loading]="(saving$ | async) ?? false"
+                    [disabled]="globalForm.invalid || globalForm.pristine"
+                />
+            </div>
+        </form>
+    </section>
+
+    <!-- Excepciones por empresa -->
+    <section class="card" aria-label="Configuración por empresa">
+        <!-- Menú flotante compartido para acciones de fila -->
+        <p-menu #rowMenu [popup]="true" [model]="rowMenuItems" appendTo="body" />
+
+        <p-table
+            *ngIf="overrides$ | async as overrides"
+            #overridesTable
+            [value]="overrides"
+            [loading]="(loadingOverrides$ | async) ?? false"
+            [globalFilterFields]="['companyName']"
+            [paginator]="overrides.length > 10"
+            [rows]="10"
+            [tableStyle]="{ 'min-width': '40rem' }"
+            [sortField]="'companyName'"
+            [sortOrder]="1"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template #caption>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="font-semibold text-xl">Configuración por empresa</span>
+                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
+                            {{ overrides.length }} empresas
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input pInputText type="text" (input)="onGlobalFilter(overridesTable, $event)" placeholder="Buscar empresa..." class="text-sm" />
+                        <p-button label="Agregar configuración" icon="pi pi-plus" (onClick)="openCreateOverride()" />
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="companyName">Empresa <p-sortIcon field="companyName" /></th>
+                    <th pSortableColumn="alertDays1">Alerta 1 <p-sortIcon field="alertDays1" /></th>
+                    <th pSortableColumn="alertDays2">Alerta 2 <p-sortIcon field="alertDays2" /></th>
+                    <th pSortableColumn="alertDays3">Alerta 3 <p-sortIcon field="alertDays3" /></th>
+                    <th pSortableColumn="gracePeriodDays">Gracia <p-sortIcon field="gracePeriodDays" /></th>
+                    <th style="width: 3rem"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-override>
+                <tr class="cursor-pointer group/row transition-colors hover:bg-primary/10 dark:hover:bg-primary/10" (click)="openEditOverride(override)">
+                    <td class="font-medium">{{ override.companyName }}</td>
+                    <td class="tabular-nums">{{ override.alertDays1 }} días</td>
+                    <td class="tabular-nums">{{ override.alertDays2 }} días</td>
+                    <td class="tabular-nums">{{ override.alertDays3 }} días</td>
+                    <td class="tabular-nums">{{ override.gracePeriodDays }} días</td>
+                    <td class="text-center">
+                        <button
+                            pButton
+                            icon="pi pi-ellipsis-v"
+                            severity="secondary"
+                            [text]="true"
+                            [rounded]="true"
+                            size="small"
+                            class="opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 transition-opacity"
+                            [attr.aria-label]="'Acciones de ' + override.companyName"
+                            (click)="openRowMenu($event, override)"
+                            pTooltip="Más opciones"
+                            tooltipPosition="left"
+                        ></button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center text-surface-500 py-12">
+                        <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                        <span>Ninguna empresa tiene configuración propia: todas usan los valores globales.</span>
+                        <button pButton label="Agregar configuración" icon="pi pi-plus" [text]="true" class="mt-2 block mx-auto" (click)="openCreateOverride()"></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </section>
+</div>
+
+<app-license-override-dialog
+    [visible]="displayOverrideDialog"
+    [override]="selectedOverride"
+    [defaults]="global$ | async"
+    (closed)="displayOverrideDialog = false"
+/>
+
+<p-confirmdialog />
+<p-toast />

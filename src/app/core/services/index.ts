@@ -13,4 +13,5 @@ export * from './company.service';
 export * from './holiday.service';
 export * from './licence.service';
 export * from './licence-lot.service';
+export * from './license-config.service';
 export * from './user.service';
