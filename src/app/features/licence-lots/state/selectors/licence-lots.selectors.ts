@@ -11,6 +11,8 @@ export const selectProfileSummary = createSelector(selectLicenceLotsState, (stat
 
 export const selectLicenceLotsLoading = createSelector(selectLicenceLotsState, (state) => state.loading);
 
+export const selectLicenceLotsSaving = createSelector(selectLicenceLotsState, (state) => state.saving);
+
 export const selectLicenceLotsError = createSelector(selectLicenceLotsState, (state) => state.error);
 
 export const selectLicenceLotsCompanyId = createSelector(selectLicenceLotsState, (state) => state.companyId);

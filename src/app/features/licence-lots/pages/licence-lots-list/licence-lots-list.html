@@ -1,5 +1,8 @@
 <div class="card">
     <p-toolbar styleClass="mb-6">
+        <ng-template #start>
+            <p-button label="Activar licencia" icon="pi pi-plus" (onClick)="openActivationDrawer()" />
+        </ng-template>
         <ng-template #end>
             <p-button label="Volver a compañías" icon="pi pi-arrow-left" severity="secondary" [text]="true" routerLink="/companies/list" />
         </ng-template>
@@ -151,4 +154,7 @@
     </ng-template>
 </div>
 
+<app-lot-activation-drawer [visible]="displayActivationDrawer" [companyId]="companyId" (closed)="displayActivationDrawer = false" />
+
+<p-confirmdialog />
 <p-toast />

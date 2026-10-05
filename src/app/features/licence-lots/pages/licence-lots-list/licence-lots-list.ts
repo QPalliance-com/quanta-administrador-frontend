@@ -12,7 +12,8 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, map, take } from 'rxjs';
 import { LicenceLot, LicenceLotStatus, LicenceProfile } from '@/core/models';
@@ -27,6 +28,7 @@ import {
     selectLicenceLotsLoading,
     selectProfileSummary
 } from '../../state/selectors/licence-lots.selectors';
+import { LotActivationDrawerComponent } from '../../components/lot-activation-drawer/lot-activation-drawer';
 import { PROFILE_LABELS, PROFILE_OPTIONS, STATUS_META, daysLeftClass, usagePercent } from '../../utils/licence-lot.utils';
 
 type StatusFilter = LicenceLotStatus | 'all';
@@ -51,9 +53,11 @@ type ProfileFilter = LicenceProfile | 'all';
         TagModule,
         InputTextModule,
         TooltipModule,
-        DateColombiaPipe
+        ConfirmDialogModule,
+        DateColombiaPipe,
+        LotActivationDrawerComponent
     ],
-    providers: [MessageService]
+    providers: [MessageService, ConfirmationService]
 })
 export class LicenceLotsListComponent implements OnInit {
     private store = inject(Store);
@@ -80,6 +84,7 @@ export class LicenceLotsListComponent implements OnInit {
     ];
     statusFilter: StatusFilter = 'all';
     profileFilter: ProfileFilter = 'all';
+    displayActivationDrawer = false;
 
     // El filtrado es del lado del cliente: el store conserva todos los lotes de la empresa,
     // que es lo que necesita F03 para detectar si hay un lote fusionable.
@@ -112,6 +117,10 @@ export class LicenceLotsListComponent implements OnInit {
 
     load(): void {
         this.store.dispatch(LicenceLotsActions.loadList({ companyId: this.companyId }));
+    }
+
+    openActivationDrawer(): void {
+        this.displayActivationDrawer = true;
     }
 
     onStatusChange(value: StatusFilter): void {

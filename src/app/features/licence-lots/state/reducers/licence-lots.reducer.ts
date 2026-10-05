@@ -8,6 +8,7 @@ export interface LicenceLotsState {
     profileSummary: ProfileSummary[];
     companyId: number | null;
     loading: boolean;
+    saving: boolean; // mutaciones (crear, agregar, extender, migrar, generar link)
     error: string | null;
 }
 
@@ -18,6 +19,7 @@ export const initialState: LicenceLotsState = {
     profileSummary: [],
     companyId: null,
     loading: false,
+    saving: false,
     error: null
 };
 
@@ -40,5 +42,8 @@ export const licenceLotsReducer = createReducer(
         profileSummary: data.profileSummary,
         loading: false
     })),
-    on(LicenceLotsActions.loadListFailure, (state, { error }) => ({ ...state, error, loading: false }))
+    on(LicenceLotsActions.loadListFailure, (state, { error }) => ({ ...state, error, loading: false })),
+
+    on(LicenceLotsActions.create, (state) => ({ ...state, saving: true })),
+    on(LicenceLotsActions.createSuccess, LicenceLotsActions.createFailure, (state) => ({ ...state, saving: false }))
 );

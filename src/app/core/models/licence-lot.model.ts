@@ -60,3 +60,25 @@ export interface LicenceLotList {
     profileSummary: ProfileSummary[];
     lots: LicenceLot[];
 }
+
+export interface CreateLicenceLotDto {
+    roleTypeProfile: LicenceProfile;
+    userCount: number;
+    paymentTypeCatalogId: number;
+    periodCatalogId: number;
+    startDate: string;
+    amountCharged: number | null;
+    paymentReference: string | null;
+    activationNotes: string | null;
+}
+
+export interface CreatedLicenceLot {
+    id: number;
+    roleTypeProfile: LicenceProfile;
+    userCount: number;
+    startDate: string;
+    endDate: string;
+    status: LicenceLotStatus;
+    paymentType: PaymentTypeRef;
+    period: PeriodRef;
+}
