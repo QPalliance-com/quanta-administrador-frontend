@@ -1,4 +1,4 @@
-import type { ExtendableLot, LicenceLot, LicenceLotStatus, LicenceProfile, RenewalType } from '@/core/models';
+import type { ExpiringLot, ExtendableLot, LicenceLot, LicenceLotStatus, LicenceProfile, RenewalType } from '@/core/models';
 
 export type TagSeverity = 'success' | 'warn' | 'danger' | 'secondary';
 
@@ -82,4 +82,35 @@ export function renewalTypeFor(status: LicenceLotStatus): RenewalType {
 export function calcNewEndDate(lot: ExtendableLot, durationDays: number, today: Date = new Date()): Date {
     const base = renewalTypeFor(lot.status) === 'early' ? fromIsoDate(lot.endDate) : today;
     return addDays(base, durationDays);
+}
+
+export type UrgencyKey = 'critical' | 'urgent' | 'upcoming';
+
+export const URGENCY_META: Record<UrgencyKey, { label: string; severity: 'danger' | 'warn' | 'info' }> = {
+    critical: { label: 'Crítico', severity: 'danger' },
+    urgent: { label: 'Urgente', severity: 'warn' },
+    upcoming: { label: 'Próximo', severity: 'info' }
+};
+
+/** Crítico: 8 días o menos, o ya en gracia. Urgente: 15 o menos. Próximo: 30 o menos. */
+export function urgencyOf(lot: Pick<ExpiringLot, 'daysRemaining' | 'status'>): UrgencyKey | null {
+    if (lot.status === 'grace_period' || lot.daysRemaining <= 8) return 'critical';
+    if (lot.daysRemaining <= 15) return 'urgent';
+    if (lot.daysRemaining <= 30) return 'upcoming';
+    return null;
+}
+
+export interface UrgencyGroup {
+    key: UrgencyKey;
+    lots: ExpiringLot[];
+}
+
+/** Agrupa por urgencia (omite los grupos vacíos) y ordena cada grupo del más cercano al más lejano. */
+export function groupByUrgency(lots: ExpiringLot[]): UrgencyGroup[] {
+    return (['critical', 'urgent', 'upcoming'] as UrgencyKey[])
+        .map((key) => ({
+            key,
+            lots: lots.filter((lot) => urgencyOf(lot) === key).sort((a, b) => a.daysRemaining - b.daysRemaining)
+        }))
+        .filter((group) => group.lots.length > 0);
 }

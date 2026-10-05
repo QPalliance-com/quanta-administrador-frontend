@@ -149,3 +149,16 @@ export interface PseCheckoutResult {
     discountApplied: number;
     period: PeriodRef;
 }
+
+/** Fila del panel cross-empresa de vencimientos (F06). */
+export interface ExpiringLot {
+    companyId: number;
+    companyName: string;
+    lotId: number;
+    roleTypeProfile: LicenceProfile;
+    userCount: number;
+    endDate: string;
+    daysRemaining: number;
+    status: LicenceLotStatus;
+    paymentType: PaymentTypeRef;
+}

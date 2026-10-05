@@ -7,6 +7,7 @@ import {
     ApiResponse,
     CreateLicenceLotDto,
     CreatedLicenceLot,
+    ExpiringLot,
     ExtendLicenceLotDto,
     ExtendLicenceLotResult,
     GeneratePseLinkDto,
@@ -23,6 +24,11 @@ import { environment } from '../../../environments/environment';
 export class LicenceLotService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.adminApiUrl}companies`;
+
+    /** Panel cross-empresa (F06). Endpoint dedicado pendiente de backend: ninguna tarea B01-B18 lo cubre. */
+    getExpiring(): Observable<ApiResponse<ExpiringLot[]>> {
+        return this.http.get<ApiResponse<ExpiringLot[]>>(`${environment.adminApiUrl}licence-lots/expiring`);
+    }
 
     private lotsUrl(companyId: number): string {
         return `${this.apiUrl}/${companyId}/licence-lots`;

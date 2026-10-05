@@ -24,6 +24,12 @@ const MENU_ITEMS: MenuItem[] = [
                 icon: 'pi pi-list',
                 routerLink: ['/companies/list'],
                 description: 'Gestión de empresas registradas'
+            },
+            {
+                label: 'Alertas de Vencimiento',
+                icon: 'pi pi-exclamation-triangle',
+                routerLink: ['/companies/licence-alerts'],
+                description: 'Lotes de licencia próximos a vencer en todas las empresas'
             }
         ]
     },
