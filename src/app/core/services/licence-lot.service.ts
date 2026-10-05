@@ -7,6 +7,8 @@ import {
     ApiResponse,
     CreateLicenceLotDto,
     CreatedLicenceLot,
+    ExtendLicenceLotDto,
+    ExtendLicenceLotResult,
     LicenceLotList
 } from '@/core/models';
 import { environment } from '../../../environments/environment';
@@ -32,5 +34,9 @@ export class LicenceLotService {
 
     addLicences(companyId: number, payload: AddLicencesDto): Observable<ApiResponse<AddLicencesResult>> {
         return this.http.post<ApiResponse<AddLicencesResult>>(`${this.lotsUrl(companyId)}/add`, { data: payload });
+    }
+
+    extend(companyId: number, lotId: number, payload: ExtendLicenceLotDto): Observable<ApiResponse<ExtendLicenceLotResult>> {
+        return this.http.put<ApiResponse<ExtendLicenceLotResult>>(`${this.lotsUrl(companyId)}/${lotId}/extend`, { data: payload });
     }
 }

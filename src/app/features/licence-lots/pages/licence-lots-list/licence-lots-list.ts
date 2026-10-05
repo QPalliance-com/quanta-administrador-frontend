@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,7 +13,8 @@ import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { Menu } from 'primeng/menu';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, map, take } from 'rxjs';
 import { LicenceLot, LicenceLotStatus, LicenceProfile } from '@/core/models';
@@ -30,6 +31,7 @@ import {
 } from '../../state/selectors/licence-lots.selectors';
 import { LotActivationDrawerComponent } from '../../components/lot-activation-drawer/lot-activation-drawer';
 import { AddLicencesDrawerComponent } from '../../components/add-licences-drawer/add-licences-drawer';
+import { ExtendLotDialogComponent } from '../../components/extend-lot-dialog/extend-lot-dialog';
 import { PROFILE_LABELS, PROFILE_OPTIONS, STATUS_META, daysLeftClass, usagePercent } from '../../utils/licence-lot.utils';
 
 type StatusFilter = LicenceLotStatus | 'all';
@@ -55,9 +57,11 @@ type ProfileFilter = LicenceProfile | 'all';
         InputTextModule,
         TooltipModule,
         ConfirmDialogModule,
+        Menu,
         DateColombiaPipe,
         LotActivationDrawerComponent,
-        AddLicencesDrawerComponent
+        AddLicencesDrawerComponent,
+        ExtendLotDialogComponent
     ],
     providers: [MessageService, ConfirmationService]
 })
@@ -74,7 +78,7 @@ export class LicenceLotsListComponent implements OnInit {
     readonly daysLeftClass = daysLeftClass;
     readonly usagePercent = usagePercent;
     readonly skeletonRows = Array.from({ length: 5 });
-    readonly skeletonCols = Array.from({ length: 9 });
+    readonly skeletonCols = Array.from({ length: 10 });
 
     readonly statusOptions: { label: string; value: StatusFilter }[] = [
         { label: 'Todos los estados', value: 'all' },
@@ -88,6 +92,11 @@ export class LicenceLotsListComponent implements OnInit {
     profileFilter: ProfileFilter = 'all';
     displayActivationDrawer = false;
     displayAddLicencesDrawer = false;
+    displayExtendDialog = false;
+    selectedLot: LicenceLot | null = null;
+    rowMenuItems: MenuItem[] = [];
+
+    @ViewChild('rowMenu') rowMenu!: Menu;
 
     // El filtrado es del lado del cliente: el store conserva todos los lotes de la empresa,
     // que es lo que necesita F03 para detectar si hay un lote fusionable.
@@ -128,6 +137,23 @@ export class LicenceLotsListComponent implements OnInit {
 
     openAddLicencesDrawer(): void {
         this.displayAddLicencesDrawer = true;
+    }
+
+    openRowMenu(event: MouseEvent, lot: LicenceLot): void {
+        event.stopPropagation();
+        this.rowMenuItems = [
+            {
+                label: 'Extender lote',
+                icon: 'pi pi-calendar-plus',
+                command: () => this.openExtendDialog(lot)
+            }
+        ];
+        this.rowMenu.toggle(event);
+    }
+
+    openExtendDialog(lot: LicenceLot): void {
+        this.selectedLot = lot;
+        this.displayExtendDialog = true;
     }
 
     onStatusChange(value: StatusFilter): void {

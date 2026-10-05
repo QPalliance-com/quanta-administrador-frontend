@@ -106,3 +106,21 @@ export interface AddLicencesResult {
     startDate?: string;
     reason?: string;
 }
+
+/** Campos mínimos de un lote para poder extenderlo (los comparten el listado F01 y el panel F06). */
+export type ExtendableLot = Pick<LicenceLot, 'id' | 'roleTypeProfile' | 'userCount' | 'endDate' | 'status'>;
+
+export interface ExtendLicenceLotDto {
+    periodCatalogId: number;
+    amountCharged: number | null;
+    paymentReference: string | null;
+}
+
+export type RenewalType = 'early' | 'reactivation';
+
+export interface ExtendLicenceLotResult {
+    lotId: number;
+    previousEndDate: string;
+    newEndDate: string;
+    renewalType: RenewalType;
+}

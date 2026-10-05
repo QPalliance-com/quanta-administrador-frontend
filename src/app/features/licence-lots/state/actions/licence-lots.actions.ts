@@ -1,5 +1,13 @@
 import { createActionGroup, props } from '@ngrx/store';
-import { AddLicencesDto, AddLicencesResult, CreateLicenceLotDto, CreatedLicenceLot, LicenceLotList } from '@/core/models';
+import {
+    AddLicencesDto,
+    AddLicencesResult,
+    CreateLicenceLotDto,
+    CreatedLicenceLot,
+    ExtendLicenceLotDto,
+    ExtendLicenceLotResult,
+    LicenceLotList
+} from '@/core/models';
 
 export const LicenceLotsActions = createActionGroup({
     source: 'Licence Lots',
@@ -14,6 +22,10 @@ export const LicenceLotsActions = createActionGroup({
 
         'Add Licences': props<{ companyId: number; payload: AddLicencesDto }>(),
         'Add Licences Success': props<{ companyId: number; result: AddLicencesResult }>(),
-        'Add Licences Failure': props<{ error: string }>()
+        'Add Licences Failure': props<{ error: string }>(),
+
+        Extend: props<{ companyId: number; lotId: number; payload: ExtendLicenceLotDto }>(),
+        'Extend Success': props<{ companyId: number; result: ExtendLicenceLotResult }>(),
+        'Extend Failure': props<{ error: string }>()
     }
 });

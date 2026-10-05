@@ -44,12 +44,17 @@ export const licenceLotsReducer = createReducer(
     })),
     on(LicenceLotsActions.loadListFailure, (state, { error }) => ({ ...state, error, loading: false })),
 
-    on(LicenceLotsActions.create, LicenceLotsActions.addLicences, (state) => ({ ...state, saving: true })),
+    on(LicenceLotsActions.create, LicenceLotsActions.addLicences, LicenceLotsActions.extend, (state) => ({
+        ...state,
+        saving: true
+    })),
     on(
         LicenceLotsActions.createSuccess,
         LicenceLotsActions.createFailure,
         LicenceLotsActions.addLicencesSuccess,
         LicenceLotsActions.addLicencesFailure,
+        LicenceLotsActions.extendSuccess,
+        LicenceLotsActions.extendFailure,
         (state) => ({ ...state, saving: false })
     )
 );

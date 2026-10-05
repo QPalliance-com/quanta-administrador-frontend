@@ -1,14 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { HttpErrorResponse } from '@angular/common/http';
-import { catchError, exhaustMap, map, of, switchMap, tap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, exhaustMap, filter, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { LicenceLotService } from '@/core/services/licence-lot.service';
 import { LicenceLotsActions } from '../actions/licence-lots.actions';
+import { selectLicenceLotsCompanyId } from '../selectors/licence-lots.selectors';
+import { formatIsoDate } from '../../utils/licence-lot.utils';
 
 @Injectable()
 export class LicenceLotsEffects {
     private actions$ = inject(Actions);
+    private store = inject(Store);
     private licenceLotService = inject(LicenceLotService);
     private messageService = inject(MessageService);
 
@@ -81,7 +85,38 @@ export class LicenceLotsEffects {
         )
     );
 
-    // Los errores de creación y de agregado se muestran dentro del drawer, no como toast
+    extend$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.extend),
+            exhaustMap(({ companyId, lotId, payload }) =>
+                this.licenceLotService.extend(companyId, lotId, payload).pipe(
+                    map((response) => LicenceLotsActions.extendSuccess({ companyId, result: response.data })),
+                    catchError((error: HttpErrorResponse) =>
+                        of(LicenceLotsActions.extendFailure({ error: this.extractError(error) }))
+                    )
+                )
+            )
+        )
+    );
+
+    extendSuccess$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.extendSuccess),
+            tap(({ result }) =>
+                this.messageService.add({
+                    severity: 'success',
+                    summary: result.renewalType === 'early' ? 'Lote extendido' : 'Lote reactivado',
+                    detail: `Lote #${result.lotId}: nuevo vencimiento ${formatIsoDate(result.newEndDate)}`
+                })
+            ),
+            // El panel de alertas (F06) también extiende lotes: solo se recarga el listado si es la empresa abierta
+            withLatestFrom(this.store.select(selectLicenceLotsCompanyId)),
+            filter(([{ companyId }, openCompanyId]) => companyId === openCompanyId),
+            map(([{ companyId }]) => LicenceLotsActions.loadList({ companyId }))
+        )
+    );
+
+    // Los errores de creación, agregado y extensión se muestran dentro del drawer/dialog, no como toast
     failure$ = createEffect(
         () =>
             this.actions$.pipe(

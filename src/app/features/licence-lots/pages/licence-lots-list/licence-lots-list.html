@@ -9,6 +9,9 @@
         </ng-template>
     </p-toolbar>
 
+    <!-- Menú flotante compartido para acciones de fila -->
+    <p-menu #rowMenu [popup]="true" [model]="rowMenuItems" appendTo="body" />
+
     <ng-container *ngIf="error$ | async as error; else contentTpl">
         <p-message severity="error" styleClass="w-full">
             <div class="flex items-center justify-between gap-3 w-full">
@@ -125,6 +128,7 @@
                         <th pSortableColumn="daysRemaining">Días restantes <p-sortIcon field="daysRemaining" /></th>
                         <th>Estado</th>
                         <th>Migración</th>
+                        <th style="width: 3rem"></th>
                     </tr>
                 </ng-template>
 
@@ -139,12 +143,27 @@
                         <td class="font-semibold tabular-nums" [ngClass]="daysLeftClass(lot.daysRemaining)">{{ lot.daysRemaining }}</td>
                         <td><p-tag [value]="statusMeta[lot.status].label" [severity]="statusMeta[lot.status].severity" /></td>
                         <td>{{ lot.scheduledMigrationTo?.displayName ?? '—' }}</td>
+                        <td class="text-center">
+                            <button
+                                pButton
+                                icon="pi pi-ellipsis-v"
+                                severity="secondary"
+                                [text]="true"
+                                [rounded]="true"
+                                size="small"
+                                class="opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                [attr.aria-label]="'Acciones del lote ' + lot.id"
+                                (click)="openRowMenu(, lot)"
+                                pTooltip="Más opciones"
+                                tooltipPosition="left"
+                            ></button>
+                        </td>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="9" class="text-center text-surface-500 py-12">
+                        <td colspan="10" class="text-center text-surface-500 py-12">
                             <i class="pi pi-inbox text-4xl mb-3 block"></i>
                             <span>{{ (totalLots$ | async) ? 'Ningún lote coincide con los filtros.' : 'Esta empresa no tiene lotes de licencia.' }}</span>
                         </td>
@@ -158,6 +177,8 @@
 <app-lot-activation-drawer [visible]="displayActivationDrawer" [companyId]="companyId" (closed)="displayActivationDrawer = false" />
 
 <app-add-licences-drawer [visible]="displayAddLicencesDrawer" [companyId]="companyId" (closed)="displayAddLicencesDrawer = false" />
+
+<app-extend-lot-dialog [visible]="displayExtendDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
 
 <p-confirmdialog />
 <p-toast />

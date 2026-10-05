@@ -1,4 +1,4 @@
-import type { LicenceLot, LicenceLotStatus, LicenceProfile } from '@/core/models';
+import type { ExtendableLot, LicenceLot, LicenceLotStatus, LicenceProfile, RenewalType } from '@/core/models';
 
 export type TagSeverity = 'success' | 'warn' | 'danger' | 'secondary';
 
@@ -66,4 +66,20 @@ export function findMergeableLot(
                 (lot.status === 'active' || lot.status === 'expiring')
         ) ?? null
     );
+}
+
+export function formatIsoDate(iso: string): string {
+    const [year, month, day] = iso.slice(0, 10).split('-');
+    return `${day}/${month}/${year}`;
+}
+
+/** Lote vigente (active/expiring) = renovación anticipada; en gracia o vencido = reactivación. */
+export function renewalTypeFor(status: LicenceLotStatus): RenewalType {
+    return status === 'active' || status === 'expiring' ? 'early' : 'reactivation';
+}
+
+/** Anticipada suma días al vencimiento actual; reactivación cuenta desde hoy (regla de B11). */
+export function calcNewEndDate(lot: ExtendableLot, durationDays: number, today: Date = new Date()): Date {
+    const base = renewalTypeFor(lot.status) === 'early' ? fromIsoDate(lot.endDate) : today;
+    return addDays(base, durationDays);
 }
