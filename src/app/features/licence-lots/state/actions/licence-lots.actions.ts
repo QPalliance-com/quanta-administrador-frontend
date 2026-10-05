@@ -6,7 +6,9 @@ import {
     CreatedLicenceLot,
     ExtendLicenceLotDto,
     ExtendLicenceLotResult,
-    LicenceLotList
+    LicenceLotList,
+    ScheduleMigrationDto,
+    ScheduleMigrationResult
 } from '@/core/models';
 
 export const LicenceLotsActions = createActionGroup({
@@ -26,6 +28,10 @@ export const LicenceLotsActions = createActionGroup({
 
         Extend: props<{ companyId: number; lotId: number; payload: ExtendLicenceLotDto }>(),
         'Extend Success': props<{ companyId: number; result: ExtendLicenceLotResult }>(),
-        'Extend Failure': props<{ error: string }>()
+        'Extend Failure': props<{ error: string }>(),
+
+        'Schedule Migration': props<{ companyId: number; lotId: number; payload: ScheduleMigrationDto }>(),
+        'Schedule Migration Success': props<{ companyId: number; result: ScheduleMigrationResult }>(),
+        'Schedule Migration Failure': props<{ error: string }>()
     }
 });

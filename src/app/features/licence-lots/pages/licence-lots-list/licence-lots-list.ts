@@ -32,6 +32,7 @@ import {
 import { LotActivationDrawerComponent } from '../../components/lot-activation-drawer/lot-activation-drawer';
 import { AddLicencesDrawerComponent } from '../../components/add-licences-drawer/add-licences-drawer';
 import { ExtendLotDialogComponent } from '../../components/extend-lot-dialog/extend-lot-dialog';
+import { MigrationDialogComponent } from '../../components/migration-dialog/migration-dialog';
 import { PROFILE_LABELS, PROFILE_OPTIONS, STATUS_META, daysLeftClass, usagePercent } from '../../utils/licence-lot.utils';
 
 type StatusFilter = LicenceLotStatus | 'all';
@@ -61,7 +62,8 @@ type ProfileFilter = LicenceProfile | 'all';
         DateColombiaPipe,
         LotActivationDrawerComponent,
         AddLicencesDrawerComponent,
-        ExtendLotDialogComponent
+        ExtendLotDialogComponent,
+        MigrationDialogComponent
     ],
     providers: [MessageService, ConfirmationService]
 })
@@ -93,6 +95,7 @@ export class LicenceLotsListComponent implements OnInit {
     displayActivationDrawer = false;
     displayAddLicencesDrawer = false;
     displayExtendDialog = false;
+    displayMigrationDialog = false;
     selectedLot: LicenceLot | null = null;
     rowMenuItems: MenuItem[] = [];
 
@@ -146,9 +149,21 @@ export class LicenceLotsListComponent implements OnInit {
                 label: 'Extender lote',
                 icon: 'pi pi-calendar-plus',
                 command: () => this.openExtendDialog(lot)
+            },
+            {
+                label: 'Programar migración',
+                icon: 'pi pi-sync',
+                // B12 solo acepta migraciones sobre lotes vigentes
+                visible: lot.status === 'active' || lot.status === 'expiring',
+                command: () => this.openMigrationDialog(lot)
             }
         ];
         this.rowMenu.toggle(event);
+    }
+
+    openMigrationDialog(lot: LicenceLot): void {
+        this.selectedLot = lot;
+        this.displayMigrationDialog = true;
     }
 
     openExtendDialog(lot: LicenceLot): void {

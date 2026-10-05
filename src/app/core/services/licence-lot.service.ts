@@ -9,7 +9,9 @@ import {
     CreatedLicenceLot,
     ExtendLicenceLotDto,
     ExtendLicenceLotResult,
-    LicenceLotList
+    LicenceLotList,
+    ScheduleMigrationDto,
+    ScheduleMigrationResult
 } from '@/core/models';
 import { environment } from '../../../environments/environment';
 
@@ -38,5 +40,9 @@ export class LicenceLotService {
 
     extend(companyId: number, lotId: number, payload: ExtendLicenceLotDto): Observable<ApiResponse<ExtendLicenceLotResult>> {
         return this.http.put<ApiResponse<ExtendLicenceLotResult>>(`${this.lotsUrl(companyId)}/${lotId}/extend`, { data: payload });
+    }
+
+    scheduleMigration(companyId: number, lotId: number, payload: ScheduleMigrationDto): Observable<ApiResponse<ScheduleMigrationResult>> {
+        return this.http.put<ApiResponse<ScheduleMigrationResult>>(`${this.lotsUrl(companyId)}/${lotId}/schedule-migration`, { data: payload });
     }
 }

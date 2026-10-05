@@ -124,3 +124,14 @@ export interface ExtendLicenceLotResult {
     newEndDate: string;
     renewalType: RenewalType;
 }
+
+export interface ScheduleMigrationDto {
+    newPaymentTypeCatalogId: number;
+}
+
+export interface ScheduleMigrationResult {
+    lotId: number;
+    currentPaymentType: PaymentTypeRef;
+    scheduledMigrationTo: PaymentTypeRef;
+    effectiveAt: string;
+}

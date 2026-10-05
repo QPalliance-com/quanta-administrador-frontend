@@ -116,7 +116,35 @@ export class LicenceLotsEffects {
         )
     );
 
-    // Los errores de creación, agregado y extensión se muestran dentro del drawer/dialog, no como toast
+    scheduleMigration$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.scheduleMigration),
+            exhaustMap(({ companyId, lotId, payload }) =>
+                this.licenceLotService.scheduleMigration(companyId, lotId, payload).pipe(
+                    map((response) => LicenceLotsActions.scheduleMigrationSuccess({ companyId, result: response.data })),
+                    catchError((error: HttpErrorResponse) =>
+                        of(LicenceLotsActions.scheduleMigrationFailure({ error: this.extractError(error) }))
+                    )
+                )
+            )
+        )
+    );
+
+    scheduleMigrationSuccess$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LicenceLotsActions.scheduleMigrationSuccess),
+            tap(({ result }) =>
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Migración programada',
+                    detail: `El lote #${result.lotId} pasará a ${result.scheduledMigrationTo.displayName} el ${formatIsoDate(result.effectiveAt)}`
+                })
+            ),
+            map(({ companyId }) => LicenceLotsActions.loadList({ companyId }))
+        )
+    );
+
+    // Los errores de creación, agregado, extensión y migración se muestran dentro del drawer/dialog, no como toast
     failure$ = createEffect(
         () =>
             this.actions$.pipe(
