@@ -128,7 +128,21 @@
                         [class.ng-invalid]="isInvalid('amountCharged')"
                         [class.ng-dirty]="isInvalid('amountCharged')"
                     />
-                    <small class="text-surface-600 dark:text-surface-300">Opcional, en dólares. Con el monto vacío o en cero no se genera factura.</small>
+                    <small class="text-surface-600 dark:text-surface-300">
+                        Se calcula con el precio del perfil por la cantidad de licencias y puedes ajustarlo. Con el monto vacío o en cero no se genera factura.
+                    </small>
+                    <div *ngIf="amountBreakdown" class="flex flex-wrap items-center gap-x-2 text-sm text-surface-700 dark:text-surface-200">
+                        <span>{{ amountBreakdown }}</span>
+                        <button
+                            *ngIf="amountDiffersFromCalculated"
+                            pButton
+                            type="button"
+                            label="Usar monto calculado"
+                            size="small"
+                            [text]="true"
+                            (click)="useCalculatedAmount()"
+                        ></button>
+                    </div>
                     <small *ngIf="isInvalid('amountCharged')" class="text-red-500 flex items-center gap-1">
                         <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('amountCharged') }}
                     </small>

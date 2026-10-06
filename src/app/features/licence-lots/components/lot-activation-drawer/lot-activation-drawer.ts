@@ -24,13 +24,23 @@ import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
-import { PeriodCatalog } from '@/core/models';
+import { Licence, PeriodCatalog } from '@/core/models';
 import { DateColombiaPipe } from '@/core/pipes/date-colombia.pipe';
+import { LicencesActions } from '@/features/settings/state/actions/licences.actions';
+import { selectAllLicences } from '@/features/settings/state/selectors/licences.selectors';
 import { CatalogsActions } from '../../state/actions/catalogs.actions';
 import { LicenceLotsActions } from '../../state/actions/licence-lots.actions';
 import { selectPaymentTypes, selectPeriods } from '../../state/selectors/catalogs.selectors';
 import { selectLicenceLotsSaving } from '../../state/selectors/licence-lots.selectors';
-import { PROFILE_LABELS, PROFILE_OPTIONS, addDays, toIsoDate } from '../../utils/licence-lot.utils';
+import {
+    PROFILE_LABELS,
+    PROFILE_OPTIONS,
+    addDays,
+    formatMoney,
+    syncCalculatedAmount,
+    toIsoDate,
+    unitPriceUsd
+} from '../../utils/licence-lot.utils';
 
 @Component({
     standalone: true,
@@ -69,6 +79,7 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
     saving$ = this.store.select(selectLicenceLotsSaving);
 
     periods: PeriodCatalog[] = [];
+    plans: Licence[] = []; // precio mensual en USD por perfil (subscription/plans)
     form: FormGroup = this.fb.group({
         roleTypeProfile: [null, Validators.required],
         userCount: [1, [Validators.required, Validators.min(1)]],
@@ -87,11 +98,19 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe((periods) => {
                 this.periods = periods;
-                this.cdr.markForCheck();
+                this.refreshAmount();
             });
 
-        // endDate y descuento son derivados del formulario: hay que re-renderizar al editar
-        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+        this.store
+            .select(selectAllLicences)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((plans) => {
+                this.plans = plans;
+                this.refreshAmount();
+            });
+
+        // endDate, descuento y monto son derivados del formulario: hay que recalcular y re-renderizar al editar
+        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshAmount());
 
         this.actions$.pipe(ofType(LicenceLotsActions.createSuccess), takeUntil(this.destroy$)).subscribe(() => this.closed.emit());
 
@@ -106,7 +125,49 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
             this.inlineError = null;
             this.form.reset({ roleTypeProfile: null, userCount: 1, startDate: new Date(), paymentReference: '', activationNotes: '' });
             this.store.dispatch(CatalogsActions.load());
+            if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
         }
+    }
+
+    /** Precio mensual por licencia en USD del perfil elegido. */
+    private get monthlyPriceUsd(): number | null {
+        return this.plans.find((plan) => plan.licences === this.form.value.roleTypeProfile)?.amountUsd ?? null;
+    }
+
+    /** Precio de una licencia por todo el periodo (aplica descuento del periodo). */
+    get unitPrice(): number | null {
+        const monthly = this.monthlyPriceUsd;
+        const period = this.selectedPeriod;
+        return monthly !== null && period ? unitPriceUsd(monthly, period) : null;
+    }
+
+    /** Activación: periodo completo × cantidad de licencias. */
+    get calculatedAmount(): number | null {
+        const unit = this.unitPrice;
+        const quantity: number | null = this.form.value.userCount;
+        return unit !== null && quantity ? unit * quantity : null;
+    }
+
+    get amountBreakdown(): string | null {
+        const unit = this.unitPrice;
+        const quantity = this.form.value.userCount;
+        return unit !== null && quantity ? `${quantity} × ${formatMoney(unit)} por licencia (${this.selectedPeriod?.displayName})` : null;
+    }
+
+    get amountDiffersFromCalculated(): boolean {
+        return this.calculatedAmount !== null && this.form.value.amountCharged !== this.calculatedAmount;
+    }
+
+    useCalculatedAmount(): void {
+        const control = this.form.get('amountCharged');
+        control?.setValue(this.calculatedAmount, { emitEvent: false });
+        control?.markAsPristine();
+        this.cdr.markForCheck();
+    }
+
+    private refreshAmount(): void {
+        syncCalculatedAmount(this.form.get('amountCharged'), this.calculatedAmount);
+        this.cdr.markForCheck();
     }
 
     get selectedPeriod(): PeriodCatalog | null {

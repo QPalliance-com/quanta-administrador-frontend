@@ -1,4 +1,5 @@
-export type LicenceProfile = 'administrator' | 'premium' | 'standard';
+// Valores que acepta ms-admin (VALID_PROFILES). Ojo: el ejemplo de la tarea decía "administrator", pero el backend valida "system_admin"
+export type LicenceProfile = 'system_admin' | 'premium' | 'standard';
 
 export type LicenceLotStatus = 'active' | 'expiring' | 'grace_period' | 'expired';
 

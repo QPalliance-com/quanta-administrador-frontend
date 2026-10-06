@@ -21,13 +21,24 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
-import { LicenceLot } from '@/core/models';
+import { Licence, LicenceLot, PeriodCatalog } from '@/core/models';
 import { DateColombiaPipe } from '@/core/pipes/date-colombia.pipe';
+import { LicencesActions } from '@/features/settings/state/actions/licences.actions';
+import { selectAllLicences } from '@/features/settings/state/selectors/licences.selectors';
 import { CatalogsActions } from '../../state/actions/catalogs.actions';
 import { LicenceLotsActions } from '../../state/actions/licence-lots.actions';
 import { selectPaymentTypes, selectPeriods } from '../../state/selectors/catalogs.selectors';
 import { selectAllLicenceLots, selectLicenceLotsSaving } from '../../state/selectors/licence-lots.selectors';
-import { PROFILE_OPTIONS, findMergeableLot } from '../../utils/licence-lot.utils';
+import {
+    PROFILE_OPTIONS,
+    findMergeableLot,
+    formatMoney,
+    fromIsoDate,
+    proratedAmountUsd,
+    remainingDays,
+    syncCalculatedAmount,
+    unitPriceUsd
+} from '../../utils/licence-lot.utils';
 
 @Component({
     standalone: true,
@@ -63,6 +74,8 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
     saving$ = this.store.select(selectLicenceLotsSaving);
 
     lots: LicenceLot[] = [];
+    periods: PeriodCatalog[] = [];
+    plans: Licence[] = []; // precio mensual en USD por perfil (subscription/plans)
     form: FormGroup = this.fb.group({
         roleTypeProfile: [null, Validators.required],
         quantityToAdd: [1, [Validators.required, Validators.min(1)]],
@@ -80,10 +93,27 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe((lots) => {
                 this.lots = lots;
-                this.cdr.markForCheck();
+                this.refreshAmount();
             });
 
-        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+        this.store
+            .select(selectPeriods)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((periods) => {
+                this.periods = periods;
+                this.refreshAmount();
+            });
+
+        this.store
+            .select(selectAllLicences)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((plans) => {
+                this.plans = plans;
+                this.refreshAmount();
+            });
+
+        // El monto depende de perfil, cantidad y periodo (y del lote fusionable): se recalcula al editar
+        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshAmount());
 
         this.actions$.pipe(ofType(LicenceLotsActions.addLicencesSuccess), takeUntil(this.destroy$)).subscribe(() => this.closed.emit());
 
@@ -98,7 +128,65 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
             this.inlineError = null;
             this.form.reset({ roleTypeProfile: null, quantityToAdd: 1, paymentReference: '' });
             this.store.dispatch(CatalogsActions.load());
+            if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
         }
+    }
+
+    private get selectedPeriod(): PeriodCatalog | null {
+        return this.periods.find((period) => period.id === this.form.value.periodCatalogId) ?? null;
+    }
+
+    /** Precio de una licencia por todo el periodo (aplica descuento del periodo). */
+    private get unitPrice(): number | null {
+        const monthly = this.plans.find((plan) => plan.licences === this.form.value.roleTypeProfile)?.amountUsd ?? null;
+        const period = this.selectedPeriod;
+        return monthly !== null && period ? unitPriceUsd(monthly, period) : null;
+    }
+
+    /** Días que le quedan al lote fusionable; null si se va a crear un lote nuevo (periodo completo). */
+    private get daysRemaining(): number | null {
+        const lot = this.mergeableLot;
+        const period = this.selectedPeriod;
+        return lot && period ? remainingDays(new Date(), fromIsoDate(lot.endDate), period.durationDays) : null;
+    }
+
+    /** Misma regla que el backend: fusión = prorrateo por los días restantes del lote; lote nuevo = periodo completo. */
+    get calculatedAmount(): number | null {
+        const unit = this.unitPrice;
+        const quantity: number | null = this.form.value.quantityToAdd;
+        const period = this.selectedPeriod;
+        if (unit === null || !quantity || !period) return null;
+
+        const days = this.daysRemaining;
+        return days === null ? unit * quantity : proratedAmountUsd(unit, quantity, days, period.durationDays);
+    }
+
+    get amountBreakdown(): string | null {
+        const unit = this.unitPrice;
+        const quantity = this.form.value.quantityToAdd;
+        const period = this.selectedPeriod;
+        if (unit === null || !quantity || !period) return null;
+
+        const days = this.daysRemaining;
+        return days === null
+            ? `${quantity} × ${formatMoney(unit)} por licencia (periodo completo)`
+            : `${quantity} × ${formatMoney(unit)} por licencia, prorrateado: ${days} de ${period.durationDays} días restantes del lote`;
+    }
+
+    get amountDiffersFromCalculated(): boolean {
+        return this.calculatedAmount !== null && this.form.value.amountCharged !== this.calculatedAmount;
+    }
+
+    useCalculatedAmount(): void {
+        const control = this.form.get('amountCharged');
+        control?.setValue(this.calculatedAmount, { emitEvent: false });
+        control?.markAsPristine();
+        this.cdr.markForCheck();
+    }
+
+    private refreshAmount(): void {
+        syncCalculatedAmount(this.form.get('amountCharged'), this.calculatedAmount);
+        this.cdr.markForCheck();
     }
 
     /** Hay que elegir perfil y periodo para poder anticipar qué hará el backend. */

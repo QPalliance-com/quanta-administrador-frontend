@@ -1,9 +1,10 @@
-import type { ExpiringLot, ExtendableLot, LicenceLot, LicenceLotStatus, LicenceProfile, RenewalType } from '@/core/models';
+import type { AbstractControl } from '@angular/forms';
+import type { ExpiringLot, ExtendableLot, LicenceLot, LicenceLotStatus, LicenceProfile, PeriodCatalog, RenewalType } from '@/core/models';
 
 export type TagSeverity = 'success' | 'warn' | 'danger' | 'secondary';
 
 export const PROFILE_LABELS: Record<LicenceProfile, string> = {
-    administrator: 'Administrador',
+    system_admin: 'Administrador',
     premium: 'Premium',
     standard: 'Estándar'
 };
@@ -118,4 +119,40 @@ export function groupByUrgency(lots: ExpiringLot[]): UrgencyGroup[] {
 /** Formatea un monto en la moneda indicada (USD por defecto: así se cargan los pagos de lotes). */
 export function formatMoney(amount: number, currency = 'USD'): string {
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+}
+
+const DAYS_PER_MONTH = 30;
+const MS_PER_DAY = 86_400_000;
+
+/**
+ * Precio en USD de UNA licencia por todo el periodo. Misma regla que `LicencePeriodPricing.unitPrice` del backend:
+ * mensual × (días / 30) × (1 − descuento), redondeado al entero.
+ */
+export function unitPriceUsd(monthlyUsd: number, period: Pick<PeriodCatalog, 'durationDays' | 'discountPct'>): number {
+    return Math.round(((monthlyUsd * period.durationDays) / DAYS_PER_MONTH) * ((100 - period.discountPct) / 100));
+}
+
+function daysBetween(from: Date, to: Date): number {
+    return Math.round(
+        (Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) - Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / MS_PER_DAY
+    );
+}
+
+/** Días que le quedan al lote, acotados a [0, duración del periodo] (igual que `calculate_prorated_amount_v2`). */
+export function remainingDays(today: Date, endDate: Date, totalPeriodDays: number): number {
+    return Math.max(0, Math.min(daysBetween(today, endDate), totalPeriodDays));
+}
+
+/** Monto al sumar licencias a un lote vigente: precio del periodo prorrateado por los días restantes. */
+export function proratedAmountUsd(unitPrice: number, quantity: number, daysRemaining: number, totalPeriodDays: number): number {
+    return Math.round((unitPrice * daysRemaining * quantity) / totalPeriodDays);
+}
+
+/**
+ * Rellena el monto calculado mientras el admin no lo haya tocado: si lo escribió a mano (dirty) se respeta.
+ * `emitEvent: false` evita que el propio relleno vuelva a disparar el recálculo.
+ */
+export function syncCalculatedAmount(control: AbstractControl | null, calculated: number | null): void {
+    if (!control || control.dirty) return;
+    control.setValue(calculated, { emitEvent: false });
 }
