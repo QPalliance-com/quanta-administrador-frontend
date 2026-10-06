@@ -24,7 +24,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
-import { Licence, PeriodCatalog } from '@/core/models';
+import { Licence, PaymentTypeCatalog, PeriodCatalog } from '@/core/models';
 import { DateColombiaPipe } from '@/core/pipes/date-colombia.pipe';
 import { LicencesActions } from '@/features/settings/state/actions/licences.actions';
 import { selectAllLicences } from '@/features/settings/state/selectors/licences.selectors';
@@ -80,6 +80,7 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
     saving$ = this.store.select(selectLicenceLotsSaving);
 
     periods: PeriodCatalog[] = [];
+    paymentTypes: PaymentTypeCatalog[] = [];
     plans: Licence[] = []; // precio mensual en USD por perfil (subscription/plans)
     form: FormGroup = this.fb.group({
         roleTypeProfile: [null, Validators.required],
@@ -100,6 +101,14 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
             .subscribe((periods) => {
                 this.periods = periods;
                 this.refreshAmount();
+            });
+
+        this.store
+            .select(selectPaymentTypes)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((paymentTypes) => {
+                this.paymentTypes = paymentTypes;
+                this.cdr.markForCheck();
             });
 
         this.store
@@ -170,6 +179,15 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
     private refreshAmount(): void {
         syncCalculatedAmount(this.form.get('amountCharged'), this.calculatedAmount);
         this.cdr.markForCheck();
+    }
+
+    /**
+     * Con tarjeta (forma de pago con renovación automática) la activación manual NO cobra ni notifica al tenant:
+     * ms-admin solo registra el lote y lo factura como pagado. El cobro lo hace el cliente al renovar.
+     */
+    get cardSelected(): boolean {
+        const id = this.form.value.paymentTypeCatalogId;
+        return !!this.paymentTypes.find((type) => type.id === id)?.allowsAutoRenewal;
     }
 
     get selectedPeriod(): PeriodCatalog | null {
