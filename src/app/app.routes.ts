@@ -33,8 +33,13 @@ export const appRoutes: Routes = [
                 data: { breadcrumb: 'Compañías' }, 
                 loadChildren: () => import('./features/companies/companies.routes').then((m) => m.companiesRoutes) 
             },
-            { 
-                path: 'users', 
+            {
+                path: 'billing',
+                data: { breadcrumb: 'Facturación' },
+                loadChildren: () => import('./features/billing/billing.routes').then((m) => m.billingRoutes)
+            },
+            {
+                path: 'users',
                 data: { breadcrumb: 'Usuarios' }, 
                 loadChildren: () => import('./features/users/users.routes').then((m) => m.usersRoutes) 
             },

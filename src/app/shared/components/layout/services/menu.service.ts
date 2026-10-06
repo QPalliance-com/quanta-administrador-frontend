@@ -34,6 +34,18 @@ const MENU_ITEMS: MenuItem[] = [
         ]
     },
     {
+        label: 'Facturación',
+        icon: 'pi pi-fw pi-wallet',
+        items: [
+            {
+                label: 'Pagos MercadoPago',
+                icon: 'pi pi-credit-card',
+                routerLink: ['/billing/mercadopago-payments'],
+                description: 'Pagos de MercadoPago y su conciliación con Quanta'
+            }
+        ]
+    },
+    {
         label: 'Usuarios',
         icon: 'pi pi-fw pi-users',
         items: [

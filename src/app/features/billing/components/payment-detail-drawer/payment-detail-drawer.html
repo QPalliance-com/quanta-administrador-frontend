@@ -1,0 +1,107 @@
+<p-drawer [visible]="visible" (visibleChange)="onVisibleChange($event)" position="right" [modal]="true" [style]="{ width: '480px' }">
+    <ng-template #header>
+        <span class="font-semibold text-base flex items-center gap-2">
+            <i class="pi pi-credit-card text-primary"></i>
+            Detalle del pago
+        </span>
+    </ng-template>
+
+    <div *ngIf="payment as p" class="flex flex-col gap-5 pt-2">
+        <!-- Conciliación: lo primero que hay que saber del pago -->
+        <section class="flex flex-col gap-2" aria-label="Conciliación">
+            <div class="flex items-center gap-3">
+                <p-tag [value]="reconciliationMeta[p.reconciliation].label" [severity]="reconciliationMeta[p.reconciliation].severity" />
+                <span *ngIf="reconciliationMeta[p.reconciliation].needsAttention" class="text-sm font-medium text-red-600 dark:text-red-400">Requiere atención</span>
+            </div>
+            <p class="text-sm text-surface-700 dark:text-surface-200 m-0">{{ reconciliationMeta[p.reconciliation].explanation }}</p>
+        </section>
+
+        <section aria-labelledby="mp-section-title">
+            <h3 id="mp-section-title" class="text-sm font-semibold text-surface-900 dark:text-surface-50 m-0 mb-2">En MercadoPago</h3>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm border border-surface-200 dark:border-surface-700 rounded-xl p-4 m-0">
+                <dt class="text-surface-600 dark:text-surface-300">Id del pago</dt>
+                <dd class="m-0 font-medium text-right break-all tabular-nums">{{ p.paymentId }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Estado</dt>
+                <dd class="m-0 text-right">
+                    <p-tag [value]="mpStatus(p.status).label" [severity]="mpStatus(p.status).severity" />
+                </dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Detalle del estado</dt>
+                <dd class="m-0 font-medium text-right">{{ p.statusDetail ?? '—' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Monto</dt>
+                <dd class="m-0 font-semibold text-right tabular-nums">{{ formatMoney(p.amount, p.currency) }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Medio de pago</dt>
+                <dd class="m-0 font-medium text-right">{{ p.paymentMethodId ?? '—' }}{{ p.paymentTypeId ? ' (' + p.paymentTypeId + ')' : '' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Descripción</dt>
+                <dd class="m-0 font-medium text-right">{{ p.description ?? '—' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Correo del pagador</dt>
+                <dd class="m-0 font-medium text-right break-all">{{ p.payerEmail ?? '—' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Referencia</dt>
+                <dd class="m-0 font-medium text-right break-all">{{ p.externalReference ?? '—' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Creado</dt>
+                <dd class="m-0 font-medium text-right tabular-nums">{{ p.dateCreated | date: 'dd/MM/yyyy HH:mm:ss' : '-0500' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Aprobado</dt>
+                <dd class="m-0 font-medium text-right tabular-nums">{{ p.dateApproved ? (p.dateApproved | date: 'dd/MM/yyyy HH:mm:ss' : '-0500') : '—' }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Última actualización</dt>
+                <dd class="m-0 font-medium text-right tabular-nums">{{ p.dateLastUpdated ? (p.dateLastUpdated | date: 'dd/MM/yyyy HH:mm:ss' : '-0500') : '—' }}</dd>
+            </dl>
+        </section>
+
+        <section aria-labelledby="local-section-title">
+            <h3 id="local-section-title" class="text-sm font-semibold text-surface-900 dark:text-surface-50 m-0 mb-2">En Quanta</h3>
+            <dl *ngIf="p.local as local; else noLocalTpl" class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm border border-surface-200 dark:border-surface-700 rounded-xl p-4 m-0">
+                <dt class="text-surface-600 dark:text-surface-300">Transacción</dt>
+                <dd class="m-0 font-medium text-right tabular-nums">#{{ local.transactionId }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Estado</dt>
+                <dd class="m-0 font-medium text-right">{{ local.engineStatus }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Empresa</dt>
+                <dd class="m-0 font-medium text-right">{{ local.companyName }}</dd>
+
+                <dt class="text-surface-600 dark:text-surface-300">Factura</dt>
+                <dd class="m-0 font-medium text-right tabular-nums">{{ local.invoiceId ? '#' + local.invoiceId : '—' }}</dd>
+
+                <ng-container *ngIf="p.lotId">
+                    <dt class="text-surface-600 dark:text-surface-300">Lote</dt>
+                    <dd class="m-0 font-medium text-right tabular-nums">#{{ p.lotId }}</dd>
+                </ng-container>
+            </dl>
+            <ng-template #noLocalTpl>
+                <p class="text-sm text-surface-700 dark:text-surface-200 m-0 border border-surface-200 dark:border-surface-700 rounded-xl p-4">
+                    Quanta no tiene registro de este pago.
+                </p>
+            </ng-template>
+        </section>
+
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-surface-100 dark:border-surface-800">
+            <p-button
+                *ngIf="p.local?.invoiceId as invoiceId"
+                label="Descargar comprobante"
+                icon="pi pi-download"
+                [loading]="(downloadingId$ | async) === invoiceId"
+                [disabled]="(downloadingId$ | async) !== null"
+                (onClick)="downloadInvoice(invoiceId)"
+            />
+            <p-button
+                *ngIf="p.lotId && p.local"
+                label="Ver lotes de la empresa"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                severity="secondary"
+                [outlined]="true"
+                [routerLink]="['/companies', p.local.companyId, 'licences']"
+                (onClick)="closed.emit()"
+            />
+        </div>
+    </div>
+</p-drawer>

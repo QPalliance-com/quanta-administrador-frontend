@@ -1,0 +1,198 @@
+<div class="card">
+    <form [formGroup]="form" (ngSubmit)="search()" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 items-end mb-6" aria-label="Filtros de pagos">
+        <div class="flex flex-col gap-1">
+            <label for="range" class="text-sm font-medium text-surface-700 dark:text-surface-200">Rango de fechas</label>
+            <p-datepicker
+                fluid
+                inputId="range"
+                formControlName="range"
+                selectionMode="range"
+                dateFormat="dd/mm/yy"
+                [maxDate]="today"
+                [showIcon]="true"
+                [showButtonBar]="false"
+                [readonlyInput]="true"
+                placeholder="Últimos 7 días"
+                appendTo="body"
+            />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="status" class="text-sm font-medium text-surface-700 dark:text-surface-200">Estado</label>
+            <p-select
+                fluid
+                inputId="status"
+                formControlName="status"
+                [options]="statusOptions"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+            />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="paymentMethodId" class="text-sm font-medium text-surface-700 dark:text-surface-200">Medio de pago</label>
+            <input pInputText fluid id="paymentMethodId" formControlName="paymentMethodId" placeholder="visa, master, pse" autocomplete="off" />
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="externalReference" class="text-sm font-medium text-surface-700 dark:text-surface-200">Referencia externa</label>
+            <input pInputText fluid id="externalReference" formControlName="externalReference" placeholder="QUANTA-LOT-61" autocomplete="off" />
+        </div>
+
+        <div class="flex gap-2">
+            <p-button label="Buscar" icon="pi pi-search" type="submit" [loading]="(loading$ | async) ?? false" />
+            <p-button label="Limpiar" severity="secondary" [outlined]="true" type="button" (onClick)="clear()" />
+        </div>
+    </form>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="flex flex-wrap items-center gap-3">
+            <p-selectbutton
+                [options]="viewOptions"
+                [(ngModel)]="viewFilter"
+                (onChange)="onViewChange($event.value)"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+            />
+            <span *ngIf="differencesCount$ | async as count" class="text-sm font-medium text-red-600 dark:text-red-400">
+                {{ count }} {{ count === 1 ? 'pago con diferencia' : 'pagos con diferencias' }} en esta página
+            </span>
+        </div>
+        <span *ngIf="total$ | async as total" class="text-sm text-surface-600 dark:text-surface-300">{{ total | number }} pagos en total</span>
+    </div>
+
+    <p-message *ngIf="truncated$ | async" severity="warn" styleClass="w-full mb-4">
+        Hay más de {{ maxResults | number }} resultados y MercadoPago no permite verlos todos. Acota el rango de fechas para ver el resto.
+    </p-message>
+
+    <ng-container *ngIf="error$ | async as error; else tableTpl">
+        <p-message severity="error" styleClass="w-full">
+            <div class="flex items-center justify-between gap-3 w-full">
+                <span>{{ error }}</span>
+                <button pButton label="Reintentar" icon="pi pi-refresh" size="small" severity="secondary" [outlined]="true" (click)="retry()"></button>
+            </div>
+        </p-message>
+    </ng-container>
+
+    <ng-template #tableTpl>
+        <p-table
+            *ngIf="visiblePayments$ | async as payments"
+            [value]="payments"
+            dataKey="paymentId"
+            [lazy]="true"
+            [lazyLoadOnInit]="false"
+            [paginator]="true"
+            [rows]="(pageSize$ | async) ?? 20"
+            [first]="(first$ | async) ?? 0"
+            [totalRecords]="(reachableTotal$ | async) ?? 0"
+            [rowsPerPageOptions]="pageSizeOptions"
+            [loading]="(loading$ | async) ?? false"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+            [tableStyle]="{ 'min-width': '72rem' }"
+            (onPage)="onPage($event)"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Id del pago</th>
+                    <th>Estado</th>
+                    <th class="text-right">Monto</th>
+                    <th>Medio de pago</th>
+                    <th>Empresa</th>
+                    <th>Referencia</th>
+                    <th>Conciliación</th>
+                    <th style="width: 6rem"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-p>
+                <tr
+                    class="cursor-pointer transition-colors hover:bg-primary/10 dark:hover:bg-primary/10"
+                    [ngClass]="rowClass(p)"
+                    (click)="openDetail(p)"
+                >
+                    <td class="tabular-nums whitespace-nowrap">{{ p.dateCreated | date: 'dd/MM/yyyy HH:mm' : '-0500' }}</td>
+                    <td>
+                        <div class="flex items-center gap-1">
+                            <span class="tabular-nums">{{ p.paymentId }}</span>
+                            <button
+                                pButton
+                                type="button"
+                                [icon]="copiedId === p.paymentId ? 'pi pi-check' : 'pi pi-copy'"
+                                severity="secondary"
+                                [text]="true"
+                                [rounded]="true"
+                                size="small"
+                                [attr.aria-label]="'Copiar id del pago ' + p.paymentId"
+                                pTooltip="Copiar id"
+                                tooltipPosition="top"
+                                (click)="copyPaymentId($event, p.paymentId)"
+                            ></button>
+                            <span class="sr-only" role="status" aria-live="polite">{{ copiedId === p.paymentId ? 'Id copiado' : '' }}</span>
+                        </div>
+                    </td>
+                    <td><p-tag [value]="mpStatus(p.status).label" [severity]="mpStatus(p.status).severity" /></td>
+                    <td class="text-right font-semibold tabular-nums whitespace-nowrap">{{ formatMoney(p.amount, p.currency) }}</td>
+                    <td>{{ p.paymentMethodId ?? '—' }}</td>
+                    <td>{{ p.local?.companyName ?? '—' }}</td>
+                    <td class="max-w-56 truncate" [pTooltip]="p.externalReference ?? ''" tooltipPosition="top">{{ p.externalReference ?? '—' }}</td>
+                    <td>
+                        <p-tag
+                            [value]="reconciliationMeta[p.reconciliation].label"
+                            [severity]="reconciliationMeta[p.reconciliation].severity"
+                        />
+                    </td>
+                    <td>
+                        <div class="flex items-center justify-end gap-1">
+                            <button
+                                *ngIf="p.local?.invoiceId as invoiceId"
+                                pButton
+                                type="button"
+                                icon="pi pi-download"
+                                severity="secondary"
+                                [text]="true"
+                                [rounded]="true"
+                                size="small"
+                                [loading]="(downloadingId$ | async) === invoiceId"
+                                [disabled]="(downloadingId$ | async) !== null"
+                                [attr.aria-label]="'Descargar comprobante del pago ' + p.paymentId"
+                                pTooltip="Descargar comprobante"
+                                tooltipPosition="top"
+                                (click)="downloadInvoice($event, invoiceId)"
+                            ></button>
+                            <button
+                                pButton
+                                type="button"
+                                icon="pi pi-eye"
+                                severity="secondary"
+                                [text]="true"
+                                [rounded]="true"
+                                size="small"
+                                [attr.aria-label]="'Ver detalle del pago ' + p.paymentId"
+                                pTooltip="Ver detalle"
+                                tooltipPosition="top"
+                            ></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="9" class="text-center text-surface-500 py-12">
+                        <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                        <span>{{ viewFilter === 'differences' ? 'Ningún pago de esta página tiene diferencias.' : 'No hay pagos en el rango seleccionado.' }}</span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </ng-template>
+</div>
+
+<app-payment-detail-drawer [visible]="displayDetail" [payment]="selectedPayment" (closed)="displayDetail = false" />
+
+<p-toast />
