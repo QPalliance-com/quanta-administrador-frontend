@@ -13,6 +13,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return next(req);
     }
 
+    // El login se autentica con credenciales: enviar un Bearer viejo o vencido de una sesión previa lo contamina
+    if (/\/login(\?|$)/.test(req.url)) {
+        return next(req);
+    }
+
     // Obtener el token del signal
     const token = authService.token();
     
