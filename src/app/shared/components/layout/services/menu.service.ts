@@ -24,6 +24,12 @@ const MENU_ITEMS: MenuItem[] = [
                 icon: 'pi pi-list',
                 routerLink: ['/companies/list'],
                 description: 'Gestión de empresas registradas'
+            },
+            {
+                label: 'Alertas de Vencimiento',
+                icon: 'pi pi-exclamation-triangle',
+                routerLink: ['/companies/licence-alerts'],
+                description: 'Lotes de licencia próximos a vencer en todas las empresas'
             }
         ]
     },
@@ -48,6 +54,12 @@ const MENU_ITEMS: MenuItem[] = [
                 icon: 'pi pi-credit-card',
                 routerLink: ['/settings/licences/list'],
                 description: 'Configuración de las licencias de suscripción del sistema'
+            },
+            {
+                label: 'Gracia y Alertas',
+                icon: 'pi pi-bell',
+                routerLink: ['/settings/licences/config'],
+                description: 'Periodo de gracia y alertas de vencimiento de licencias'
             },
             {
                 label: 'Días No Laborables',

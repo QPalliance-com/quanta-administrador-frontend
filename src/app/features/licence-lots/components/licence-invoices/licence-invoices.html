@@ -1,0 +1,85 @@
+<section class="card mt-6" aria-labelledby="invoices-title">
+    <ng-container *ngIf="error$ | async as error; else tableTpl">
+        <h2 id="invoices-title" class="font-semibold text-xl m-0 mb-4">Facturas</h2>
+        <p-message severity="error" styleClass="w-full">
+            <div class="flex items-center justify-between gap-3 w-full">
+                <span>{{ error }}</span>
+                <button pButton label="Reintentar" icon="pi pi-refresh" size="small" severity="secondary" [outlined]="true" (click)="load()"></button>
+            </div>
+        </p-message>
+    </ng-container>
+
+    <ng-template #tableTpl>
+        <p-table
+            *ngIf="invoices$ | async as invoices"
+            [value]="invoices"
+            [loading]="(loading$ | async) ?? false"
+            [paginator]="invoices.length > 10"
+            [rows]="10"
+            [tableStyle]="{ 'min-width': '52rem' }"
+            [sortField]="'issueDate'"
+            [sortOrder]="-1"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template #caption>
+                <div class="flex items-center gap-3">
+                    <h2 id="invoices-title" class="font-semibold text-xl m-0">Facturas</h2>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
+                        {{ invoices.length }} {{ invoices.length === 1 ? 'factura' : 'facturas' }}
+                    </span>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="issueDate">Fecha <p-sortIcon field="issueDate" /></th>
+                    <th>Descripción</th>
+                    <th pSortableColumn="lotId">Lote <p-sortIcon field="lotId" /></th>
+                    <th>Forma de pago</th>
+                    <th>Referencia</th>
+                    <th pSortableColumn="totalAmount" class="text-right">Monto <p-sortIcon field="totalAmount" /></th>
+                    <th>Estado</th>
+                    <th style="width: 3rem"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-invoice>
+                <tr class="transition-colors hover:bg-primary/10 dark:hover:bg-primary/10">
+                    <td>{{ invoice.issueDate | dateColombia }}</td>
+                    <td>{{ invoice.description ?? '—' }}</td>
+                    <td class="tabular-nums">{{ invoice.lotId ? '#' + invoice.lotId : '—' }}</td>
+                    <td>{{ providerLabels[invoice.provider] ?? invoice.provider ?? '—' }}</td>
+                    <td class="max-w-56 truncate" [pTooltip]="invoice.paymentReference ?? ''" tooltipPosition="top">{{ invoice.paymentReference ?? '—' }}</td>
+                    <td class="text-right font-semibold tabular-nums">{{ formatMoney(invoice.totalAmount, invoice.currency) }}</td>
+                    <td><p-tag [value]="statusLabel(invoice.status)" [severity]="statusSeverity(invoice.status)" /></td>
+                    <td class="text-center">
+                        <button
+                            pButton
+                            type="button"
+                            icon="pi pi-download"
+                            severity="secondary"
+                            [text]="true"
+                            [rounded]="true"
+                            size="small"
+                            [loading]="(downloadingId$ | async) === invoice.id"
+                            [disabled]="(downloadingId$ | async) !== null"
+                            [attr.aria-label]="'Descargar PDF de la factura ' + invoice.id"
+                            pTooltip="Descargar PDF"
+                            tooltipPosition="left"
+                            (click)="download(invoice.id)"
+                        ></button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="8" class="text-center text-surface-500 py-12">
+                        <i class="pi pi-receipt text-4xl mb-3 block"></i>
+                        <span>Esta empresa no tiene facturas. Se generan al registrar un pago con monto.</span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </ng-template>
+</section>

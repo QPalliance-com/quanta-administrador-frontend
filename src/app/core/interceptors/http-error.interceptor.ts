@@ -3,6 +3,7 @@ import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpErrorResponse
 import { Router } from '@angular/router';
 import { Observable, catchError, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
+import { LOCAL_ERROR_HANDLING } from './local-error-handling';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
@@ -14,6 +15,12 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(req).pipe(
             catchError((error: HttpErrorResponse) => {
+                // 400/403/404 de lotes y configuración: el feature muestra el mensaje real del backend
+                // (p. ej. "APPLICATION - 50: exclusiva de los administradores de Quanta") sin sacar al usuario de la pantalla
+                if (this.isHandledLocally(req, error)) {
+                    return throwError(() => error);
+                }
+
                 if (error instanceof HttpErrorResponse) {
                     switch (error.status) {
                         case 401:
@@ -71,5 +78,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                 return throwError(() => error);
             })
         );
+    }
+
+    /** El 401 siempre es global: la sesión vencida lleva a login desde cualquier pantalla. */
+    private isHandledLocally(req: HttpRequest<unknown>, error: HttpErrorResponse): boolean {
+        return req.context.get(LOCAL_ERROR_HANDLING) && error.status >= 400 && error.status < 500 && error.status !== 401;
     }
 }

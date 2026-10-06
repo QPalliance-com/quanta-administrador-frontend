@@ -19,7 +19,17 @@ import { CompaniesEffects } from './features/companies/state/effects/companies.e
 import { licencesReducer } from './features/settings/state/reducers/licences.reducer';
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
 import { holidaysReducer } from './features/settings/state/reducers/holidays.reducer';
+import { licenseConfigReducer } from './features/settings/state/reducers/license-config.reducer';
+import { LicenseConfigEffects } from './features/settings/state/effects/license-config.effects';
 import { HolidaysEffects } from './features/settings/state/effects/holidays.effects';
+import { licenceLotsReducer } from './features/licence-lots/state/reducers/licence-lots.reducer';
+import { LicenceLotsEffects } from './features/licence-lots/state/effects/licence-lots.effects';
+import { catalogsReducer } from './features/licence-lots/state/reducers/catalogs.reducer';
+import { invoicesReducer } from './features/licence-lots/state/reducers/invoices.reducer';
+import { InvoicesEffects } from './features/licence-lots/state/effects/invoices.effects';
+import { expiringLotsReducer } from './features/licence-lots/state/reducers/expiring-lots.reducer';
+import { ExpiringLotsEffects } from './features/licence-lots/state/effects/expiring-lots.effects';
+import { CatalogsEffects } from './features/licence-lots/state/effects/catalogs.effects';
 import { authReducer } from './features/auth/state/reducers/auth.reducer';
 import { AuthEffects } from './features/auth/state/effects/auth.effects';
 import { dashboardReducer } from './features/dashboard/state/reducers/dashboard.reducer';
@@ -71,6 +81,11 @@ export const appConfig: ApplicationConfig = {
                 companies: companiesReducer,
                 licences: licencesReducer,
                 holidays: holidaysReducer,
+                licenseConfig: licenseConfigReducer,
+                licenceLots: licenceLotsReducer,
+                catalogs: catalogsReducer,
+                expiringLots: expiringLotsReducer,
+                licenceInvoices: invoicesReducer,
                 dashboard: dashboardReducer
             },
             {
@@ -92,6 +107,11 @@ export const appConfig: ApplicationConfig = {
             CompaniesEffects,
             LicencesEffects,
             HolidaysEffects,
+            LicenseConfigEffects,
+            LicenceLotsEffects,
+            CatalogsEffects,
+            ExpiringLotsEffects,
+            InvoicesEffects,
             DashboardEffects
         ]),
 

@@ -1,0 +1,118 @@
+<p-dialog
+    [visible]="visible"
+    (visibleChange)="onVisibleChange($event)"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '450px' }"
+    [breakpoints]="{ '575px': '95vw' }"
+    header="Extender lote"
+>
+    <form *ngIf="lot" [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+        <p-message *ngIf="inlineError" severity="error" [text]="inlineError" styleClass="w-full" />
+
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm border border-surface-200 dark:border-surface-700 rounded-xl p-4 m-0">
+            <dt class="text-surface-600 dark:text-surface-300">Lote</dt>
+            <dd class="m-0 font-medium text-right">#{{ lot.id }} · {{ profileLabels[lot.roleTypeProfile] }} · {{ lot.userCount }} usuarios</dd>
+
+            <dt class="text-surface-600 dark:text-surface-300">Vencimiento actual</dt>
+            <dd class="m-0 font-medium text-right">{{ lot.endDate | dateColombia }}</dd>
+
+            <dt class="text-surface-600 dark:text-surface-300">Tipo de renovación</dt>
+            <dd class="m-0 text-right">
+                <p-tag *ngIf="renewalType === 'early'" value="Renovación anticipada" severity="success" />
+                <p-tag *ngIf="renewalType === 'reactivation'" value="Reactivación" severity="warn" />
+            </dd>
+
+            <dt class="text-surface-600 dark:text-surface-300">Nuevo vencimiento</dt>
+            <dd class="m-0 font-semibold text-right">{{ newEndDate ? (newEndDate | dateColombia) : 'Selecciona un periodo' }}</dd>
+        </dl>
+
+        <p-message *ngIf="renewalType === 'reactivation'" severity="warn" styleClass="w-full">
+            El lote ya venció o está en gracia: el nuevo periodo se cuenta desde hoy.
+        </p-message>
+
+        <div class="flex flex-col gap-1">
+            <label for="periodCatalogId" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                Periodo <span class="text-red-500">*</span>
+            </label>
+            <p-select
+                fluid
+                inputId="periodCatalogId"
+                formControlName="periodCatalogId"
+                [options]="periods"
+                optionLabel="displayName"
+                optionValue="id"
+                placeholder="Seleccionar periodo"
+                appendTo="body"
+                [class.ng-invalid]="isInvalid('periodCatalogId')"
+                [class.ng-dirty]="isInvalid('periodCatalogId')"
+            />
+            <small *ngIf="isInvalid('periodCatalogId')" class="text-red-500 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('periodCatalogId') }}
+            </small>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="amountCharged" class="text-sm font-medium text-surface-700 dark:text-surface-200">Monto (USD)</label>
+            <p-inputnumber
+                fluid
+                inputId="amountCharged"
+                formControlName="amountCharged"
+                mode="currency"
+                currency="USD"
+                locale="es-CO"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="2"
+                [min]="0"
+                placeholder="US$ 0"
+                [class.ng-invalid]="isInvalid('amountCharged')"
+                [class.ng-dirty]="isInvalid('amountCharged')"
+            />
+            <small class="text-surface-600 dark:text-surface-300">
+                Se calcula con el precio del perfil por las licencias del lote y puedes ajustarlo (por ejemplo por un descuento). Con el monto vacío o en cero no se genera factura.
+            </small>
+            <div *ngIf="amountBreakdown" class="flex flex-wrap items-center gap-x-2 text-sm text-surface-700 dark:text-surface-200">
+                <span>{{ amountBreakdown }}</span>
+                <button
+                    *ngIf="amountDiffersFromCalculated"
+                    pButton
+                    type="button"
+                    label="Usar monto calculado"
+                    size="small"
+                    [text]="true"
+                    (click)="useCalculatedAmount()"
+                ></button>
+            </div>
+            <small *ngIf="isInvalid('amountCharged')" class="text-red-500 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('amountCharged') }}
+            </small>
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="paymentReference" class="text-sm font-medium text-surface-700 dark:text-surface-200">Referencia de pago</label>
+            <input
+                pInputText
+                fluid
+                id="paymentReference"
+                formControlName="paymentReference"
+                maxlength="200"
+                placeholder="Ej: Transferencia Banco de Bogotá ref#112233"
+                [class.ng-invalid]="isInvalid('paymentReference')"
+                [class.ng-dirty]="isInvalid('paymentReference')"
+            />
+            <small *ngIf="isInvalid('paymentReference')" class="text-red-500 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('paymentReference') }}
+            </small>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
+            <p-button
+                [label]="renewalType === 'early' ? 'Extender lote' : 'Reactivar lote'"
+                icon="pi pi-check"
+                type="submit"
+                [loading]="(saving$ | async) ?? false"
+            />
+        </div>
+    </form>
+</p-dialog>
