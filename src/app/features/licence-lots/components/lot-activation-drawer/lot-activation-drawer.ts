@@ -172,6 +172,7 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
                     paymentTypeCatalogId: value.paymentTypeCatalogId,
                     periodCatalogId: value.periodCatalogId,
                     startDate: toIsoDate(value.startDate),
+                    endDate: null,
                     amountCharged: value.amountCharged ?? null,
                     paymentReference: value.paymentReference?.trim() || null,
                     activationNotes: value.activationNotes?.trim() || null

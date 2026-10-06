@@ -53,20 +53,22 @@
         </div>
 
         <div class="flex flex-col gap-1">
-            <label for="amountCharged" class="text-sm font-medium text-surface-700 dark:text-surface-200">Monto cobrado</label>
+            <label for="amountCharged" class="text-sm font-medium text-surface-700 dark:text-surface-200">Monto (USD)</label>
             <p-inputnumber
                 fluid
                 inputId="amountCharged"
                 formControlName="amountCharged"
                 mode="currency"
-                currency="COP"
+                currency="USD"
                 locale="es-CO"
-                [maxFractionDigits]="0"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="2"
                 [min]="0"
-                placeholder="$ 0"
+                placeholder="US$ 0"
                 [class.ng-invalid]="isInvalid('amountCharged')"
                 [class.ng-dirty]="isInvalid('amountCharged')"
             />
+            <small class="text-surface-600 dark:text-surface-300">Opcional, en dólares. Con el monto vacío o en cero no se genera factura.</small>
             <small *ngIf="isInvalid('amountCharged')" class="text-red-500 flex items-center gap-1">
                 <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('amountCharged') }}
             </small>

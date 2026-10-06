@@ -7,7 +7,7 @@ import { MessageService } from 'primeng/api';
 import { LicenceLotService } from '@/core/services/licence-lot.service';
 import { LicenceLotsActions } from '../actions/licence-lots.actions';
 import { selectLicenceLotsCompanyId } from '../selectors/licence-lots.selectors';
-import { formatIsoDate } from '../../utils/licence-lot.utils';
+import { formatIsoDate, formatMoney } from '../../utils/licence-lot.utils';
 
 @Injectable()
 export class LicenceLotsEffects {
@@ -77,7 +77,8 @@ export class LicenceLotsEffects {
                     summary: result.action === 'merged' ? 'Licencias agregadas' : 'Nuevo lote creado',
                     detail:
                         result.action === 'merged'
-                            ? `Se agregaron ${(result.newUserCount ?? 0) - (result.previousUserCount ?? 0)} licencias al lote #${result.lotId}`
+                            ? `Se agregaron ${(result.newUserCount ?? 0) - (result.previousUserCount ?? 0)} licencias al lote #${result.lotId}` +
+                              (result.proratedAmount ? `. Monto prorrateado: ${formatMoney(result.proratedAmount, result.currency)}` : '')
                             : `Se creó el lote #${result.lotId} con ${result.userCount} licencias porque el periodo difiere del lote vigente`
                 })
             ),

@@ -67,7 +67,8 @@ export interface CreateLicenceLotDto {
     paymentTypeCatalogId: number;
     periodCatalogId: number;
     startDate: string;
-    amountCharged: number | null;
+    endDate: string | null; // null: el backend lo calcula con la duración del periodo
+    amountCharged: number | null; // USD; con monto > 0 se genera una factura
     paymentReference: string | null;
     activationNotes: string | null;
 }
@@ -102,6 +103,7 @@ export interface AddLicencesResult {
     previousUserCount?: number;
     newUserCount?: number;
     proratedAmount?: number;
+    currency?: string;
     userCount?: number;
     startDate?: string;
     reason?: string;

@@ -114,3 +114,8 @@ export function groupByUrgency(lots: ExpiringLot[]): UrgencyGroup[] {
         }))
         .filter((group) => group.lots.length > 0);
 }
+
+/** Formatea un monto en la moneda indicada (USD por defecto: así se cargan los pagos de lotes). */
+export function formatMoney(amount: number, currency = 'USD'): string {
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+}
