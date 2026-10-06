@@ -37,6 +37,7 @@ import {
     PROFILE_OPTIONS,
     addDays,
     formatMoney,
+    syncCalculatedAmount,
     toIsoDate,
     unitPriceUsd
 } from '../../utils/licence-lot.utils';
@@ -73,7 +74,6 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
     @Output() closed = new EventEmitter<void>();
 
     readonly profileOptions = PROFILE_OPTIONS;
-    readonly formatMoney = formatMoney;
     paymentTypes$ = this.store.select(selectPaymentTypes);
     periods$ = this.store.select(selectPeriods);
     saving$ = this.store.select(selectLicenceLotsSaving);
@@ -86,6 +86,7 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
         paymentTypeCatalogId: [null, Validators.required],
         periodCatalogId: [null, Validators.required],
         startDate: [new Date(), Validators.required],
+        amountCharged: [null, Validators.min(0)],
         paymentReference: ['', Validators.maxLength(200)],
         activationNotes: ['']
     });
@@ -153,8 +154,19 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
         return unit !== null && quantity ? `${quantity} × ${formatMoney(unit)} por licencia (${this.selectedPeriod?.displayName})` : null;
     }
 
-    // El monto no se edita: es derivado de perfil, cantidad y periodo, así que solo hay que re-renderizar
+    get amountDiffersFromCalculated(): boolean {
+        return this.calculatedAmount !== null && this.form.value.amountCharged !== this.calculatedAmount;
+    }
+
+    useCalculatedAmount(): void {
+        const control = this.form.get('amountCharged');
+        control?.setValue(this.calculatedAmount, { emitEvent: false });
+        control?.markAsPristine();
+        this.cdr.markForCheck();
+    }
+
     private refreshAmount(): void {
+        syncCalculatedAmount(this.form.get('amountCharged'), this.calculatedAmount);
         this.cdr.markForCheck();
     }
 
@@ -198,18 +210,11 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
             return;
         }
 
-        // Sin monto no se factura: si falta el precio del perfil no se deja activar a ciegas
-        const amount = this.calculatedAmount;
-        if (amount === null) {
-            this.inlineError = 'No se pudo calcular el monto: falta el precio del perfil seleccionado. Recarga la página e inténtalo de nuevo.';
-            return;
-        }
-
         const value = this.form.value;
         this.confirmationService.confirm({
             header: 'Confirmar activación',
             icon: 'pi pi-question-circle',
-            message: `¿Activar ${value.userCount} licencias ${PROFILE_LABELS[value.roleTypeProfile as keyof typeof PROFILE_LABELS]} con vencimiento el ${this.formatDate(this.endDate)} y facturar ${formatMoney(amount)}?`,
+            message: `¿Activar ${value.userCount} licencias ${PROFILE_LABELS[value.roleTypeProfile as keyof typeof PROFILE_LABELS]} con vencimiento el ${this.formatDate(this.endDate)}?`,
             acceptLabel: 'Sí, activar',
             rejectLabel: 'Cancelar',
             accept: () => this.dispatchCreate()
@@ -229,7 +234,7 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
                     periodCatalogId: value.periodCatalogId,
                     startDate: toIsoDate(value.startDate),
                     endDate: null,
-                    amountCharged: this.calculatedAmount,
+                    amountCharged: value.amountCharged ?? null,
                     paymentReference: value.paymentReference?.trim() || null,
                     activationNotes: value.activationNotes?.trim() || null
                 }

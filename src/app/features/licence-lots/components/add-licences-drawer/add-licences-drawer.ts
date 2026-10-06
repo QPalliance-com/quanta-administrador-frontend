@@ -36,6 +36,7 @@ import {
     fromIsoDate,
     proratedAmountUsd,
     remainingDays,
+    syncCalculatedAmount,
     unitPriceUsd
 } from '../../utils/licence-lot.utils';
 
@@ -68,7 +69,6 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
     @Output() closed = new EventEmitter<void>();
 
     readonly profileOptions = PROFILE_OPTIONS;
-    readonly formatMoney = formatMoney;
     paymentTypes$ = this.store.select(selectPaymentTypes);
     periods$ = this.store.select(selectPeriods);
     saving$ = this.store.select(selectLicenceLotsSaving);
@@ -81,6 +81,7 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
         quantityToAdd: [1, [Validators.required, Validators.min(1)]],
         paymentTypeCatalogId: [null, Validators.required],
         periodCatalogId: [null, Validators.required],
+        amountCharged: [null, Validators.min(0)],
         paymentReference: ['', Validators.maxLength(200)]
     });
     inlineError: string | null = null;
@@ -172,8 +173,19 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
             : `${quantity} × ${formatMoney(unit)} por licencia, prorrateado: ${days} de ${period.durationDays} días restantes del lote`;
     }
 
-    // El monto no se edita: es derivado de perfil, cantidad, periodo y lote fusionable, así que solo hay que re-renderizar
+    get amountDiffersFromCalculated(): boolean {
+        return this.calculatedAmount !== null && this.form.value.amountCharged !== this.calculatedAmount;
+    }
+
+    useCalculatedAmount(): void {
+        const control = this.form.get('amountCharged');
+        control?.setValue(this.calculatedAmount, { emitEvent: false });
+        control?.markAsPristine();
+        this.cdr.markForCheck();
+    }
+
     private refreshAmount(): void {
+        syncCalculatedAmount(this.form.get('amountCharged'), this.calculatedAmount);
         this.cdr.markForCheck();
     }
 
@@ -214,13 +226,6 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
             return;
         }
 
-        // Sin monto no se factura: si falta el precio del perfil no se deja agregar a ciegas
-        const amount = this.calculatedAmount;
-        if (amount === null) {
-            this.inlineError = 'No se pudo calcular el monto: falta el precio del perfil seleccionado. Recarga la página e inténtalo de nuevo.';
-            return;
-        }
-
         this.inlineError = null;
         const value = this.form.value;
         this.store.dispatch(
@@ -231,7 +236,7 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
                     quantityToAdd: value.quantityToAdd,
                     paymentTypeCatalogId: value.paymentTypeCatalogId,
                     periodCatalogId: value.periodCatalogId,
-                    amountCharged: amount,
+                    amountCharged: value.amountCharged ?? null,
                     paymentReference: value.paymentReference?.trim() || null
                 }
             })

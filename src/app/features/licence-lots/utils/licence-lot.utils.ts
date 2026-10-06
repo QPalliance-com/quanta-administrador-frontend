@@ -1,3 +1,4 @@
+import type { AbstractControl } from '@angular/forms';
 import type { ExpiringLot, ExtendableLot, LicenceLot, LicenceLotStatus, LicenceProfile, PeriodCatalog, RenewalType } from '@/core/models';
 
 export type TagSeverity = 'success' | 'warn' | 'danger' | 'secondary';
@@ -145,4 +146,13 @@ export function remainingDays(today: Date, endDate: Date, totalPeriodDays: numbe
 /** Monto al sumar licencias a un lote vigente: precio del periodo prorrateado por los días restantes. */
 export function proratedAmountUsd(unitPrice: number, quantity: number, daysRemaining: number, totalPeriodDays: number): number {
     return Math.round((unitPrice * daysRemaining * quantity) / totalPeriodDays);
+}
+
+/**
+ * Rellena el monto calculado mientras el admin no lo haya tocado: si lo escribió a mano (dirty) se respeta.
+ * `emitEvent: false` evita que el propio relleno vuelva a disparar el recálculo.
+ */
+export function syncCalculatedAmount(control: AbstractControl | null, calculated: number | null): void {
+    if (!control || control.dirty) return;
+    control.setValue(calculated, { emitEvent: false });
 }
