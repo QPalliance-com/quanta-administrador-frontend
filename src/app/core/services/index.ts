@@ -5,6 +5,7 @@
 
 // Infrastructure Services
 export * from './auth.service';
+export * from './billing-invoice.service';
 export * from './catalog.service';
 export * from './department-city.service';
 

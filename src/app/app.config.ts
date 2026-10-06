@@ -25,6 +25,8 @@ import { HolidaysEffects } from './features/settings/state/effects/holidays.effe
 import { licenceLotsReducer } from './features/licence-lots/state/reducers/licence-lots.reducer';
 import { LicenceLotsEffects } from './features/licence-lots/state/effects/licence-lots.effects';
 import { catalogsReducer } from './features/licence-lots/state/reducers/catalogs.reducer';
+import { invoicesReducer } from './features/licence-lots/state/reducers/invoices.reducer';
+import { InvoicesEffects } from './features/licence-lots/state/effects/invoices.effects';
 import { expiringLotsReducer } from './features/licence-lots/state/reducers/expiring-lots.reducer';
 import { ExpiringLotsEffects } from './features/licence-lots/state/effects/expiring-lots.effects';
 import { CatalogsEffects } from './features/licence-lots/state/effects/catalogs.effects';
@@ -83,6 +85,7 @@ export const appConfig: ApplicationConfig = {
                 licenceLots: licenceLotsReducer,
                 catalogs: catalogsReducer,
                 expiringLots: expiringLotsReducer,
+                licenceInvoices: invoicesReducer,
                 dashboard: dashboardReducer
             },
             {
@@ -108,6 +111,7 @@ export const appConfig: ApplicationConfig = {
             LicenceLotsEffects,
             CatalogsEffects,
             ExpiringLotsEffects,
+            InvoicesEffects,
             DashboardEffects
         ]),
 

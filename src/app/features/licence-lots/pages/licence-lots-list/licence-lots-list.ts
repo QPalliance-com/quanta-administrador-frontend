@@ -34,6 +34,7 @@ import { AddLicencesDrawerComponent } from '../../components/add-licences-drawer
 import { ExtendLotDialogComponent } from '../../components/extend-lot-dialog/extend-lot-dialog';
 import { MigrationDialogComponent } from '../../components/migration-dialog/migration-dialog';
 import { PseLinkDrawerComponent } from '../../components/pse-link-drawer/pse-link-drawer';
+import { LicenceInvoicesComponent } from '../../components/licence-invoices/licence-invoices';
 import {
     PROFILE_LABELS,
     PROFILE_OPTIONS,
@@ -72,7 +73,8 @@ type ProfileFilter = LicenceProfile | 'all';
         AddLicencesDrawerComponent,
         ExtendLotDialogComponent,
         MigrationDialogComponent,
-        PseLinkDrawerComponent
+        PseLinkDrawerComponent,
+        LicenceInvoicesComponent
     ],
     providers: [MessageService, ConfirmationService]
 })

@@ -17,6 +17,7 @@ export * from './table-options.model';
 export * from './company.model';
 export * from './holiday.model';
 export * from './licence.model';
+export * from './billing-invoice.model';
 export * from './licence-lot.model';
 export * from './license-config.model';
 export * from './subscription-plan.model';
