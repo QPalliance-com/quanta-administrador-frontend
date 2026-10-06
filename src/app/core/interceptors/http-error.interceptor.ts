@@ -80,8 +80,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         );
     }
 
-    /** El 401 siempre es global: la sesión vencida lleva a login desde cualquier pantalla. */
+    /**
+     * El 401 siempre es global: la sesión vencida lleva a login desde cualquier pantalla.
+     * El resto de errores HTTP (incluido un 502 de un proveedor externo) los muestra el feature que lo pidió.
+     */
     private isHandledLocally(req: HttpRequest<unknown>, error: HttpErrorResponse): boolean {
-        return req.context.get(LOCAL_ERROR_HANDLING) && error.status >= 400 && error.status < 500 && error.status !== 401;
+        return req.context.get(LOCAL_ERROR_HANDLING) && error.status >= 400 && error.status !== 401;
     }
 }
