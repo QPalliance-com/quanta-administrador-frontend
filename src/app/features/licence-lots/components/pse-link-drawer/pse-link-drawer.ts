@@ -20,11 +20,14 @@ import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
+import { Licence, PeriodCatalog } from '@/core/models';
+import { LicencesActions } from '@/features/settings/state/actions/licences.actions';
+import { selectAllLicences } from '@/features/settings/state/selectors/licences.selectors';
 import { CatalogsActions } from '../../state/actions/catalogs.actions';
 import { LicenceLotsActions } from '../../state/actions/licence-lots.actions';
 import { selectPeriods } from '../../state/selectors/catalogs.selectors';
 import { selectPseCheckout, selectPseLoading } from '../../state/selectors/licence-lots.selectors';
-import { PROFILE_LABELS, PROFILE_OPTIONS } from '../../utils/licence-lot.utils';
+import { PROFILE_LABELS, PURCHASABLE_PROFILE_OPTIONS, formatMoney, fullPeriodAmountUsd, unitPriceUsd } from '../../utils/licence-lot.utils';
 
 const COP_FORMAT = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 
@@ -49,8 +52,11 @@ export class PseLinkDrawerComponent implements OnChanges, OnDestroy {
     @Input() recipientEmail: string | null = null;
     @Output() closed = new EventEmitter<void>();
 
-    readonly profileOptions = PROFILE_OPTIONS;
+    readonly profileOptions = PURCHASABLE_PROFILE_OPTIONS;
     readonly profileLabels: Record<string, string> = PROFILE_LABELS;
+    readonly formatMoney = formatMoney;
+    periods: PeriodCatalog[] = [];
+    plans: Licence[] = []; // precio mensual en USD por perfil (subscription/plans)
     periods$ = this.store.select(selectPeriods);
     checkout$ = this.store.select(selectPseCheckout);
     loading$ = this.store.select(selectPseLoading);
@@ -64,6 +70,25 @@ export class PseLinkDrawerComponent implements OnChanges, OnDestroy {
     copied = false;
 
     constructor() {
+        this.store
+            .select(selectPeriods)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((periods) => {
+                this.periods = periods;
+                this.cdr.markForCheck();
+            });
+
+        this.store
+            .select(selectAllLicences)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((plans) => {
+                this.plans = plans;
+                this.cdr.markForCheck();
+            });
+
+        // La estimación depende de perfil, cantidad y periodo: hay que re-renderizar al editar
+        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+
         this.actions$.pipe(ofType(LicenceLotsActions.generatePseLinkFailure), takeUntil(this.destroy$)).subscribe(({ error }) => {
             this.inlineError = error;
             this.cdr.markForCheck();
@@ -74,7 +99,30 @@ export class PseLinkDrawerComponent implements OnChanges, OnDestroy {
         if (changes['visible'] && this.visible) {
             this.resetForm();
             this.store.dispatch(CatalogsActions.load());
+            if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
         }
+    }
+
+    /** Precio de una licencia por todo el periodo elegido (aplica descuento del periodo). */
+    private get unitPrice(): number | null {
+        const monthly = this.plans.find((plan) => plan.licences === this.form.value.roleTypeProfile)?.amountUsd ?? null;
+        const period = this.periods.find((item) => item.id === this.form.value.periodCatalogId);
+        return monthly !== null && period ? unitPriceUsd(monthly, period) : null;
+    }
+
+    /** El checkout PSE cobra el periodo completo (B14), sin prorrateo: mismo monto que el backend convierte a COP. */
+    get estimatedAmountUsd(): number | null {
+        const unit = this.unitPrice;
+        const quantity: number | null = this.form.value.userCount;
+        const period = this.periods.find((item) => item.id === this.form.value.periodCatalogId);
+        return unit !== null && quantity && period ? fullPeriodAmountUsd(unit, quantity, period.durationDays) : null;
+    }
+
+    get amountBreakdown(): string | null {
+        const unit = this.unitPrice;
+        const quantity = this.form.value.userCount;
+        const period = this.periods.find((item) => item.id === this.form.value.periodCatalogId);
+        return unit !== null && quantity && period ? `${quantity} × ${formatMoney(unit)} por licencia (${period.displayName})` : null;
     }
 
     formatCop(amount: number): string {

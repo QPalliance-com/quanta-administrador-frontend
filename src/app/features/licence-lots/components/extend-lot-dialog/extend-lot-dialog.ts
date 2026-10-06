@@ -23,13 +23,25 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
-import { ExtendableLot, PeriodCatalog, RenewalType } from '@/core/models';
+import { ExtendableLot, Licence, PeriodCatalog, RenewalType } from '@/core/models';
 import { DateColombiaPipe } from '@/core/pipes/date-colombia.pipe';
+import { LicencesActions } from '@/features/settings/state/actions/licences.actions';
+import { selectAllLicences } from '@/features/settings/state/selectors/licences.selectors';
 import { CatalogsActions } from '../../state/actions/catalogs.actions';
 import { LicenceLotsActions } from '../../state/actions/licence-lots.actions';
 import { selectPeriods } from '../../state/selectors/catalogs.selectors';
 import { selectLicenceLotsSaving } from '../../state/selectors/licence-lots.selectors';
-import { PROFILE_LABELS, calcNewEndDate, formatIsoDate, renewalTypeFor, toIsoDate } from '../../utils/licence-lot.utils';
+import {
+    PROFILE_LABELS,
+    calcNewEndDate,
+    formatIsoDate,
+    formatMoney,
+    fullPeriodAmountUsd,
+    renewalTypeFor,
+    syncCalculatedAmount,
+    toIsoDate,
+    unitPriceUsd
+} from '../../utils/licence-lot.utils';
 
 @Component({
     standalone: true,
@@ -64,6 +76,7 @@ export class ExtendLotDialogComponent implements OnChanges, OnDestroy {
 
     readonly profileLabels = PROFILE_LABELS;
     periods: PeriodCatalog[] = [];
+    plans: Licence[] = []; // precio mensual en USD por perfil (subscription/plans)
     saving$ = this.store.select(selectLicenceLotsSaving);
 
     form: FormGroup = this.fb.group({
@@ -79,10 +92,19 @@ export class ExtendLotDialogComponent implements OnChanges, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe((periods) => {
                 this.periods = periods;
-                this.cdr.markForCheck();
+                this.refreshAmount();
             });
 
-        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+        this.store
+            .select(selectAllLicences)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((plans) => {
+                this.plans = plans;
+                this.refreshAmount();
+            });
+
+        // newEndDate y el monto son derivados del formulario: hay que recalcular y re-renderizar al editar
+        this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.refreshAmount());
 
         this.actions$.pipe(ofType(LicenceLotsActions.extendSuccess), takeUntil(this.destroy$)).subscribe(() => this.closed.emit());
 
@@ -97,7 +119,43 @@ export class ExtendLotDialogComponent implements OnChanges, OnDestroy {
             this.inlineError = null;
             this.form.reset({ paymentReference: '' });
             this.store.dispatch(CatalogsActions.load());
+            if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
         }
+    }
+
+    /** Precio de una licencia por todo el periodo elegido (aplica descuento del periodo). */
+    private get unitPrice(): number | null {
+        const monthly = this.plans.find((plan) => plan.licences === this.lot?.roleTypeProfile)?.amountUsd ?? null;
+        const period = this.selectedPeriod;
+        return monthly !== null && period ? unitPriceUsd(monthly, period) : null;
+    }
+
+    /** Renovar o reactivar cobra un periodo nuevo completo por todas las licencias del lote (igual que la renovación automática). */
+    get calculatedAmount(): number | null {
+        const unit = this.unitPrice;
+        const period = this.selectedPeriod;
+        return unit !== null && this.lot && period ? fullPeriodAmountUsd(unit, this.lot.userCount, period.durationDays) : null;
+    }
+
+    get amountBreakdown(): string | null {
+        const unit = this.unitPrice;
+        return unit !== null && this.lot ? `${this.lot.userCount} × ${formatMoney(unit)} por licencia (${this.selectedPeriod?.displayName})` : null;
+    }
+
+    get amountDiffersFromCalculated(): boolean {
+        return this.calculatedAmount !== null && this.form.value.amountCharged !== this.calculatedAmount;
+    }
+
+    useCalculatedAmount(): void {
+        const control = this.form.get('amountCharged');
+        control?.setValue(this.calculatedAmount, { emitEvent: false });
+        control?.markAsPristine();
+        this.cdr.markForCheck();
+    }
+
+    private refreshAmount(): void {
+        syncCalculatedAmount(this.form.get('amountCharged'), this.calculatedAmount);
+        this.cdr.markForCheck();
     }
 
     get renewalType(): RenewalType | null {

@@ -34,6 +34,7 @@ import {
     findMergeableLot,
     formatMoney,
     fromIsoDate,
+    fullPeriodAmountUsd,
     proratedAmountUsd,
     remainingDays,
     syncCalculatedAmount,
@@ -158,7 +159,9 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
         if (unit === null || !quantity || !period) return null;
 
         const days = this.daysRemaining;
-        return days === null ? unit * quantity : proratedAmountUsd(unit, quantity, days, period.durationDays);
+        return days === null
+            ? fullPeriodAmountUsd(unit, quantity, period.durationDays)
+            : proratedAmountUsd(unit, quantity, days, period.durationDays);
     }
 
     get amountBreakdown(): string | null {

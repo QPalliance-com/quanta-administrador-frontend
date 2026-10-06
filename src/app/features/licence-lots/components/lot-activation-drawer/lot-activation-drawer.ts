@@ -37,6 +37,7 @@ import {
     PROFILE_OPTIONS,
     addDays,
     formatMoney,
+    fullPeriodAmountUsd,
     syncCalculatedAmount,
     toIsoDate,
     unitPriceUsd
@@ -145,7 +146,8 @@ export class LotActivationDrawerComponent implements OnChanges, OnDestroy {
     get calculatedAmount(): number | null {
         const unit = this.unitPrice;
         const quantity: number | null = this.form.value.userCount;
-        return unit !== null && quantity ? unit * quantity : null;
+        const period = this.selectedPeriod;
+        return unit !== null && quantity && period ? fullPeriodAmountUsd(unit, quantity, period.durationDays) : null;
     }
 
     get amountBreakdown(): string | null {

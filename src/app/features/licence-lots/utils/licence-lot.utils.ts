@@ -156,3 +156,14 @@ export function syncCalculatedAmount(control: AbstractControl | null, calculated
     if (!control || control.dirty) return;
     control.setValue(calculated, { emitEvent: false });
 }
+
+/**
+ * Monto de un periodo completo: es el prorrateo con todos los días restantes. Así el backend cobra la activación,
+ * el lote nuevo, la renovación y el checkout PSE, y todo el cálculo pasa por la misma función.
+ */
+export function fullPeriodAmountUsd(unitPrice: number, quantity: number, periodDays: number): number {
+    return proratedAmountUsd(unitPrice, quantity, periodDays, periodDays);
+}
+
+/** ms-admin solo deja pagar por PSE perfiles comprables: system_admin es licencia de cortesía (APPLICATION - 41). */
+export const PURCHASABLE_PROFILE_OPTIONS = PROFILE_OPTIONS.filter((option) => option.value !== 'system_admin');
