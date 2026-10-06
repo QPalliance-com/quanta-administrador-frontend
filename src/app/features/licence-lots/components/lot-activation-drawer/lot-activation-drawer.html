@@ -101,38 +101,15 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label for="amountCharged" class="text-sm font-medium text-surface-700 dark:text-surface-200">Monto (USD)</label>
-                    <p-inputnumber
-                        fluid
-                        inputId="amountCharged"
-                        formControlName="amountCharged"
-                        mode="currency"
-                        currency="USD"
-                        locale="es-CO"
-                        [minFractionDigits]="0"
-                        [maxFractionDigits]="2"
-                        [min]="0"
-                        placeholder="US$ 0"
-                        [class.ng-invalid]="isInvalid('amountCharged')"
-                        [class.ng-dirty]="isInvalid('amountCharged')"
-                    />
+                    <span id="amountLabel" class="text-sm font-medium text-surface-700 dark:text-surface-200">Monto a cobrar (USD)</span>
+                    <output
+                        aria-labelledby="amountLabel"
+                        class="flex items-center h-10 px-3 rounded-md bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-50 font-semibold tabular-nums"
+                    >
+                        {{ calculatedAmount !== null ? formatMoney(calculatedAmount) : '—' }}
+                    </output>
                     <small class="text-surface-600 dark:text-surface-300">
-                        Se calcula con el precio del perfil por la cantidad de licencias y puedes ajustarlo. Con el monto vacío o en cero no se genera factura.
-                    </small>
-                    <div *ngIf="amountBreakdown" class="flex flex-wrap items-center gap-x-2 text-sm text-surface-700 dark:text-surface-200">
-                        <span>{{ amountBreakdown }}</span>
-                        <button
-                            *ngIf="amountDiffersFromCalculated"
-                            pButton
-                            type="button"
-                            label="Usar monto calculado"
-                            size="small"
-                            [text]="true"
-                            (click)="useCalculatedAmount()"
-                        ></button>
-                    </div>
-                    <small *ngIf="isInvalid('amountCharged')" class="text-red-500 flex items-center gap-1">
-                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('amountCharged') }}
+                        {{ amountBreakdown ?? 'Se calcula al elegir perfil, cantidad y periodo.' }}
                     </small>
                 </div>
 
