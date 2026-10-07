@@ -16,7 +16,8 @@ import {
 } from '../../state/selectors/invoices.selectors';
 import { formatMoney } from '../../utils/licence-lot.utils';
 
-const PROVIDER_LABELS: Record<string, string> = {
+// `| undefined`: el proveedor puede ser uno que acá no conocemos y la plantilla cae al valor crudo
+const PROVIDER_LABELS: Record<string, string | undefined> = {
     manual_transfer: 'Transferencia bancaria',
     pse: 'PSE',
     recurring_card: 'Tarjeta de crédito',
