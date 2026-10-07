@@ -192,5 +192,7 @@
 
 <app-migration-dialog [visible]="displayMigrationDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayMigrationDialog = false" />
 
+<app-lot-movements-drawer [visible]="displayMovementsDrawer" [companyId]="companyId" [lot]="selectedLot" (closed)="displayMovementsDrawer = false" />
+
 <p-confirmdialog />
 <p-toast />

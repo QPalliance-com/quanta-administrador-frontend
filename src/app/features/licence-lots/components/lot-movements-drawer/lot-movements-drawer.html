@@ -1,0 +1,58 @@
+<p-drawer [visible]="visible" (visibleChange)="onVisibleChange($event)" position="right" [modal]="true" [style]="{ width: '480px' }">
+    <ng-template #header>
+        <span class="font-semibold text-base flex items-center gap-2">
+            <i class="pi pi-history text-primary"></i>
+            Movimientos del lote
+            <span *ngIf="lot" class="text-sm font-normal text-surface-600 dark:text-surface-300">#{{ lot.id }} · {{ profileLabels[lot.roleTypeProfile] }}</span>
+        </span>
+    </ng-template>
+
+    <div class="pt-2">
+        <div *ngIf="loading()" class="flex flex-col gap-4" aria-busy="true">
+            <p-skeleton *ngFor="let row of skeletonRows" height="5rem" />
+        </div>
+
+        <p-message *ngIf="error() as message" severity="error" styleClass="w-full">
+            <div class="flex items-center justify-between gap-3 w-full">
+                <span>{{ message }}</span>
+                <button pButton type="button" label="Reintentar" icon="pi pi-refresh" size="small" severity="secondary" [outlined]="true" (click)="load()"></button>
+            </div>
+        </p-message>
+
+        <p *ngIf="!loading() && !error() && !movements().length" class="text-center text-surface-500 py-12 m-0">
+            <i class="pi pi-inbox text-4xl mb-3 block"></i>
+            Este lote no tiene movimientos registrados.
+        </p>
+
+        <!-- Más antiguo arriba, más reciente abajo (orden del backend) -->
+        <ol *ngIf="movements().length" class="list-none m-0 p-0 flex flex-col gap-4">
+            <li *ngFor="let movement of movements()" class="border border-surface-200 dark:border-surface-700 rounded-xl p-4">
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <span class="font-semibold flex items-center gap-2">
+                        <i [class]="(movementMeta[movement.eventType]?.icon ?? 'pi pi-circle') + ' text-primary'"></i>
+                        {{ movementMeta[movement.eventType]?.label ?? movement.eventType }}
+                    </span>
+                    <span class="text-xs text-surface-600 dark:text-surface-300 tabular-nums">{{ movement.eventDate | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm m-0">
+                    <ng-container *ngIf="movement.quantityAdded !== null">
+                        <dt class="text-surface-600 dark:text-surface-300">Licencias</dt>
+                        <dd class="m-0 font-medium text-right tabular-nums">+{{ movement.quantityAdded }}</dd>
+                    </ng-container>
+
+                    <dt class="text-surface-600 dark:text-surface-300">Forma de pago</dt>
+                    <dd class="m-0 font-medium text-right">{{ movement.paymentType?.displayName ?? '—' }}</dd>
+
+                    <dt class="text-surface-600 dark:text-surface-300">Monto</dt>
+                    <dd class="m-0 font-medium text-right tabular-nums">{{ movement.amountCharged !== null ? formatMoney(movement.amountCharged) : '—' }}</dd>
+
+                    <dt class="text-surface-600 dark:text-surface-300">Referencia</dt>
+                    <dd class="m-0 font-medium text-right break-all">{{ movement.paymentReference ?? '—' }}</dd>
+
+                    <dt class="text-surface-600 dark:text-surface-300">Registrado por</dt>
+                    <dd class="m-0 font-medium text-right">{{ movement.activatedBy ?? '—' }}</dd>
+                </dl>
+            </li>
+        </ol>
+    </div>
+</p-drawer>
