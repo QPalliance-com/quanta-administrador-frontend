@@ -1,0 +1,45 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Angular 19 standalone, TypeScript 5.6, PrimeNG 19, Tailwind 3, NgRx 19, RxJS 7.8
+  Architecture: src/app/{core,features,shared}; per-feature pages/components/state(actions,effects,reducers,selectors)/utils
+  Testing: Jest 30 + jest-preset-angular configured (npm test), but the repo does not write specs
+  Style: ESLint 9 + Prettier + .editorconfig; UI copy in Spanish; follow licences/companies/users patterns
+  Git: branch from dev, PR to dev, conventional commits without AI attribution
+
+strict_tdd: false
+
+testing:
+  runner: jest (npm test)
+  layers:
+    unit: configured, only demo.spec.ts exists
+    integration: not installed
+    e2e: not installed
+  coverage: not configured
+  quality:
+    linter: eslint
+    type_checker: tsc (via ng build)
+    formatter: prettier
+  note: Team convention for this repo is no specs, no test runs and no build after changes. Verify by reading code.
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Do not write specs or run tests/build
+  verify:
+    - Verify by reading code against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)
