@@ -35,6 +35,7 @@ import { ExtendLotDialogComponent } from '../../components/extend-lot-dialog/ext
 import { MigrationDialogComponent } from '../../components/migration-dialog/migration-dialog';
 import { PseLinkDrawerComponent } from '../../components/pse-link-drawer/pse-link-drawer';
 import { LicenceInvoicesComponent } from '../../components/licence-invoices/licence-invoices';
+import { LotMovementsDrawerComponent } from '../../components/lot-movements-drawer/lot-movements-drawer';
 import {
     PROFILE_LABELS,
     PROFILE_OPTIONS,
@@ -74,7 +75,8 @@ type ProfileFilter = LicenceProfile | 'all';
         ExtendLotDialogComponent,
         MigrationDialogComponent,
         PseLinkDrawerComponent,
-        LicenceInvoicesComponent
+        LicenceInvoicesComponent,
+        LotMovementsDrawerComponent
     ],
     providers: [MessageService, ConfirmationService]
 })
@@ -109,6 +111,7 @@ export class LicenceLotsListComponent implements OnInit {
     displayExtendDialog = false;
     displayMigrationDialog = false;
     displayPseDrawer = false;
+    displayMovementsDrawer = false;
     selectedLot: LicenceLot | null = null;
     rowMenuItems: MenuItem[] = [];
 
@@ -164,6 +167,11 @@ export class LicenceLotsListComponent implements OnInit {
         event.stopPropagation();
         this.rowMenuItems = [
             {
+                label: 'Ver movimientos',
+                icon: 'pi pi-history',
+                command: () => this.openMovementsDrawer(lot)
+            },
+            {
                 label: 'Extender lote',
                 icon: 'pi pi-calendar-plus',
                 command: () => this.openExtendDialog(lot)
@@ -177,6 +185,11 @@ export class LicenceLotsListComponent implements OnInit {
             }
         ];
         this.rowMenu.toggle(event);
+    }
+
+    openMovementsDrawer(lot: LicenceLot): void {
+        this.selectedLot = lot;
+        this.displayMovementsDrawer = true;
     }
 
     openMigrationDialog(lot: LicenceLot): void {

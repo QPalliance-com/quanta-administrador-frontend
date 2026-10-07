@@ -165,3 +165,18 @@ export interface ExpiringLot {
     status: LicenceLotStatus;
     paymentType: PaymentTypeRef;
 }
+
+/** Valores de `LicenceLotEventTypeEnum` de ms-admin. */
+export type LicenceLotEventType = 'creation' | 'addition' | 'extension' | 'migration';
+
+/** Movimiento del historial de un lote (del más antiguo al más reciente). */
+export interface LicenceLotMovement {
+    id: number;
+    eventType: LicenceLotEventType | string;
+    quantityAdded: number | null;
+    paymentType: PaymentTypeRef | null;
+    amountCharged: number | null;
+    paymentReference: string | null;
+    activatedBy: string | null;
+    eventDate: string; // "2026-10-07T10:21:00", hora local sin zona
+}

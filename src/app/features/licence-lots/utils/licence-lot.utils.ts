@@ -167,3 +167,11 @@ export function fullPeriodAmountUsd(unitPrice: number, quantity: number, periodD
 
 /** ms-admin solo deja pagar por PSE perfiles comprables: system_admin es licencia de cortesía (APPLICATION - 41). */
 export const PURCHASABLE_PROFILE_OPTIONS = PROFILE_OPTIONS.filter((option) => option.value !== 'system_admin');
+
+// `| undefined`: el backend puede mandar un eventType que acá no conocemos y la plantilla cae al valor crudo
+export const MOVEMENT_META: Record<string, { label: string; icon: string } | undefined> = {
+    creation: { label: 'Activación del lote', icon: 'pi pi-plus-circle' },
+    addition: { label: 'Licencias agregadas', icon: 'pi pi-user-plus' },
+    extension: { label: 'Extensión del lote', icon: 'pi pi-calendar-plus' },
+    migration: { label: 'Migración de forma de pago', icon: 'pi pi-sync' }
+};

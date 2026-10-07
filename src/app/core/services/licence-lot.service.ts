@@ -12,6 +12,7 @@ import {
     ExtendLicenceLotResult,
     GeneratePseLinkDto,
     LicenceLotList,
+    LicenceLotMovement,
     PseCheckoutResult,
     ScheduleMigrationDto,
     ScheduleMigrationResult
@@ -39,6 +40,10 @@ export class LicenceLotService {
 
     getByCompany(companyId: number): Observable<ApiResponse<LicenceLotList>> {
         return this.http.get<ApiResponse<LicenceLotList>>(this.lotsUrl(companyId), this.options);
+    }
+
+    getMovements(companyId: number, lotId: number): Observable<ApiResponse<LicenceLotMovement[]>> {
+        return this.http.get<ApiResponse<LicenceLotMovement[]>>(`${this.lotsUrl(companyId)}/${lotId}/movements`, this.options);
     }
 
     // B09 responde 201: HttpClient lo trata como éxito, no se valida `status === 200`
