@@ -46,12 +46,6 @@ export class MenuprofileComponent implements OnInit, OnDestroy {
     user = signal<User | null>(null);
     loading = signal(false);
 
-    avatarUrl = computed(() => {
-        const u = this.user();
-        if (!u) return 'assets/images/avatar.png';
-        return `https://ui-avatars.com/api/?name=${encodeURIComponent(`${u.names} ${u.lastNames}`)}&background=random`;
-    });
-
     isHorizontal = computed(() => this._layoutService.isHorizontal() && this._layoutService.isDesktop());
     menuProfileActive = computed(() => this._layoutService.layoutState().menuProfileActive);
     menuProfilePosition = computed(() => this._layoutService.layoutConfig().menuProfilePosition);
