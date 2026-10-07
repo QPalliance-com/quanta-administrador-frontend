@@ -1,6 +1,6 @@
 <section class="card mt-6" aria-labelledby="invoices-title">
     <ng-container *ngIf="error$ | async as error; else tableTpl">
-        <h2 id="invoices-title" class="font-semibold text-xl m-0 mb-4">Facturas</h2>
+        <h2 id="invoices-title" class="font-semibold text-xl m-0 mb-4">Comprobante de pago</h2>
         <p-message severity="error" styleClass="w-full">
             <div class="flex items-center justify-between gap-3 w-full">
                 <span>{{ error }}</span>
@@ -23,9 +23,9 @@
         >
             <ng-template #caption>
                 <div class="flex items-center gap-3">
-                    <h2 id="invoices-title" class="font-semibold text-xl m-0">Facturas</h2>
+                    <h2 id="invoices-title" class="font-semibold text-xl m-0">Comprobante de pago</h2>
                     <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-300">
-                        {{ invoices.length }} {{ invoices.length === 1 ? 'factura' : 'facturas' }}
+                        {{ invoices.length }} {{ invoices.length === 1 ? 'comprobante' : 'comprobantes' }}
                     </span>
                 </div>
             </ng-template>
