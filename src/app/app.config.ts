@@ -16,6 +16,8 @@ import { usersReducer } from './features/users/state/reducers/users.reducer';
 import { UsersEffects } from './features/users/state/effects/users.effects';
 import { companiesReducer } from './features/companies/state/reducers/companies.reducer';
 import { CompaniesEffects } from './features/companies/state/effects/companies.effects';
+import { countriesReducer } from './features/companies/state/reducers/countries.reducer';
+import { CountriesEffects } from './features/companies/state/effects/countries.effects';
 import { licencesReducer } from './features/settings/state/reducers/licences.reducer';
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
 import { holidaysReducer } from './features/settings/state/reducers/holidays.reducer';
@@ -81,6 +83,7 @@ export const appConfig: ApplicationConfig = {
                 departmentCity: departmentCityReducer,
                 users: usersReducer,
                 companies: companiesReducer,
+                countries: countriesReducer,
                 licences: licencesReducer,
                 holidays: holidaysReducer,
                 licenseConfig: licenseConfigReducer,
@@ -108,6 +111,7 @@ export const appConfig: ApplicationConfig = {
             DepartmentCityEffects,
             UsersEffects,
             CompaniesEffects,
+            CountriesEffects,
             LicencesEffects,
             HolidaysEffects,
             LicenseConfigEffects,

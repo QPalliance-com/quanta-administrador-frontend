@@ -151,6 +151,26 @@
             </legend>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div class="flex flex-col gap-1">
+                    <label for="countryCode" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        País <span class="text-red-500">*</span>
+                    </label>
+                    <p-select
+                        fluid
+                        inputId="countryCode"
+                        formControlName="countryCode"
+                        [options]="countries()"
+                        optionLabel="name"
+                        optionValue="code"
+                        showFilter
+                        placeholder="Seleccione un país"
+                        [class.ng-invalid]="isInvalid('countryCode')"
+                        [class.ng-dirty]="isInvalid('countryCode')"
+                    />
+                    <small *ngIf="isInvalid('countryCode')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('countryCode') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
                     <label for="identificationType" class="text-sm font-medium text-surface-700 dark:text-surface-200">
                         Tipo de identificación <span class="text-red-500">*</span>
                     </label>
@@ -445,7 +465,7 @@
             </small>
             <div class="flex gap-3">
                 <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
-                <p-button label="Guardar" icon="pi pi-check" type="submit" [disabled]="form.invalid" />
+                <p-button label="Guardar" icon="pi pi-check" type="submit" [disabled]="form.invalid || (!isEditMode && !countries().length)" />
             </div>
         </div>
 
