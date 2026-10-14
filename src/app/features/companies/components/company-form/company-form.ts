@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
@@ -17,7 +18,9 @@ import { Observable, Subject, filter, of, startWith, switchMap, takeUntil, disti
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompaniesActions } from '../../state/actions/companies.actions';
+import { CountriesActions } from '../../state/actions/countries.actions';
 import { selectSelectedCompany, selectCompaniesLoading } from '../../state/selectors/companies.selectors';
+import { selectAllCountries } from '../../state/selectors/countries.selectors';
 
 @Component({
     standalone: true,
@@ -43,6 +46,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     companyId!: number;
 
     loading$ = this.store.select(selectCompaniesLoading);
+    countries = toSignal(this.store.select(selectAllCountries), { initialValue: [] });
     departments$ = this.store.select(selectAllDepartments);
     cities$!: Observable<{ id: number; name: string; departmentId: number }[]>;
 
@@ -141,6 +145,8 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         if (id) {
             this.isEditMode = true;
             this.companyId = +id;
+            // El país es inmutable: sin preselección y deshabilitado (no viaja en form.value)
+            this.form.get('countryCode')!.reset({ value: null, disabled: true });
             this.store.dispatch(CompaniesActions.loadCompany({ id: this.companyId }));
 
             this.store.select(selectSelectedCompany)
@@ -152,6 +158,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         }
 
         this.store.dispatch(initLocationData());
+        this.store.dispatch(CountriesActions.loadCountries());
 
         this.cities$ = this.form.get('departmentId')!.valueChanges.pipe(
             startWith(this.form.get('departmentId')!.value),
@@ -172,6 +179,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     private buildForm(): void {
         this.form = this.fb.group({
             id: [null],
+            countryCode: ['CO', Validators.required],
             logoUrl: [''],
             companyName: ['', Validators.required],
             documentType: [null],
@@ -215,6 +223,9 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     onUpload(_event: UploadEvent): void {}
 
     onSubmit(): void {
+        // En creación el país es obligatorio: no se envía hasta que el catálogo esté cargado
+        if (!this.isEditMode && !this.countries().length) return;
+
         if (this.form.invalid) {
             Object.keys(this.form.controls).forEach((key) => {
                 this.form.get(key)?.markAsTouched();
@@ -252,6 +263,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             companyRequest.id = this.companyId;
             this.store.dispatch(CompaniesActions.updateCompany({ company: companyRequest }));
         } else {
+            companyRequest.countryCode = formData.countryCode;
             this.store.dispatch(CompaniesActions.createCompany({ company: companyRequest }));
         }
     }

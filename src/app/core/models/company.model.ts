@@ -26,6 +26,7 @@ export interface Company {
     address: string;
     departmentId: number;
     cityId: number;
+    countryCode?: string; // país de la compañía, inmutable tras la creación
     names?: string;
     lastNames?: string;
     phone?: string;
@@ -53,6 +54,7 @@ export interface CompanyRequest {
     address: string;
     departmentId: number;
     cityId: number;
+    countryCode?: string; // obligatorio en POST, se omite en PUT (inmutable)
     names?: string;
     lastNames?: string;
     phone?: string;
