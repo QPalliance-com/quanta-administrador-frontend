@@ -7,7 +7,7 @@ export const DepartmentCityActions = createActionGroup({
     source: 'Department/City',
     events: {
         // Load Departments
-        'Load Departments': emptyProps(),
+        'Load Departments': props<{ countryCode: string }>(),
         'Load Departments Success': props<{ departments: Department[] }>(),
         'Load Departments Failure': props<{ error: string }>(),
 
