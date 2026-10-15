@@ -4,3 +4,6 @@ export interface CountryCatalog {
     phonePrefix: string;
     currencyCode: string;
 }
+
+// Países con departamentos/ciudades disponibles en el backend
+export const SUPPORTED_COUNTRY_CODES = ['CO', 'MX'] as const;
