@@ -7,14 +7,15 @@ import { ButtonModule } from 'primeng/button';
 import { FileUploadModule, UploadEvent } from 'primeng/fileupload';
 import { CheckboxModule } from 'primeng/checkbox';
 import { Company, generateTenantSlug, CompanyRequest } from '@/core/models';
+import { Department } from '@/core/models/department-city.model';
 import { DOCUMENT_TYPE_LABELS, DocumentType } from '@/core/enums/document-type.enum';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Store } from '@ngrx/store';
-import { initLocationData } from '@/core/state/actions/department-city.actions';
+import { DepartmentCityActions, initLocationData } from '@/core/state/actions/department-city.actions';
 import { selectAllDepartments, selectCitiesByDepartment } from '@/core/state/selectors/department-city.selectors';
-import { Observable, Subject, filter, of, startWith, switchMap, takeUntil, distinctUntilChanged } from 'rxjs';
+import { Observable, Subject, combineLatest, filter, map, of, startWith, switchMap, takeUntil, distinctUntilChanged } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompaniesActions } from '../../state/actions/companies.actions';
@@ -47,7 +48,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
 
     loading$ = this.store.select(selectCompaniesLoading);
     countries = toSignal(this.store.select(selectAllCountries), { initialValue: [] });
-    departments$ = this.store.select(selectAllDepartments);
+    departments$!: Observable<Department[]>;
     cities$!: Observable<{ id: number; name: string; departmentId: number }[]>;
 
     documentTypes = Object.values(DocumentType).map((type) => ({
@@ -154,11 +155,37 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                 .subscribe((company: Company) => {
                     this.companyName.set(company.companyName);
                     this.form.patchValue(company);
+                    // El país es inmutable: se usa el de la company, nunca null
+                    if (company.countryCode) {
+                        this.store.dispatch(DepartmentCityActions.loadDepartments({ countryCode: company.countryCode }));
+                    }
                 });
         }
 
         this.store.dispatch(initLocationData());
         this.store.dispatch(CountriesActions.loadCountries());
+
+        // Solo los departamentos del país seleccionado (el state acumula los de todos los países)
+        const countryCode$ = this.form.get('countryCode')!.valueChanges.pipe(
+            startWith(this.form.get('countryCode')!.value),
+            map(() => this.form.get('countryCode')!.getRawValue() as string | null),
+            distinctUntilChanged()
+        );
+        this.departments$ = combineLatest([this.store.select(selectAllDepartments), countryCode$]).pipe(
+            map(([departments, countryCode]) => departments.filter((d) => d.countryCode === countryCode))
+        );
+
+        if (!this.isEditMode) {
+            this.form
+                .get('countryCode')!
+                .valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
+                .subscribe((countryCode) => {
+                    this.form.patchValue({ departmentId: null, cityId: null });
+                    if (countryCode) {
+                        this.store.dispatch(DepartmentCityActions.loadDepartments({ countryCode }));
+                    }
+                });
+        }
 
         this.cities$ = this.form.get('departmentId')!.valueChanges.pipe(
             startWith(this.form.get('departmentId')!.value),
