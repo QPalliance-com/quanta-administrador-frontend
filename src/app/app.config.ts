@@ -12,6 +12,8 @@ import { appRoutes } from './app.routes';
 import { AppTheme } from './core/theme/theme.config';
 import { departmentCityReducer } from './core/state/reducers/department-city.reducer';
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
+import { identificationTypeReducer } from './core/state/reducers/identification-type.reducer';
+import { IdentificationTypeEffects } from './core/state/effects/identification-type.effects';
 import { usersReducer } from './features/users/state/reducers/users.reducer';
 import { UsersEffects } from './features/users/state/effects/users.effects';
 import { companiesReducer } from './features/companies/state/reducers/companies.reducer';
@@ -81,6 +83,7 @@ export const appConfig: ApplicationConfig = {
             {
                 auth: authReducer,
                 departmentCity: departmentCityReducer,
+                identificationTypes: identificationTypeReducer,
                 users: usersReducer,
                 companies: companiesReducer,
                 countries: countriesReducer,
@@ -109,6 +112,7 @@ export const appConfig: ApplicationConfig = {
         provideEffects([
             AuthEffects,
             DepartmentCityEffects,
+            IdentificationTypeEffects,
             UsersEffects,
             CompaniesEffects,
             CountriesEffects,

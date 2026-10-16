@@ -8,6 +8,7 @@ export * from './auth.service';
 export * from './billing-invoice.service';
 export * from './catalog.service';
 export * from './department-city.service';
+export * from './identification-type.service';
 
 // Business Domain Services
 export * from './company.service';
