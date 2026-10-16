@@ -178,7 +178,7 @@
                         fluid
                         inputId="identificationType"
                         formControlName="identificationType"
-                        [options]="documentTypes"
+                        [options]="(identificationTypeOptions$ | async) ?? []"
                         optionLabel="label"
                         optionValue="value"
                         showFilter
@@ -203,13 +203,29 @@
                         [class.ng-invalid]="isInvalid('numberIdentification')"
                         [class.ng-dirty]="isInvalid('numberIdentification')"
                     />
+                    <small *ngIf="identificationFormatHint()" class="text-surface-500 dark:text-surface-400 text-xs">
+                        {{ identificationFormatHint() }}
+                    </small>
                     <small *ngIf="isInvalid('numberIdentification')" class="text-red-500 flex items-center gap-1">
                         <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('numberIdentification') }}
                     </small>
                 </div>
-                <div *ngIf="form.get('identificationType')?.value === 'NIT'" class="flex flex-col gap-1">
-                    <label for="verificationDigit" class="text-sm font-medium text-surface-700 dark:text-surface-200">Dígito de verificación</label>
-                    <input pInputText fluid id="verificationDigit" formControlName="verificationDigit" placeholder="0" />
+                <div *ngIf="selectedType()?.hasVerificationDigit" class="flex flex-col gap-1">
+                    <label for="verificationDigit" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Dígito de verificación <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="verificationDigit"
+                        formControlName="verificationDigit"
+                        placeholder="0"
+                        [class.ng-invalid]="isInvalid('verificationDigit')"
+                        [class.ng-dirty]="isInvalid('verificationDigit')"
+                    />
+                    <small *ngIf="isInvalid('verificationDigit')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('verificationDigit') }}
+                    </small>
                 </div>
                 <!-- <div class="flex flex-col gap-1">
                     <label for="taxRegime" class="text-sm font-medium text-surface-700 dark:text-surface-200">Régimen tributario</label>
@@ -317,7 +333,7 @@
                         [auto]="false"
                         fluid
                     />
-                    <a *ngIf="form.get('rutUrl')?.value" [href]="form.get('rutUrl')?.value" target="_blank" class="text-blue-600 dark:text-blue-400 underline text-sm">Ver archivo</a>
+                    <a *ngIf="form.get('taxRegistrationDocUrl')?.value" [href]="form.get('taxRegistrationDocUrl')?.value" target="_blank" class="text-blue-600 dark:text-blue-400 underline text-sm">Ver archivo</a>
                 </div>
               
             </div>

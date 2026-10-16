@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Company, CompanyRequest } from '../models/company.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
+import { localErrorHandling } from '@/core/interceptors/local-error-handling';
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
@@ -29,12 +30,13 @@ export class CompanyService {
         return this.http.get<ApiResponse<Company>>(`${this.baseUrl}/${this.extractSubdomain()}`);
     }
 
+    // Manejo local: el 422 de identificación (60/61/62) se mapea al campo del formulario, no al toast global
     createCompany(company: CompanyRequest) {
-        return this.http.post<ApiResponse<Company>>(this.baseUrl, { data: company });
+        return this.http.post<ApiResponse<Company>>(this.baseUrl, { data: company }, { context: localErrorHandling() });
     }
 
     updateCompany(company: CompanyRequest) {
-        return this.http.put<ApiResponse<Company>>(this.baseUrl, { data: company });
+        return this.http.put<ApiResponse<Company>>(this.baseUrl, { data: company }, { context: localErrorHandling() });
     }
 
     patchCompany(id: number, changes: Partial<Company>) {
