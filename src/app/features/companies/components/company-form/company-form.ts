@@ -8,20 +8,32 @@ import { FileUploadModule, UploadEvent } from 'primeng/fileupload';
 import { CheckboxModule } from 'primeng/checkbox';
 import { Company, generateTenantSlug, CompanyRequest } from '@/core/models';
 import { Department } from '@/core/models/department-city.model';
-import { DOCUMENT_TYPE_LABELS, DocumentType } from '@/core/enums/document-type.enum';
+import { IdentificationType } from '@/core/models/identification-type.model';
+import { buildNumberValidator } from '@/core/validators/identification-number.validator';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Store } from '@ngrx/store';
 import { DepartmentCityActions, initLocationData } from '@/core/state/actions/department-city.actions';
 import { selectAllDepartments, selectCitiesByDepartment } from '@/core/state/selectors/department-city.selectors';
+import { IdentificationTypeActions } from '@/core/state/actions/identification-type.actions';
+import { selectAllIdentificationTypes } from '@/core/state/selectors/identification-type.selectors';
 import { Observable, Subject, combineLatest, filter, map, of, startWith, switchMap, takeUntil, distinctUntilChanged } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompaniesActions } from '../../state/actions/companies.actions';
 import { CountriesActions } from '../../state/actions/countries.actions';
-import { selectSelectedCompany, selectCompaniesLoading } from '../../state/selectors/companies.selectors';
+import { selectSelectedCompany, selectCompaniesLoading, selectCompaniesFieldError } from '../../state/selectors/companies.selectors';
 import { selectAllCountries } from '../../state/selectors/countries.selectors';
+
+// Texto de formato por código de tipo de identificación (refleja las reglas del backend, ms-admin V64)
+const IDENTIFICATION_FORMAT_HINTS: Record<string, string> = {
+    NIT: 'Formato: 9 o 10 dígitos, sin guiones ni dígito de verificación',
+    CC: 'Formato: entre 6 y 10 dígitos',
+    CE: 'Formato: entre 6 y 7 dígitos',
+    RFC: 'Formato: 12 caracteres (persona moral) o 13 (persona física), se convierte a mayúsculas',
+    CURP: 'Formato: 18 caracteres, se convierte a mayúsculas'
+};
 
 @Component({
     standalone: true,
@@ -51,10 +63,16 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     departments$!: Observable<Department[]>;
     cities$!: Observable<{ id: number; name: string; departmentId: number }[]>;
 
-    documentTypes = Object.values(DocumentType).map((type) => ({
-        label: DOCUMENT_TYPE_LABELS[type],
-        value: type
-    }));
+    identificationTypeOptions$!: Observable<{ label: string; value: string }[]>;
+    // Tipo de identificación seleccionado (del catálogo del país); null si no hay o es legado/no cargado
+    selectedType = signal<IdentificationType | null>(null);
+
+    // Ayuda visible bajo el número de identificación: se muestra solo si hay tipo seleccionado con texto de formato
+    identificationFormatHint(): string | null {
+        const code = this.selectedType()?.code;
+        return code ? (IDENTIFICATION_FORMAT_HINTS[code] ?? null) : null;
+    }
+
     legalTypes = [
         { label: 'Persona Natural', value: 'natural' },
         { label: 'Persona Jurídica', value: 'juridical' }
@@ -99,7 +117,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const file = event.files?.[0];
         if (file) {
             this.rutFileUrlFile = file;
-            this.fileToBase64(file).then((base64) => this.form.patchValue({ rutUrl: base64 }));
+            this.fileToBase64(file).then((base64) => this.form.patchValue({ taxRegistrationDocUrl: base64 }));
         }
     }
 
@@ -128,7 +146,10 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         const control = this.form.get(fieldName);
         if (!control || !control.errors) return '';
 
+        // Error del backend (422 60/61/62) asociado al campo; se limpia al volver a validar el control
+        if (control.errors['server']) return control.errors['server'];
         if (control.errors['required']) return 'Este campo es requerido';
+        if (control.errors['pattern']) return 'El formato no es válido para el tipo de identificación seleccionado';
         if (control.errors['email']) return 'Ingresa un correo válido';
         if (control.errors['min']) return `El valor mínimo es ${control.errors['min'].min}`;
         if (control.errors['minlength'])
@@ -141,6 +162,8 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.buildForm();
+        // Descarta un error de campo de un intento anterior antes de suscribirse
+        this.store.dispatch(CompaniesActions.clearError());
 
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
@@ -158,6 +181,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                     // El país es inmutable: se usa el de la company, nunca null
                     if (company.countryCode) {
                         this.store.dispatch(DepartmentCityActions.loadDepartments({ countryCode: company.countryCode }));
+                        this.store.dispatch(IdentificationTypeActions.loadIdentificationTypes({ countryCode: company.countryCode }));
                     }
                 });
         }
@@ -175,14 +199,72 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             map(([departments, countryCode]) => departments.filter((d) => d.countryCode === countryCode))
         );
 
+        // Tipos de identificación del país del form (el state acumula los de todos los países)
+        const identificationTypes$ = combineLatest([this.store.select(selectAllIdentificationTypes), countryCode$]).pipe(
+            map(([types, countryCode]) => types.filter((t) => t.countryCode === countryCode))
+        );
+        const identificationTypeCode$ = this.form.get('identificationType')!.valueChanges.pipe(
+            startWith(this.form.get('identificationType')!.value as string | null),
+            distinctUntilChanged()
+        );
+
+        // Opciones del select; en edición un tipo legado fuera del catálogo se muestra tal cual (el backend valida al guardar)
+        this.identificationTypeOptions$ = combineLatest([identificationTypes$, identificationTypeCode$]).pipe(
+            map(([types, code]) => {
+                const options = types.map((t) => ({ label: t.displayName, value: t.code }));
+                if (this.isEditMode && code && !types.some((t) => t.code === code)) {
+                    options.push({ label: code, value: code });
+                }
+                return options;
+            })
+        );
+
+        // Cambia el tipo (o llega el catálogo): recalcula dígito de verificación y validador del número
+        combineLatest([identificationTypes$, identificationTypeCode$])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(([types, code]) => this.applyIdentificationType(types.find((t) => t.code === code) ?? null));
+
+        // Mayúsculas automáticas: el match del backend es case-sensitive sobre el valor ya normalizado
+        this.form
+            .get('numberIdentification')!
+            .valueChanges.pipe(takeUntil(this.destroy$))
+            .subscribe((value) => {
+                if (typeof value === 'string' && value !== value.toUpperCase()) {
+                    this.form.get('numberIdentification')!.setValue(value.toUpperCase(), { emitEvent: false });
+                }
+            });
+
+        // 422 del backend (60/61/62) -> error en el campo correspondiente
+        this.store
+            .select(selectCompaniesFieldError)
+            .pipe(filter(Boolean), takeUntil(this.destroy$))
+            .subscribe(({ field, message }) => {
+                const control = this.form.get(field);
+                control?.setErrors({ server: message });
+                control?.markAsTouched();
+            });
+
         if (!this.isEditMode) {
+            this.store.dispatch(
+                IdentificationTypeActions.loadIdentificationTypes({
+                    countryCode: this.form.get('countryCode')!.value
+                })
+            );
             this.form
                 .get('countryCode')!
                 .valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
                 .subscribe((countryCode) => {
-                    this.form.patchValue({ departmentId: null, cityId: null });
+                    // Tipos y formatos dependen del país: se limpia la identificación completa
+                    this.form.patchValue({
+                        departmentId: null,
+                        cityId: null,
+                        identificationType: null,
+                        numberIdentification: '',
+                        verificationDigit: ''
+                    });
                     if (countryCode) {
                         this.store.dispatch(DepartmentCityActions.loadDepartments({ countryCode }));
+                        this.store.dispatch(IdentificationTypeActions.loadIdentificationTypes({ countryCode }));
                     }
                 });
         }
@@ -203,21 +285,42 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             });
     }
 
+    /**
+     * Ajusta validadores según el tipo seleccionado: el dígito solo aplica si hasVerificationDigit
+     * y el número se valida contra el validationRegex del tipo. Sin tipo conocido (legado/no cargado) no se
+     * valida formato en cliente ni se exige dígito.
+     */
+    private applyIdentificationType(type: IdentificationType | null): void {
+        this.selectedType.set(type);
+
+        const number = this.form.get('numberIdentification')!;
+        number.setValidators([Validators.required, buildNumberValidator(type)]);
+        number.updateValueAndValidity({ emitEvent: false });
+
+        const digit = this.form.get('verificationDigit')!;
+        if (type?.hasVerificationDigit) {
+            digit.setValidators(Validators.required);
+        } else {
+            digit.clearValidators();
+            if (type) digit.setValue('', { emitEvent: false });
+        }
+        digit.updateValueAndValidity({ emitEvent: false });
+    }
+
     private buildForm(): void {
         this.form = this.fb.group({
             id: [null],
             countryCode: ['CO', Validators.required],
             logoUrl: [''],
             companyName: ['', Validators.required],
-            documentType: [null],
             identificationType: [null, Validators.required],
-            numberIdentification: ['', [Validators.required, Validators.min(1)]],
+            numberIdentification: ['', Validators.required],
             verificationDigit: [''],
             email: ['', [Validators.required, Validators.email]],
             names: [''],
             lastNames: [''],
             phone: [''],
-            rutUrl: [''],
+            taxRegistrationDocUrl: [''],
             certificateFile: [''],
             tenantSlug: ['', Validators.required],
             website: [''],
@@ -265,13 +368,13 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             logoUrl: formData.logoUrl,
             companyName: formData.companyName,
             identificationType: formData.identificationType,
-            numberIdentification: formData.numberIdentification,
+            numberIdentification: String(formData.numberIdentification ?? '').trim().toUpperCase(),
             providerCustomerPmId: formData.providerCustomerPmId,
             identifyProvider: formData.identifyProvider,
-            verificationDigit: formData.verificationDigit,
+            verificationDigit: this.selectedType()?.hasVerificationDigit ? formData.verificationDigit : undefined,
             email: formData.email,
             tenantSlug: formData.tenantSlug,
-            rutUrl: formData.rutUrl,
+            taxRegistrationDocUrl: formData.taxRegistrationDocUrl,
             website: formData.website,
             address: formData.address,
             departmentId: formData.departmentId,

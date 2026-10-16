@@ -10,6 +10,8 @@ export const selectCompaniesLoading = createSelector(selectCompaniesState, (stat
 
 export const selectCompaniesError = createSelector(selectCompaniesState, (state) => state.error);
 
+export const selectCompaniesFieldError = createSelector(selectCompaniesState, (state) => state.fieldError);
+
 export const selectSelectedCompany = createSelector(
     selectCompaniesState,
     (state) => state.selectedCompany

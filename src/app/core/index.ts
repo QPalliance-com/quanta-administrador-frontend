@@ -10,7 +10,6 @@ export * from './models';
 export * from './services';
 
 // Enums
-export * from './enums/document-type.enum';
 export * from './enums/licence-type.enum';
 export * from './enums/material-distribution.enum';
 export * from './enums/material-reception-status.enum';
@@ -36,3 +35,7 @@ export * from './state/actions/department-city.actions';
 export * from './state/effects/department-city.effects';
 export * from './state/reducers/department-city.reducer';
 export * from './state/selectors/department-city.selectors';
+export * from './state/actions/identification-type.actions';
+export * from './state/effects/identification-type.effects';
+export * from './state/reducers/identification-type.reducer';
+export * from './state/selectors/identification-type.selectors';

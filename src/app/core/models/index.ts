@@ -8,6 +8,7 @@ export * from './api-response.model';
 export * from './auth.model';
 export * from './breadcrumb.model';
 export * from './department-city.model';
+export * from './identification-type.model';
 export * from './login-response.model';
 export * from './menu.model';
 export * from './permission.model';

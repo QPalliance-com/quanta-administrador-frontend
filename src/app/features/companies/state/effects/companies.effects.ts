@@ -4,7 +4,39 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of, tap } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { CompanyService } from '@/core/services/company.service';
-import { CompaniesActions } from '../actions/companies.actions';
+import { CompaniesActions, CompanyFieldErrorField } from '../actions/companies.actions';
+
+// Códigos de ErrorApplicationEnum (ms-admin) para la validación de identificación -> campo del formulario
+const IDENTIFICATION_ERROR_FIELDS: Record<number, CompanyFieldErrorField> = {
+    60: 'identificationType', // IDENTIFICATION_TYPE_INVALID
+    61: 'verificationDigit', // VERIFICATION_DIGIT_REQUIRED
+    62: 'numberIdentification' // IDENTIFICATION_NUMBER_INVALID_FORMAT
+};
+
+/**
+ * El backend envía el código como prefijo del mensaje: "APPLICATION - 62: texto".
+ * Devuelve el campo asociado y el texto sin prefijo; null si no es un error de identificación.
+ */
+function parseIdentificationError(error: any): { field: CompanyFieldErrorField; message: string } | null {
+    const raw = error?.error?.message;
+    if (typeof raw !== 'string') return null;
+    const match = raw.match(/APPLICATION\s*-\s*(\d+)\s*:\s*(.*)/s);
+    if (!match) return null;
+    const field = IDENTIFICATION_ERROR_FIELDS[Number(match[1])];
+    return field ? { field, message: match[2].trim() || raw } : null;
+}
+
+/** Acciones de falla de create/update: toast con el mensaje del backend + error asociado al campo si aplica */
+function saveFailureActions(
+    failure: typeof CompaniesActions.createCompanyFailure | typeof CompaniesActions.updateCompanyFailure,
+    error: any
+) {
+    const fieldError = parseIdentificationError(error);
+    const message = fieldError?.message ?? error?.error?.message ?? error.message;
+    return fieldError
+        ? of(failure({ error: message }), CompaniesActions.setFieldError(fieldError))
+        : of(failure({ error: message }));
+}
 
 @Injectable()
 export class CompaniesEffects {
@@ -53,9 +85,7 @@ export class CompaniesEffects {
                     map((response) =>
                         CompaniesActions.createCompanySuccess({ company: response.data })
                     ),
-                    catchError((error) =>
-                        of(CompaniesActions.createCompanyFailure({ error: error.message }))
-                    )
+                    catchError((error) => saveFailureActions(CompaniesActions.createCompanyFailure, error))
                 )
             )
         )
@@ -85,9 +115,7 @@ export class CompaniesEffects {
                     map((response) =>
                         CompaniesActions.updateCompanySuccess({ company: response.data })
                     ),
-                    catchError((error) =>
-                        of(CompaniesActions.updateCompanyFailure({ error: error.message }))
-                    )
+                    catchError((error) => saveFailureActions(CompaniesActions.updateCompanyFailure, error))
                 )
             )
         )
