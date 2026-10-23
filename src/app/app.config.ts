@@ -14,6 +14,8 @@ import { departmentCityReducer } from './core/state/reducers/department-city.red
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
 import { identificationTypeReducer } from './core/state/reducers/identification-type.reducer';
 import { IdentificationTypeEffects } from './core/state/effects/identification-type.effects';
+import { timezoneReducer } from './core/state/reducers/timezone.reducer';
+import { TimezoneEffects } from './core/state/effects/timezone.effects';
 import { usersReducer } from './features/users/state/reducers/users.reducer';
 import { UsersEffects } from './features/users/state/effects/users.effects';
 import { companiesReducer } from './features/companies/state/reducers/companies.reducer';
@@ -84,6 +86,7 @@ export const appConfig: ApplicationConfig = {
                 auth: authReducer,
                 departmentCity: departmentCityReducer,
                 identificationTypes: identificationTypeReducer,
+                timezones: timezoneReducer,
                 users: usersReducer,
                 companies: companiesReducer,
                 countries: countriesReducer,
@@ -113,6 +116,7 @@ export const appConfig: ApplicationConfig = {
             AuthEffects,
             DepartmentCityEffects,
             IdentificationTypeEffects,
+            TimezoneEffects,
             UsersEffects,
             CompaniesEffects,
             CountriesEffects,

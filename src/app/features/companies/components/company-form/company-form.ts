@@ -9,6 +9,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { Company, generateTenantSlug, CompanyRequest } from '@/core/models';
 import { Department } from '@/core/models/department-city.model';
 import { IdentificationType } from '@/core/models/identification-type.model';
+import { Timezone } from '@/core/models/timezone.model';
 import { buildNumberValidator } from '@/core/validators/identification-number.validator';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
@@ -18,6 +19,8 @@ import { DepartmentCityActions, initLocationData } from '@/core/state/actions/de
 import { selectAllDepartments, selectCitiesByDepartment } from '@/core/state/selectors/department-city.selectors';
 import { IdentificationTypeActions } from '@/core/state/actions/identification-type.actions';
 import { selectAllIdentificationTypes } from '@/core/state/selectors/identification-type.selectors';
+import { TimezoneActions } from '@/core/state/actions/timezone.actions';
+import { selectAllTimezones } from '@/core/state/selectors/timezone.selectors';
 import { Observable, Subject, combineLatest, filter, map, of, startWith, switchMap, takeUntil, distinctUntilChanged } from 'rxjs';
 import { TooltipModule } from 'primeng/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -66,6 +69,9 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
     identificationTypeOptions$!: Observable<{ label: string; value: string }[]>;
     // Tipo de identificación seleccionado (del catálogo del país); null si no hay o es legado/no cargado
     selectedType = signal<IdentificationType | null>(null);
+
+    timezones$!: Observable<Timezone[]>;
+    timezoneOptions$!: Observable<{ label: string; value: string }[]>;
 
     // Ayuda visible bajo el número de identificación: se muestra solo si hay tipo seleccionado con texto de formato
     identificationFormatHint(): string | null {
@@ -182,6 +188,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                     if (company.countryCode) {
                         this.store.dispatch(DepartmentCityActions.loadDepartments({ countryCode: company.countryCode }));
                         this.store.dispatch(IdentificationTypeActions.loadIdentificationTypes({ countryCode: company.countryCode }));
+                        this.store.dispatch(TimezoneActions.loadTimezones({ countryCode: company.countryCode }));
                     }
                 });
         }
@@ -250,6 +257,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                     countryCode: this.form.get('countryCode')!.value
                 })
             );
+            this.store.dispatch(TimezoneActions.loadTimezones({ countryCode: this.form.get('countryCode')!.value }));
             this.form
                 .get('countryCode')!
                 .valueChanges.pipe(takeUntil(this.destroy$), distinctUntilChanged())
@@ -260,14 +268,39 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
                         cityId: null,
                         identificationType: null,
                         numberIdentification: '',
-                        verificationDigit: ''
+                        verificationDigit: '',
+                        timeZone: null
                     });
                     if (countryCode) {
                         this.store.dispatch(DepartmentCityActions.loadDepartments({ countryCode }));
                         this.store.dispatch(IdentificationTypeActions.loadIdentificationTypes({ countryCode }));
+                        this.store.dispatch(TimezoneActions.loadTimezones({ countryCode }));
                     }
                 });
         }
+
+        // Zonas horarias del país del form (el state acumula las de todos los países)
+        this.timezones$ = combineLatest([this.store.select(selectAllTimezones), countryCode$]).pipe(
+            map(([timezones, countryCode]) => timezones.filter((t) => t.countryCode === countryCode))
+        );
+        const timeZoneValue$ = this.form.get('timeZone')!.valueChanges.pipe(
+            startWith(this.form.get('timeZone')!.value as string | null),
+            distinctUntilChanged()
+        );
+
+        // En edición una zona legada fuera del catálogo (p. ej. 'UTC-5' del default de V70) se muestra tal cual
+        this.timezoneOptions$ = combineLatest([this.timezones$, timeZoneValue$]).pipe(
+            map(([timezones, value]) => {
+                const options = timezones.map((t) => ({ label: t.displayName, value: t.ianaId }));
+                if (this.isEditMode && value && !timezones.some((t) => t.ianaId === value)) {
+                    options.push({ label: value, value });
+                }
+                return options;
+            })
+        );
+
+        // Se suscribe después del reset por país para que la preselección no se pise
+        this.timezones$.pipe(takeUntil(this.destroy$)).subscribe((timezones) => this.applyTimezones(timezones));
 
         this.cities$ = this.form.get('departmentId')!.valueChanges.pipe(
             startWith(this.form.get('departmentId')!.value),
@@ -307,6 +340,25 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
         digit.updateValueAndValidity({ emitEvent: false });
     }
 
+    /**
+     * Una sola zona del país: se fija y se deshabilita. Varias: se preselecciona la default solo si el campo
+     * está vacío, para no pisar la zona guardada de la company en edición.
+     */
+    private applyTimezones(timezones: Timezone[]): void {
+        const control = this.form.get('timeZone')!;
+        if (timezones.length === 1) {
+            control.setValue(timezones[0].ianaId, { emitEvent: false });
+            control.disable({ emitEvent: false });
+            return;
+        }
+
+        control.enable({ emitEvent: false });
+        if (!control.value) {
+            const defaultZone = timezones.find((t) => t.isDefault);
+            if (defaultZone) control.setValue(defaultZone.ianaId, { emitEvent: false });
+        }
+    }
+
     private buildForm(): void {
         this.form = this.fb.group({
             id: [null],
@@ -316,6 +368,7 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             identificationType: [null, Validators.required],
             numberIdentification: ['', Validators.required],
             verificationDigit: [''],
+            timeZone: [null],
             email: ['', [Validators.required, Validators.email]],
             names: [''],
             lastNames: [''],
@@ -379,6 +432,8 @@ export class CompanyFormComponent implements OnInit, OnDestroy {
             address: formData.address,
             departmentId: formData.departmentId,
             cityId: formData.cityId,
+            // El control puede estar deshabilitado (una sola zona): form.value no lo incluye, se lee directo
+            timeZone: this.form.get('timeZone')!.value || undefined,
             names: formData.names,
             lastNames: formData.lastNames,
             phone: formData.phone,

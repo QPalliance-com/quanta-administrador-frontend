@@ -44,13 +44,12 @@ export class HttpErrorInterceptor implements HttpInterceptor {
                             break;
 
                         case 404:
-                            // Recurso no encontrado
+                            // Recurso no encontrado: solo toast, el usuario se queda en la pantalla actual
                             this.messageService.add({
                                 severity: 'warn',
                                 summary: 'No encontrado',
                                 detail: 'El recurso solicitado no existe.'
                             });
-                            this.router.navigate(['/not-found']);
                             break;
 
                         case 0:
