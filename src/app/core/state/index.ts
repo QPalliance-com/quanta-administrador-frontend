@@ -6,3 +6,7 @@ export * from './actions/identification-type.actions';
 export * from './effects/identification-type.effects';
 export * from './reducers/identification-type.reducer';
 export * from './selectors/identification-type.selectors';
+export * from './actions/timezone.actions';
+export * from './effects/timezone.effects';
+export * from './reducers/timezone.reducer';
+export * from './selectors/timezone.selectors';

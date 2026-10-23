@@ -9,6 +9,7 @@ export * from './auth.model';
 export * from './breadcrumb.model';
 export * from './department-city.model';
 export * from './identification-type.model';
+export * from './timezone.model';
 export * from './login-response.model';
 export * from './menu.model';
 export * from './permission.model';

@@ -25,6 +25,7 @@ export interface Company {
     departmentId: number;
     cityId: number;
     countryCode?: string; // país de la compañía, inmutable tras la creación
+    timeZone?: string; // iana_id del catálogo de zonas horarias del país (admin_company.time_zone)
     names?: string;
     lastNames?: string;
     phone?: string;
@@ -53,6 +54,7 @@ export interface CompanyRequest {
     departmentId: number;
     cityId: number;
     countryCode?: string; // obligatorio en POST, se omite en PUT (inmutable)
+    timeZone?: string; // opcional: si se omite, el backend asigna el default del país
     names?: string;
     lastNames?: string;
     phone?: string;
