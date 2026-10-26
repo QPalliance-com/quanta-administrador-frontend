@@ -28,6 +28,30 @@ const MENU_ITEMS: MenuItem[] = [
         ]
     },
     {
+        label: 'Facturación',
+        icon: 'pi pi-fw pi-wallet',
+        items: [
+            {
+                label: 'Licencias',
+                icon: 'pi pi-id-card',
+                routerLink: ['/settings/licences/list'],
+                description: 'Configuración de las licencias de suscripción del sistema'
+            },
+            {
+                label: 'Gracia y Alertas',
+                icon: 'pi pi-bell',
+                routerLink: ['/settings/licences/config'],
+                description: 'Periodo de gracia y alertas de vencimiento de licencias'
+            },
+            {
+                label: 'Pagos MercadoPago',
+                icon: 'pi pi-credit-card',
+                routerLink: ['/billing/mercadopago-payments'],
+                description: 'Pagos de MercadoPago y su conciliación con Quanta'
+            }
+        ]
+    },
+    {
         label: 'Usuarios',
         icon: 'pi pi-fw pi-users',
         items: [
@@ -43,12 +67,6 @@ const MENU_ITEMS: MenuItem[] = [
         label: 'Configuración',
         icon: 'pi pi-fw pi-cog',
         items: [
-            {
-                label: 'Licencias',
-                icon: 'pi pi-credit-card',
-                routerLink: ['/settings/licences/list'],
-                description: 'Configuración de las licencias de suscripción del sistema'
-            },
             {
                 label: 'Días No Laborables',
                 icon: 'pi pi-calendar-plus',

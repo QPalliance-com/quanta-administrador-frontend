@@ -133,6 +133,11 @@ export class CompanyListComponent implements OnInit, OnDestroy {
                 icon: 'pi pi-pencil',
                 command: () => this.navigateToEdit(company.id!)
             },
+            {
+                label: 'Licencias',
+                icon: 'pi pi-credit-card',
+                command: () => this.router.navigate(['/companies', company.id, 'licences'])
+            },
             { separator: true },
             {
                 label: 'Eliminar',

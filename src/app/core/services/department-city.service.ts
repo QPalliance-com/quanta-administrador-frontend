@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '@/core/models/api-response.model';
@@ -9,8 +9,9 @@ export class DepartmentCityService {
     private http = inject(HttpClient);
     private readonly baseUrl = environment.adminApiUrl;
 
-    getDepartments() {
-        return this.http.get<ApiResponse<Department[]>>(`${this.baseUrl}departments`);
+    getDepartments(countryCode: string) {
+        const params = new HttpParams().set('countryCode', countryCode);
+        return this.http.get<ApiResponse<Department[]>>(`${this.baseUrl}departments`, { params });
     }
 
     getCitiesByDepartment(idDepartment: number | string) {

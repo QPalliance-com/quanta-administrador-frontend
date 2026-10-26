@@ -1,11 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { LoaderService } from './loader.service';
 
 @Component({
     selector: 'app-loader',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, ProgressBarModule],
     templateUrl: './loader.html',
     styleUrls: ['./loader.scss']
 })

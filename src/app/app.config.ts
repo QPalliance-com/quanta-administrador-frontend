@@ -12,14 +12,32 @@ import { appRoutes } from './app.routes';
 import { AppTheme } from './core/theme/theme.config';
 import { departmentCityReducer } from './core/state/reducers/department-city.reducer';
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
+import { identificationTypeReducer } from './core/state/reducers/identification-type.reducer';
+import { IdentificationTypeEffects } from './core/state/effects/identification-type.effects';
+import { timezoneReducer } from './core/state/reducers/timezone.reducer';
+import { TimezoneEffects } from './core/state/effects/timezone.effects';
 import { usersReducer } from './features/users/state/reducers/users.reducer';
 import { UsersEffects } from './features/users/state/effects/users.effects';
 import { companiesReducer } from './features/companies/state/reducers/companies.reducer';
 import { CompaniesEffects } from './features/companies/state/effects/companies.effects';
+import { countriesReducer } from './features/companies/state/reducers/countries.reducer';
+import { CountriesEffects } from './features/companies/state/effects/countries.effects';
 import { licencesReducer } from './features/settings/state/reducers/licences.reducer';
 import { LicencesEffects } from './features/settings/state/effects/licences.effects';
 import { holidaysReducer } from './features/settings/state/reducers/holidays.reducer';
+import { licenseConfigReducer } from './features/settings/state/reducers/license-config.reducer';
+import { LicenseConfigEffects } from './features/settings/state/effects/license-config.effects';
 import { HolidaysEffects } from './features/settings/state/effects/holidays.effects';
+import { licenceLotsReducer } from './features/licence-lots/state/reducers/licence-lots.reducer';
+import { LicenceLotsEffects } from './features/licence-lots/state/effects/licence-lots.effects';
+import { catalogsReducer } from './features/licence-lots/state/reducers/catalogs.reducer';
+import { mercadoPagoPaymentsReducer } from './features/billing/state/reducers/mercadopago-payments.reducer';
+import { MercadoPagoPaymentsEffects } from './features/billing/state/effects/mercadopago-payments.effects';
+import { invoicesReducer } from './features/licence-lots/state/reducers/invoices.reducer';
+import { InvoicesEffects } from './features/licence-lots/state/effects/invoices.effects';
+import { expiringLotsReducer } from './features/licence-lots/state/reducers/expiring-lots.reducer';
+import { ExpiringLotsEffects } from './features/licence-lots/state/effects/expiring-lots.effects';
+import { CatalogsEffects } from './features/licence-lots/state/effects/catalogs.effects';
 import { authReducer } from './features/auth/state/reducers/auth.reducer';
 import { AuthEffects } from './features/auth/state/effects/auth.effects';
 import { dashboardReducer } from './features/dashboard/state/reducers/dashboard.reducer';
@@ -67,10 +85,19 @@ export const appConfig: ApplicationConfig = {
             {
                 auth: authReducer,
                 departmentCity: departmentCityReducer,
+                identificationTypes: identificationTypeReducer,
+                timezones: timezoneReducer,
                 users: usersReducer,
                 companies: companiesReducer,
+                countries: countriesReducer,
                 licences: licencesReducer,
                 holidays: holidaysReducer,
+                licenseConfig: licenseConfigReducer,
+                licenceLots: licenceLotsReducer,
+                catalogs: catalogsReducer,
+                expiringLots: expiringLotsReducer,
+                licenceInvoices: invoicesReducer,
+                mercadoPagoPayments: mercadoPagoPaymentsReducer,
                 dashboard: dashboardReducer
             },
             {
@@ -88,10 +115,19 @@ export const appConfig: ApplicationConfig = {
         provideEffects([
             AuthEffects,
             DepartmentCityEffects,
+            IdentificationTypeEffects,
+            TimezoneEffects,
             UsersEffects,
             CompaniesEffects,
+            CountriesEffects,
             LicencesEffects,
             HolidaysEffects,
+            LicenseConfigEffects,
+            LicenceLotsEffects,
+            CatalogsEffects,
+            ExpiringLotsEffects,
+            InvoicesEffects,
+            MercadoPagoPaymentsEffects,
             DashboardEffects
         ]),
 

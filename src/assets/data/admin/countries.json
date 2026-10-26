@@ -1,0 +1,4 @@
+[
+    { "code": "CO", "name": "Colombia", "phonePrefix": "+57", "currencyCode": "COP" },
+    { "code": "MX", "name": "México", "phonePrefix": "+52", "currencyCode": "MXN" }
+]

@@ -1,0 +1,62 @@
+<p-dialog
+    [visible]="visible"
+    (visibleChange)="onVisibleChange($event)"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '450px' }"
+    [breakpoints]="{ '575px': '95vw' }"
+    [header]="isEdit ? 'Editar configuración de empresa' : 'Agregar configuración de empresa'"
+>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+            <label for="companyId" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                Empresa <span class="text-red-500">*</span>
+            </label>
+            <p-select
+                fluid
+                inputId="companyId"
+                formControlName="companyId"
+                [options]="(companies$ | async) ?? []"
+                optionLabel="companyName"
+                optionValue="id"
+                [filter]="true"
+                filterBy="companyName"
+                placeholder="Buscar empresa"
+                appendTo="body"
+                [class.ng-invalid]="isInvalid('companyId')"
+                [class.ng-dirty]="isInvalid('companyId')"
+            />
+            <small *ngIf="isInvalid('companyId')" class="text-red-500 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i>Este campo es requerido
+            </small>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+                <label for="alertDays1" class="text-sm font-medium text-surface-700 dark:text-surface-200">Primera alerta (días)</label>
+                <p-inputnumber fluid inputId="alertDays1" formControlName="alertDays1" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('alertDays1') || orderInvalid" [class.ng-dirty]="isInvalid('alertDays1') || orderInvalid" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label for="alertDays2" class="text-sm font-medium text-surface-700 dark:text-surface-200">Segunda alerta (días)</label>
+                <p-inputnumber fluid inputId="alertDays2" formControlName="alertDays2" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('alertDays2') || orderInvalid" [class.ng-dirty]="isInvalid('alertDays2') || orderInvalid" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label for="alertDays3" class="text-sm font-medium text-surface-700 dark:text-surface-200">Alerta urgente (días)</label>
+                <p-inputnumber fluid inputId="alertDays3" formControlName="alertDays3" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('alertDays3') || orderInvalid" [class.ng-dirty]="isInvalid('alertDays3') || orderInvalid" />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label for="gracePeriodDays" class="text-sm font-medium text-surface-700 dark:text-surface-200">Periodo de gracia (días)</label>
+                <p-inputnumber fluid inputId="gracePeriodDays" formControlName="gracePeriodDays" [min]="1" [showButtons]="true" [class.ng-invalid]="isInvalid('gracePeriodDays')" [class.ng-dirty]="isInvalid('gracePeriodDays')" />
+            </div>
+        </div>
+
+        <small *ngIf="orderInvalid" class="text-red-500 flex items-center gap-1" role="alert">
+            <i class="pi pi-exclamation-circle text-xs"></i>{{ alertOrderMessage }}
+        </small>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
+            <p-button label="Guardar configuración" icon="pi pi-check" type="submit" [loading]="(saving$ | async) ?? false" [disabled]="form.invalid" />
+        </div>
+    </form>
+</p-dialog>

@@ -1,38 +1,8 @@
-.loader-overlay {
+.app-top-loader {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(2px);
-}
-
-.loader-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.loader-spinner {
-    width: 36px;
-    height: 36px;
-    border: 2px solid rgba(234, 92, 158, 0.15);
-    border-top-color: #ea5c9e;
-    border-radius: 50%;
-    animation: spin 0.75s linear infinite;
-}
-
-.loader-brand-name {
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.5em;
-    color: #ea5c9e;
-    padding-right: 0.5em;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
+    pointer-events: none;
 }

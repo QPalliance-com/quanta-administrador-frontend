@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
+import { SUPPORTED_COUNTRY_CODES } from '@/core/models/country.model';
 import { DepartmentCityService } from '@/core/services/department-city.service';
 import { DepartmentCityActions, initLocationData } from '../actions/department-city.actions';
-import { selectDepartmentsLoaded, selectCitiesLoaded } from '../selectors/department-city.selectors';
+import { selectCitiesLoaded } from '../selectors/department-city.selectors';
 import { catchError, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
 @Injectable()
@@ -15,13 +16,11 @@ export class DepartmentCityEffects {
     initLocationData$ = createEffect(() => {
         return this.actions$.pipe(
             ofType(initLocationData),
-            withLatestFrom(
-                this.store.select(selectDepartmentsLoaded),
-                this.store.select(selectCitiesLoaded)
-            ),
-            switchMap(([, departmentsLoaded, citiesLoaded]) => {
-                const actions = [];
-                if (!departmentsLoaded) actions.push(DepartmentCityActions.loadDepartments());
+            withLatestFrom(this.store.select(selectCitiesLoaded)),
+            switchMap(([, citiesLoaded]) => {
+                const actions: Action[] = SUPPORTED_COUNTRY_CODES.map((countryCode) =>
+                    DepartmentCityActions.loadDepartments({ countryCode })
+                );
                 if (!citiesLoaded) actions.push(DepartmentCityActions.loadAllCities());
                 return actions;
             })
@@ -31,8 +30,8 @@ export class DepartmentCityEffects {
     loadDepartments$ = createEffect(() => {
         return this.actions$.pipe(
             ofType(DepartmentCityActions.loadDepartments),
-            mergeMap(() =>
-                this.departmentCityService.getDepartments().pipe(
+            mergeMap(({ countryCode }) =>
+                this.departmentCityService.getDepartments(countryCode).pipe(
                     map((response) => DepartmentCityActions.loadDepartmentsSuccess({ departments: response.data })),
                     catchError((error) =>
                         of(DepartmentCityActions.loadDepartmentsFailure({ error: error.message }))

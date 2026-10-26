@@ -1,0 +1,96 @@
+<div class="card">
+    <p-toolbar styleClass="mb-6">
+        <ng-template #start>
+            <span class="font-semibold text-xl">Alertas de vencimiento</span>
+        </ng-template>
+        <ng-template #end>
+            <p-button
+                label="Actualizar"
+                icon="pi pi-refresh"
+                severity="secondary"
+                [outlined]="true"
+                [loading]="(loading$ | async) ?? false"
+                (onClick)="load()"
+            />
+        </ng-template>
+    </p-toolbar>
+
+    <ng-container *ngIf="error$ | async as error; else contentTpl">
+        <p-message severity="error" styleClass="w-full">
+            <div class="flex items-center justify-between gap-3 w-full">
+                <span>{{ error }}</span>
+                <button pButton label="Reintentar" icon="pi pi-refresh" size="small" severity="secondary" [outlined]="true" (click)="load()"></button>
+            </div>
+        </p-message>
+    </ng-container>
+
+    <ng-template #contentTpl>
+        <ng-container *ngIf="groups$ | async as groups">
+            <!-- Skeleton solo en la primera carga; en refrescos se conserva el contenido -->
+            <div *ngIf="(loading$ | async) && !groups.length; else groupsTpl" aria-busy="true" class="flex flex-col gap-2">
+                <p-skeleton *ngFor="let row of skeletonRows" height="2.5rem" />
+            </div>
+
+            <ng-template #groupsTpl>
+                <p-message *ngIf="!groups.length" severity="success" styleClass="w-full">No hay licencias próximas a vencer.</p-message>
+
+                <div class="flex flex-col gap-8">
+                    <section *ngFor="let group of groups" [attr.aria-label]="'Lotes ' + urgencyMeta[group.key].label">
+                        <div class="flex items-center gap-3 mb-2">
+                            <p-tag [value]="urgencyMeta[group.key].label" [severity]="urgencyMeta[group.key].severity" />
+                            <span class="text-sm text-surface-600 dark:text-surface-300">
+                                {{ group.lots.length }} {{ group.lots.length === 1 ? 'lote' : 'lotes' }}
+                            </span>
+                        </div>
+
+                        <p-table [value]="group.lots" [tableStyle]="{ 'min-width': '52rem' }" styleClass="p-datatable-sm">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Empresa</th>
+                                    <th>Licencias</th>
+                                    <th>Forma de pago</th>
+                                    <th>Vencimiento</th>
+                                    <th>Días restantes</th>
+                                    <th style="width: 15rem"></th>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="body" let-item>
+                                <tr class="transition-colors hover:bg-primary/10 dark:hover:bg-primary/10">
+                                    <td>
+                                        <a [routerLink]="['/companies', item.companyId, 'licences']" class="font-medium text-primary hover:underline">
+                                            {{ item.companyName }}
+                                        </a>
+                                    </td>
+                                    <td>{{ profileLabels[item.roleTypeProfile] }} · {{ item.userCount }} usuarios</td>
+                                    <td>{{ item.paymentType.displayName }}</td>
+                                    <td>{{ item.endDate | dateColombia }}</td>
+                                    <td class="font-semibold tabular-nums" [ngClass]="daysLeftClass(item.daysRemaining)">{{ item.daysRemaining }}</td>
+                                    <td>
+                                        <div class="flex justify-end gap-2">
+                                            <p-button label="Extender" icon="pi pi-calendar-plus" size="small" (onClick)="openExtend(item)" />
+                                            <p-button
+                                                label="Ver detalle"
+                                                icon="pi pi-arrow-right"
+                                                iconPos="right"
+                                                size="small"
+                                                severity="secondary"
+                                                [text]="true"
+                                                [routerLink]="['/companies', item.companyId, 'licences']"
+                                            />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </section>
+                </div>
+            </ng-template>
+        </ng-container>
+    </ng-template>
+</div>
+
+<app-extend-lot-dialog [visible]="displayExtendDialog" [companyId]="selectedCompanyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
+
+<p-confirmdialog />
+<p-toast />

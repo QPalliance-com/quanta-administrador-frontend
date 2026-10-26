@@ -33,7 +33,7 @@ export const departmentCityReducer = createReducer(
     })),
     on(DepartmentCityActions.loadDepartmentsSuccess, (state, { departments }) => ({
         ...state,
-        departments: departmentAdapter.setAll(departments, state.departments),
+        departments: departmentAdapter.upsertMany(departments, state.departments),
         departmentsLoaded: true,
         loading: false
     })),

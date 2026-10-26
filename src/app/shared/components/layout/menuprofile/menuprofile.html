@@ -11,7 +11,6 @@
 <ng-template #profileContent>
     <ng-container *ngIf="user() as user">
         <button (click)="toggleMenu()" pTooltip="Profile" [tooltipDisabled]="isTooltipDisabled()">
-            <img [src]="avatarUrl()" alt="avatar" style="width: 32px; height: 32px" />
             <span class="text-start">
                 <strong>{{ user.names }} {{ user.lastNames }}</strong>
                 <small>{{ user.position || 'Usuario' }}</small>

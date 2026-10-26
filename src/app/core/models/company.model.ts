@@ -1,17 +1,16 @@
-import { DocumentType } from '../enums/document-type.enum';
-
 export interface Company {
     id: number;
     logoUrl: string; // obligatorio, se imprime en reportes
     companyName: string;
     legalType?: 'natural' | 'juridical'; // persona natural o jurídica
-    documentType?: DocumentType;
-    identificationType: DocumentType;
+    documentType?: string;
+    identificationType: string; // code del tipo según el país (catálogo identification-types)
     numberIdentification: string;
     verificationDigit: string;
     email: string;
+    emailBilling?: string; // email para facturación
     rutFileUrl?: string; // archivo cargado
-    rutUrl?: string;
+    taxRegistrationDocUrl?: string;
     certificateFile?: string; // certificado de existencia y representación legal
     taxRegime?: string; // desplegable
     taxResponsibility?: string; // desplegable
@@ -25,6 +24,8 @@ export interface Company {
     address: string;
     departmentId: number;
     cityId: number;
+    countryCode?: string; // país de la compañía, inmutable tras la creación
+    timeZone?: string; // iana_id del catálogo de zonas horarias del país (admin_company.time_zone)
     names?: string;
     lastNames?: string;
     phone?: string;
@@ -40,18 +41,20 @@ export interface CompanyRequest {
     id?: number; // Presente en PUT, ausente en POST
     logoUrl: string;
     companyName: string;
-    identificationType: DocumentType;
+    identificationType: string;
     numberIdentification: string;
     providerCustomerPmId: string;
     identifyProvider: string;
-    verificationDigit: string;
+    verificationDigit?: string; // solo si el tipo tiene hasVerificationDigit
     email: string;
     tenantSlug: string;
-    rutUrl: string;
+    taxRegistrationDocUrl: string;
     website: string;
     address: string;
     departmentId: number;
     cityId: number;
+    countryCode?: string; // obligatorio en POST, se omite en PUT (inmutable)
+    timeZone?: string; // opcional: si se omite, el backend asigna el default del país
     names?: string;
     lastNames?: string;
     phone?: string;

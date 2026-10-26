@@ -1,6 +1,8 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { Company, CompanyRequest } from '@/core/models/company.model';
 
+export type CompanyFieldErrorField = 'identificationType' | 'verificationDigit' | 'numberIdentification';
+
 export const CompaniesActions = createActionGroup({
     source: 'Companies',
     events: {
@@ -23,6 +25,9 @@ export const CompaniesActions = createActionGroup({
         'Delete Company': props<{ id: number }>(),
         'Delete Company Success': props<{ id: number }>(),
         'Delete Company Failure': props<{ error: string }>(),
+
+        // Error de validación de identificación (422 códigos 60/61/62) asociado a un campo del formulario
+        'Set Field Error': props<{ field: CompanyFieldErrorField; message: string }>(),
 
         'Clear Selected Company': emptyProps(),
         'Clear Error': emptyProps()
