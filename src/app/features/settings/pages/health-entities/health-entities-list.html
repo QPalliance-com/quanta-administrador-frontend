@@ -40,6 +40,20 @@
         </div>
     </div>
 
+    <div class="flex flex-col gap-1 mb-4">
+        <label for="searchFilter" class="text-sm font-medium text-surface-700 dark:text-surface-200">Buscar</label>
+        <input
+            pInputText
+            fluid
+            id="searchFilter"
+            type="text"
+            [ngModel]="searchTerm"
+            (ngModelChange)="onSearchChange($event)"
+            [disabled]="!selectedCountry"
+            placeholder="Nombre, código externo, NIT o tipo"
+        />
+    </div>
+
     <ng-container *ngIf="vm$ | async as vm">
         <p-table
             [value]="vm.items"
@@ -53,11 +67,21 @@
         >
             <ng-template pTemplate="header">
                 <tr>
-                    <th>Tipo</th>
-                    <th>Nombre</th>
-                    <th>Código externo</th>
-                    <th>NIT</th>
-                    <th>Estado</th>
+                    <th pSortableColumn="entityTypeName">
+                        Tipo <p-sortIcon field="entityTypeName" />
+                    </th>
+                    <th pSortableColumn="name">
+                        Nombre <p-sortIcon field="name" />
+                    </th>
+                    <th pSortableColumn="externalCode">
+                        Código externo <p-sortIcon field="externalCode" />
+                    </th>
+                    <th pSortableColumn="nit">
+                        NIT <p-sortIcon field="nit" />
+                    </th>
+                    <th pSortableColumn="recordState">
+                        Estado <p-sortIcon field="recordState" />
+                    </th>
                     <th style="width: 7rem"></th>
                 </tr>
             </ng-template>

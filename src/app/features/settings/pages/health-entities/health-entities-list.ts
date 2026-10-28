@@ -5,6 +5,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
@@ -38,6 +39,7 @@ import { HealthEntityDrawerComponent } from '../../components/health-entity-draw
         ButtonModule,
         CardModule,
         SelectModule,
+        InputTextModule,
         TagModule,
         ToastModule,
         TooltipModule,
@@ -57,10 +59,14 @@ export class HealthEntitiesListComponent implements OnInit, OnDestroy {
     healthEntities$ = this.store.select(selectAllHealthEntities);
     loading$ = this.store.select(selectHealthEntitiesLoading);
     error$ = this.store.select(selectHealthEntitiesError);
-    vm$ = combineLatest([this.healthEntities$, this.loading$]).pipe(map(([items, loading]) => ({ items, loading })));
+    private search$ = new BehaviorSubject<string>('');
+    vm$ = combineLatest([this.healthEntities$, this.loading$, this.search$]).pipe(
+        map(([items, loading, term]) => ({ items: term ? items.filter((entity) => this.matches(entity, term)) : items, loading }))
+    );
 
     selectedCountry: string | null = null;
     selectedEntityTypeId: number | null = null;
+    searchTerm = '';
 
     displayDrawer = false;
     drawerMode: 'create' | 'edit' = 'create';
@@ -93,6 +99,15 @@ export class HealthEntitiesListComponent implements OnInit, OnDestroy {
 
     onEntityTypeChange(): void {
         this.loadList();
+    }
+
+    onSearchChange(term: string): void {
+        this.searchTerm = term;
+        this.search$.next(term.trim().toLowerCase());
+    }
+
+    private matches(entity: HealthEntity, term: string): boolean {
+        return [entity.name, entity.externalCode, entity.nit, entity.entityTypeName].some((value) => value?.toLowerCase().includes(term));
     }
 
     loadList(): void {
