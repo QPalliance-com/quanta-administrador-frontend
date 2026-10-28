@@ -9,6 +9,7 @@ export * from './billing-invoice.service';
 export * from './catalog.service';
 export * from './department-city.service';
 export * from './identification-type.service';
+export * from './health-entity-type.service';
 export * from './timezone.service';
 
 // Business Domain Services

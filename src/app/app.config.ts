@@ -14,6 +14,8 @@ import { departmentCityReducer } from './core/state/reducers/department-city.red
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
 import { identificationTypeReducer } from './core/state/reducers/identification-type.reducer';
 import { IdentificationTypeEffects } from './core/state/effects/identification-type.effects';
+import { healthEntityTypeReducer } from './core/state/reducers/health-entity-type.reducer';
+import { HealthEntityTypeEffects } from './core/state/effects/health-entity-type.effects';
 import { timezoneReducer } from './core/state/reducers/timezone.reducer';
 import { TimezoneEffects } from './core/state/effects/timezone.effects';
 import { usersReducer } from './features/users/state/reducers/users.reducer';
@@ -86,6 +88,7 @@ export const appConfig: ApplicationConfig = {
                 auth: authReducer,
                 departmentCity: departmentCityReducer,
                 identificationTypes: identificationTypeReducer,
+                healthEntityTypes: healthEntityTypeReducer,
                 timezones: timezoneReducer,
                 users: usersReducer,
                 companies: companiesReducer,
@@ -116,6 +119,7 @@ export const appConfig: ApplicationConfig = {
             AuthEffects,
             DepartmentCityEffects,
             IdentificationTypeEffects,
+            HealthEntityTypeEffects,
             TimezoneEffects,
             UsersEffects,
             CompaniesEffects,
