@@ -14,6 +14,8 @@ import { departmentCityReducer } from './core/state/reducers/department-city.red
 import { DepartmentCityEffects } from './core/state/effects/department-city.effects';
 import { identificationTypeReducer } from './core/state/reducers/identification-type.reducer';
 import { IdentificationTypeEffects } from './core/state/effects/identification-type.effects';
+import { healthEntityTypeReducer } from './core/state/reducers/health-entity-type.reducer';
+import { HealthEntityTypeEffects } from './core/state/effects/health-entity-type.effects';
 import { timezoneReducer } from './core/state/reducers/timezone.reducer';
 import { TimezoneEffects } from './core/state/effects/timezone.effects';
 import { usersReducer } from './features/users/state/reducers/users.reducer';
@@ -28,6 +30,8 @@ import { holidaysReducer } from './features/settings/state/reducers/holidays.red
 import { licenseConfigReducer } from './features/settings/state/reducers/license-config.reducer';
 import { LicenseConfigEffects } from './features/settings/state/effects/license-config.effects';
 import { HolidaysEffects } from './features/settings/state/effects/holidays.effects';
+import { healthEntitiesReducer } from './features/settings/state/reducers/health-entities.reducer';
+import { HealthEntitiesEffects } from './features/settings/state/effects/health-entities.effects';
 import { licenceLotsReducer } from './features/licence-lots/state/reducers/licence-lots.reducer';
 import { LicenceLotsEffects } from './features/licence-lots/state/effects/licence-lots.effects';
 import { catalogsReducer } from './features/licence-lots/state/reducers/catalogs.reducer';
@@ -86,12 +90,14 @@ export const appConfig: ApplicationConfig = {
                 auth: authReducer,
                 departmentCity: departmentCityReducer,
                 identificationTypes: identificationTypeReducer,
+                healthEntityTypes: healthEntityTypeReducer,
                 timezones: timezoneReducer,
                 users: usersReducer,
                 companies: companiesReducer,
                 countries: countriesReducer,
                 licences: licencesReducer,
                 holidays: holidaysReducer,
+                healthEntities: healthEntitiesReducer,
                 licenseConfig: licenseConfigReducer,
                 licenceLots: licenceLotsReducer,
                 catalogs: catalogsReducer,
@@ -116,12 +122,14 @@ export const appConfig: ApplicationConfig = {
             AuthEffects,
             DepartmentCityEffects,
             IdentificationTypeEffects,
+            HealthEntityTypeEffects,
             TimezoneEffects,
             UsersEffects,
             CompaniesEffects,
             CountriesEffects,
             LicencesEffects,
             HolidaysEffects,
+            HealthEntitiesEffects,
             LicenseConfigEffects,
             LicenceLotsEffects,
             CatalogsEffects,

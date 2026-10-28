@@ -1,0 +1,156 @@
+<p-drawer
+    [visible]="visible"
+    (visibleChange)="onVisibleChange($event)"
+    position="right"
+    [modal]="true"
+    [style]="{ width: '550px' }"
+>
+    <ng-template #header>
+        <span class="font-semibold text-base flex items-center gap-2">
+            <i class="pi pi-heart text-primary"></i>
+            {{ title }}
+        </span>
+    </ng-template>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5 pt-2 h-full">
+        <p-message *ngIf="inlineError" severity="error" [text]="inlineError" styleClass="w-full" />
+
+        <fieldset class="border border-surface-200 dark:border-surface-700 p-5 rounded-xl">
+            <legend class="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider px-2">
+                Detalle de la entidad ({{ effectiveCountryCode }})
+            </legend>
+            <div class="flex flex-col gap-4 mt-2">
+                <div class="flex flex-col gap-1">
+                    <label for="entityTypeId" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Tipo de entidad <span class="text-red-500">*</span>
+                    </label>
+                    <p-select
+                        fluid
+                        inputId="entityTypeId"
+                        formControlName="entityTypeId"
+                        [options]="(entityTypes$ | async) ?? []"
+                        optionLabel="displayName"
+                        optionValue="id"
+                        showFilter
+                        appendTo="body"
+                        placeholder="Seleccione un tipo"
+                        [class.ng-invalid]="isInvalid('entityTypeId')"
+                        [class.ng-dirty]="isInvalid('entityTypeId')"
+                    />
+                    <small *ngIf="isInvalid('entityTypeId')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('entityTypeId') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="name" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Nombre <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="name"
+                        formControlName="name"
+                        maxlength="200"
+                        placeholder="Ej: EPS Sura"
+                        [class.ng-invalid]="isInvalid('name')"
+                        [class.ng-dirty]="isInvalid('name')"
+                    />
+                    <small *ngIf="isInvalid('name')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('name') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="externalCode" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Código externo
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="externalCode"
+                        formControlName="externalCode"
+                        maxlength="50"
+                        placeholder=""
+                        [class.ng-invalid]="isInvalid('externalCode')"
+                        [class.ng-dirty]="isInvalid('externalCode')"
+                    />
+                    <small *ngIf="isInvalid('externalCode')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('externalCode') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="mobilityCode" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Código de movilidad
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="mobilityCode"
+                        formControlName="mobilityCode"
+                        maxlength="50"
+                        placeholder=""
+                        [class.ng-invalid]="isInvalid('mobilityCode')"
+                        [class.ng-dirty]="isInvalid('mobilityCode')"
+                    />
+                    <small *ngIf="isInvalid('mobilityCode')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('mobilityCode') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="nit" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        NIT
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="nit"
+                        formControlName="nit"
+                        maxlength="50"
+                        placeholder=""
+                        [class.ng-invalid]="isInvalid('nit')"
+                        [class.ng-dirty]="isInvalid('nit')"
+                    />
+                    <small *ngIf="isInvalid('nit')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('nit') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="scope" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Alcance
+                    </label>
+                    <input
+                        pInputText
+                        fluid
+                        id="scope"
+                        formControlName="scope"
+                        maxlength="100"
+                        placeholder=""
+                        [class.ng-invalid]="isInvalid('scope')"
+                        [class.ng-dirty]="isInvalid('scope')"
+                    />
+                    <small *ngIf="isInvalid('scope')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('scope') }}
+                    </small>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="notes" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                        Notas
+                    </label>
+                    <textarea pTextarea fluid id="notes" formControlName="notes" rows="3" maxlength="500" placeholder=""></textarea>
+                    <small *ngIf="isInvalid('notes')" class="text-red-500 flex items-center gap-1">
+                        <i class="pi pi-exclamation-circle text-xs"></i>{{ getError('notes') }}
+                    </small>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="flex items-center justify-between pt-2 border-t border-surface-100 dark:border-surface-800 mt-auto">
+            <small class="text-surface-400 flex items-center gap-1">
+                <span class="text-red-500">*</span> Campos requeridos
+            </small>
+            <div class="flex gap-2">
+                <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" (onClick)="cancel()" />
+                <p-button label="Guardar" icon="pi pi-check" type="submit" [loading]="(loading$ | async) ?? false" [disabled]="form.invalid" />
+            </div>
+        </div>
+    </form>
+</p-drawer>

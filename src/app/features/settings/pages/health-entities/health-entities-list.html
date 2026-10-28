@@ -1,0 +1,137 @@
+<p-card>
+    <ng-template #title>
+        <div class="flex items-center justify-between">
+            <span>Entidades de salud</span>
+            <p-button label="Crear" icon="pi pi-plus" [disabled]="!selectedCountry" (onClick)="openCreateDrawer()" />
+        </div>
+    </ng-template>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="flex flex-col gap-1">
+            <label for="countryFilter" class="text-sm font-medium text-surface-700 dark:text-surface-200">
+                País <span class="text-red-500">*</span>
+            </label>
+            <p-select
+                fluid
+                inputId="countryFilter"
+                [options]="(countries$ | async) ?? []"
+                optionLabel="name"
+                optionValue="code"
+                [ngModel]="selectedCountry"
+                (ngModelChange)="onCountryChange($event)"
+                showFilter
+                placeholder="Seleccione un país"
+            />
+        </div>
+        <div class="flex flex-col gap-1">
+            <label for="typeFilter" class="text-sm font-medium text-surface-700 dark:text-surface-200">Tipo de entidad</label>
+            <p-select
+                fluid
+                inputId="typeFilter"
+                [options]="(entityTypes$ | async) ?? []"
+                optionLabel="displayName"
+                optionValue="id"
+                [(ngModel)]="selectedEntityTypeId"
+                (ngModelChange)="onEntityTypeChange()"
+                [disabled]="!selectedCountry"
+                [showClear]="true"
+                placeholder="Todos los tipos"
+            />
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1 mb-4">
+        <label for="searchFilter" class="text-sm font-medium text-surface-700 dark:text-surface-200">Buscar</label>
+        <input
+            pInputText
+            fluid
+            id="searchFilter"
+            type="text"
+            [ngModel]="searchTerm"
+            (ngModelChange)="onSearchChange($event)"
+            [disabled]="!selectedCountry"
+            placeholder="Nombre, código externo, NIT o tipo"
+        />
+    </div>
+
+    <ng-container *ngIf="vm$ | async as vm">
+        <p-table
+            [value]="vm.items"
+            [loading]="vm.loading"
+            [paginator]="vm.items.length > 15"
+            [rows]="15"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+            [tableStyle]="{ 'min-width': '40rem' }"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="entityTypeName">
+                        Tipo <p-sortIcon field="entityTypeName" />
+                    </th>
+                    <th pSortableColumn="name">
+                        Nombre <p-sortIcon field="name" />
+                    </th>
+                    <th pSortableColumn="externalCode">
+                        Código externo <p-sortIcon field="externalCode" />
+                    </th>
+                    <th pSortableColumn="nit">
+                        NIT <p-sortIcon field="nit" />
+                    </th>
+                    <th pSortableColumn="recordState">
+                        Estado <p-sortIcon field="recordState" />
+                    </th>
+                    <th style="width: 7rem"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-entity>
+                <tr>
+                    <td>{{ entity.entityTypeName }}</td>
+                    <td class="font-medium">{{ entity.name }}</td>
+                    <td>{{ entity.externalCode || '-' }}</td>
+                    <td>{{ entity.nit || '-' }}</td>
+                    <td>
+                        <p-tag [value]="isActive(entity) ? 'Activo' : 'Inactivo'" [severity]="isActive(entity) ? 'success' : 'secondary'" />
+                    </td>
+                    <td class="text-right">
+                        <button pButton icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true" size="small" pTooltip="Editar" tooltipPosition="top" (click)="openEditDrawer(entity)"></button>
+                        <button pButton icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" size="small" pTooltip="Eliminar" tooltipPosition="top" (click)="confirmDelete(entity)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center text-surface-400 py-12">
+                        <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                        <span *ngIf="!selectedCountry">Seleccione un país para ver sus entidades de salud.</span>
+                        <span *ngIf="selectedCountry">No hay entidades de salud registradas para el filtro seleccionado.</span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </ng-container>
+</p-card>
+
+<app-health-entity-drawer
+    [visible]="displayDrawer"
+    [mode]="drawerMode"
+    [healthEntity]="selectedHealthEntity"
+    [countryCode]="selectedCountry"
+    (closed)="displayDrawer = false"
+/>
+
+<p-dialog header="Confirmar eliminación" [(visible)]="displayDeleteDialog" [modal]="true" [style]="{ width: '28rem' }">
+    <p>
+        ¿Eliminar la entidad de salud <b>{{ entityToDelete?.name }}</b
+        >?
+    </p>
+    <ng-template #footer>
+        <p-button label="No, cancelar" severity="secondary" [outlined]="true" (onClick)="displayDeleteDialog = false" />
+        <p-button label="Sí, eliminar" severity="danger" icon="pi pi-trash" (onClick)="deleteConfirmed()" />
+    </ng-template>
+</p-dialog>
+
+<p-toast />

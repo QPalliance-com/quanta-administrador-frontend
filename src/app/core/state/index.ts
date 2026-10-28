@@ -10,3 +10,7 @@ export * from './actions/timezone.actions';
 export * from './effects/timezone.effects';
 export * from './reducers/timezone.reducer';
 export * from './selectors/timezone.selectors';
+export * from './actions/health-entity-type.actions';
+export * from './effects/health-entity-type.effects';
+export * from './reducers/health-entity-type.reducer';
+export * from './selectors/health-entity-type.selectors';

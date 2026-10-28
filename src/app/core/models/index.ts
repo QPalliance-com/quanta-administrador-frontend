@@ -9,6 +9,7 @@ export * from './auth.model';
 export * from './breadcrumb.model';
 export * from './department-city.model';
 export * from './identification-type.model';
+export * from './health-entity-type.model';
 export * from './timezone.model';
 export * from './login-response.model';
 export * from './menu.model';
@@ -26,3 +27,5 @@ export * from './mercadopago-payment.model';
 export * from './license-config.model';
 export * from './subscription-plan.model';
 export * from './user.model';
+export * from './health-entity.model';
+

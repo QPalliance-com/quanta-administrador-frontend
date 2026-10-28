@@ -7,3 +7,8 @@ export * from './actions/licences.actions';
 export * from './reducers/licences.reducer';
 export * from './effects/licences.effects';
 export * from './selectors/licences.selectors';
+
+export * from './actions/health-entities.actions';
+export * from './reducers/health-entities.reducer';
+export * from './effects/health-entities.effects';
+export * from './selectors/health-entities.selectors';
