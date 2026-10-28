@@ -3,6 +3,7 @@ import { SettingsComponent } from './settings';
 import { LicencesListComponent } from './components/licences/licences-list/licences-list';
 import { HolidaysListComponent } from './pages/holidays-list/holidays-list';
 import { LicenseConfigComponent } from './pages/license-config/license-config';
+import { HealthEntitiesListComponent } from './pages/health-entities/health-entities-list';
 
 export const SETTINGS_ROUTES: Routes = [
     {
@@ -28,6 +29,15 @@ export const SETTINGS_ROUTES: Routes = [
                     {
                         path: 'list',
                         component: HolidaysListComponent
+                    }
+                ]
+            },
+            {
+                path: 'health-entities',
+                children: [
+                    {
+                        path: 'list',
+                        component: HealthEntitiesListComponent
                     }
                 ]
             }

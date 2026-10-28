@@ -27,3 +27,5 @@ export * from './mercadopago-payment.model';
 export * from './license-config.model';
 export * from './subscription-plan.model';
 export * from './user.model';
+export * from './health-entity.model';
+

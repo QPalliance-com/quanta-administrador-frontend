@@ -30,6 +30,8 @@ import { holidaysReducer } from './features/settings/state/reducers/holidays.red
 import { licenseConfigReducer } from './features/settings/state/reducers/license-config.reducer';
 import { LicenseConfigEffects } from './features/settings/state/effects/license-config.effects';
 import { HolidaysEffects } from './features/settings/state/effects/holidays.effects';
+import { healthEntitiesReducer } from './features/settings/state/reducers/health-entities.reducer';
+import { HealthEntitiesEffects } from './features/settings/state/effects/health-entities.effects';
 import { licenceLotsReducer } from './features/licence-lots/state/reducers/licence-lots.reducer';
 import { LicenceLotsEffects } from './features/licence-lots/state/effects/licence-lots.effects';
 import { catalogsReducer } from './features/licence-lots/state/reducers/catalogs.reducer';
@@ -95,6 +97,7 @@ export const appConfig: ApplicationConfig = {
                 countries: countriesReducer,
                 licences: licencesReducer,
                 holidays: holidaysReducer,
+                healthEntities: healthEntitiesReducer,
                 licenseConfig: licenseConfigReducer,
                 licenceLots: licenceLotsReducer,
                 catalogs: catalogsReducer,
@@ -126,6 +129,7 @@ export const appConfig: ApplicationConfig = {
             CountriesEffects,
             LicencesEffects,
             HolidaysEffects,
+            HealthEntitiesEffects,
             LicenseConfigEffects,
             LicenceLotsEffects,
             CatalogsEffects,
