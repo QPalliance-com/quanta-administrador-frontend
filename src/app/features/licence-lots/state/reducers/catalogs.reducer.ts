@@ -4,29 +4,37 @@ import { CatalogsActions } from '../actions/catalogs.actions';
 
 export interface CatalogsState {
     paymentTypes: PaymentTypeCatalog[];
+    paymentTypesCountry: string | null;
     periods: PeriodCatalog[];
-    loaded: boolean;
+    periodsLoaded: boolean;
     loading: boolean;
     error: string | null;
 }
 
 export const initialState: CatalogsState = {
     paymentTypes: [],
+    paymentTypesCountry: null,
     periods: [],
-    loaded: false,
+    periodsLoaded: false,
     loading: false,
     error: null
 };
 
 export const catalogsReducer = createReducer(
     initialState,
-    on(CatalogsActions.load, (state) => ({ ...state, loading: true, error: null })),
-    on(CatalogsActions.loadSuccess, (state, { paymentTypes, periods }) => ({
+    // Al pedir otro país se vacía la lista para no ofrecer por un instante formas de pago del país anterior
+    on(CatalogsActions.loadPaymentTypes, (state, { countryCode }) =>
+        state.paymentTypesCountry === countryCode
+            ? state
+            : { ...state, paymentTypes: [], paymentTypesCountry: null, loading: !!countryCode, error: null }
+    ),
+    on(CatalogsActions.loadPaymentTypesSuccess, (state, { countryCode, paymentTypes }) => ({
         ...state,
         paymentTypes,
-        periods,
-        loaded: true,
+        paymentTypesCountry: countryCode,
         loading: false
     })),
+    on(CatalogsActions.loadPeriods, (state) => ({ ...state, loading: true, error: null })),
+    on(CatalogsActions.loadPeriodsSuccess, (state, { periods }) => ({ ...state, periods, periodsLoaded: true, loading: false })),
     on(CatalogsActions.loadFailure, (state, { error }) => ({ ...state, error, loading: false }))
 );
