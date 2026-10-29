@@ -177,9 +177,9 @@
 
 <app-licence-invoices [companyId]="companyId" />
 
-<app-lot-activation-drawer [visible]="displayActivationDrawer" [companyId]="companyId" (closed)="displayActivationDrawer = false" />
+<app-lot-activation-drawer [visible]="displayActivationDrawer" [companyId]="companyId" [countryCode]="(countryCode$ | async) ?? ''" (closed)="displayActivationDrawer = false" />
 
-<app-add-licences-drawer [visible]="displayAddLicencesDrawer" [companyId]="companyId" (closed)="displayAddLicencesDrawer = false" />
+<app-add-licences-drawer [visible]="displayAddLicencesDrawer" [companyId]="companyId" [countryCode]="(countryCode$ | async) ?? ''" (closed)="displayAddLicencesDrawer = false" />
 
 <app-pse-link-drawer
     [visible]="displayPseDrawer"
@@ -190,7 +190,7 @@
 
 <app-extend-lot-dialog [visible]="displayExtendDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayExtendDialog = false" />
 
-<app-migration-dialog [visible]="displayMigrationDialog" [companyId]="companyId" [lot]="selectedLot" (closed)="displayMigrationDialog = false" />
+<app-migration-dialog [visible]="displayMigrationDialog" [companyId]="companyId" [countryCode]="(countryCode$ | async) ?? ''" [lot]="selectedLot" (closed)="displayMigrationDialog = false" />
 
 <app-lot-movements-drawer [visible]="displayMovementsDrawer" [companyId]="companyId" [lot]="selectedLot" (closed)="displayMovementsDrawer = false" />
 
