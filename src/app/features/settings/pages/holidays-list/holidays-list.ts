@@ -12,18 +12,22 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { MessageModule } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { Menu } from 'primeng/menu';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, map, Subject, takeUntil } from 'rxjs';
 import { HolidayCalendar } from '@/core/models';
 import { DateColombiaPipe } from '@/core/pipes/date-colombia.pipe';
+import { CountriesActions } from '@/features/companies/state/actions/countries.actions';
+import { selectAllCountries } from '@/features/companies/state/selectors/countries.selectors';
 import { HolidaysActions } from '../../state/actions/holidays.actions';
 import {
     selectAllHolidays,
     selectHolidaysLoading,
     selectHolidaysError,
     selectSelectedYear,
+    selectSelectedCountry,
     selectTotalActiveInYear,
     selectAlertLowCount
 } from '../../state/selectors/holidays.selectors';
@@ -50,6 +54,7 @@ type StatusFilter = 'all' | 'active' | 'inactive';
         MessageModule,
         TagModule,
         InputTextModule,
+        SelectModule,
         TooltipModule,
         Menu,
         DateColombiaPipe,
@@ -87,7 +92,10 @@ export class HolidaysListComponent implements OnInit, OnDestroy {
     totalActiveInYear$ = this.store.select(selectTotalActiveInYear);
     alertLowCount$ = this.store.select(selectAlertLowCount);
 
+    countries$ = this.store.select(selectAllCountries);
+
     currentYear = new Date().getFullYear();
+    selectedCountry = 'CO';
     displayDrawer = false;
     drawerMode: 'create' | 'edit' = 'create';
     selectedHoliday: HolidayCalendar | null = null;
@@ -104,11 +112,23 @@ export class HolidaysListComponent implements OnInit, OnDestroy {
                 this.currentYear = year;
             });
 
+        this.store
+            .select(selectSelectedCountry)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((country) => {
+                this.selectedCountry = country;
+            });
+
+        this.store.dispatch(CountriesActions.loadCountries());
         this.loadYear(this.currentYear);
     }
 
     loadYear(year: number): void {
-        this.store.dispatch(HolidaysActions.loadList({ year }));
+        this.store.dispatch(HolidaysActions.loadList({ year, countryCode: this.selectedCountry }));
+    }
+
+    onCountryChange(countryCode: string): void {
+        this.store.dispatch(HolidaysActions.loadList({ year: this.currentYear, countryCode }));
     }
 
     retry(): void {

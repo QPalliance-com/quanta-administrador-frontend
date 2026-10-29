@@ -11,7 +11,7 @@ import {
 export const HolidaysActions = createActionGroup({
     source: 'Holidays',
     events: {
-        'Load List': props<{ year: number }>(),
+        'Load List': props<{ year: number; countryCode: string }>(),
         'Load List Success': props<{ data: HolidayCalendarList }>(),
         'Load List Failure': props<{ error: string }>(),
 

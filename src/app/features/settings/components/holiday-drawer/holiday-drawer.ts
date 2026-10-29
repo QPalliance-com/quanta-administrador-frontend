@@ -30,6 +30,7 @@ export class HolidayDrawerComponent implements OnChanges, OnDestroy {
     @Input() visible = false;
     @Input() mode: 'create' | 'edit' = 'create';
     @Input() holiday: HolidayCalendar | null = null;
+    @Input({ required: true }) countryCode!: string;
     @Output() closed = new EventEmitter<void>();
 
     form: FormGroup = this.buildForm();
@@ -106,7 +107,7 @@ export class HolidayDrawerComponent implements OnChanges, OnDestroy {
                     payload: {
                         holidayDate,
                         name: this.form.value.name,
-                        countryCode: 'CO',
+                        countryCode: this.holiday.countryCode,
                         isActive: this.form.value.isActive
                     }
                 })
@@ -114,7 +115,7 @@ export class HolidayDrawerComponent implements OnChanges, OnDestroy {
         } else {
             this.store.dispatch(
                 HolidaysActions.create({
-                    payload: { holidayDate, name: this.form.value.name, countryCode: 'CO' }
+                    payload: { holidayDate, name: this.form.value.name, countryCode: this.countryCode }
                 })
             );
         }

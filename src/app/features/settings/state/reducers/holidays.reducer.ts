@@ -8,6 +8,7 @@ export interface HolidaysState {
     loading: boolean;
     error: string | null;
     selectedYear: number;
+    selectedCountry: string;
     totalActiveInYear: number;
 }
 
@@ -18,18 +19,26 @@ export const initialState: HolidaysState = {
     loading: false,
     error: null,
     selectedYear: new Date().getFullYear(),
+    selectedCountry: 'CO',
     totalActiveInYear: 0
 };
 
 export const holidaysReducer = createReducer(
     initialState,
 
-    on(HolidaysActions.loadList, (state, { year }) => ({
-        ...state,
-        loading: true,
-        error: null,
-        selectedYear: year
-    })),
+    on(HolidaysActions.loadList, (state, { year, countryCode }) => {
+        const countryChanged = countryCode !== state.selectedCountry;
+        return {
+            ...state,
+            loading: true,
+            error: null,
+            selectedYear: year,
+            selectedCountry: countryCode,
+            // Al cambiar de país se limpian filas y total para no mostrar datos del país anterior
+            holidays: countryChanged ? holidaysAdapter.removeAll(state.holidays) : state.holidays,
+            totalActiveInYear: countryChanged ? 0 : state.totalActiveInYear
+        };
+    }),
     on(HolidaysActions.loadListSuccess, (state, { data }) => ({
         ...state,
         holidays: holidaysAdapter.setAll(data.holidays, state.holidays),
