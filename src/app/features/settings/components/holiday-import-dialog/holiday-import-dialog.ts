@@ -38,6 +38,7 @@ export class HolidayImportDialogComponent implements OnChanges, OnDestroy {
     private destroy$ = new Subject<void>();
 
     @Input() visible = false;
+    @Input({ required: true }) countryCode!: string;
     @Output() visibleChange = new EventEmitter<boolean>();
 
     fileName: string | null = null;
@@ -132,7 +133,7 @@ export class HolidayImportDialogComponent implements OnChanges, OnDestroy {
             HolidaysActions.importBatch({
                 payload: {
                     holidays: this.rows.map((row) => ({ holidayDate: row.holidayDate, name: row.name })),
-                    countryCode: 'CO',
+                    countryCode: this.countryCode,
                     overwrite: this.overwrite
                 }
             })

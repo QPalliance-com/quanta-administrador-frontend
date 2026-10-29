@@ -6,7 +6,7 @@ import { catchError, exhaustMap, filter, map, of, switchMap, tap, withLatestFrom
 import { MessageService } from 'primeng/api';
 import { HolidayService } from '@/core/services/holiday.service';
 import { HolidaysActions } from '../actions/holidays.actions';
-import { selectSelectedYear } from '../selectors/holidays.selectors';
+import { selectSelectedCountry, selectSelectedYear } from '../selectors/holidays.selectors';
 
 @Injectable()
 export class HolidaysEffects {
@@ -18,8 +18,8 @@ export class HolidaysEffects {
     loadList$ = createEffect(() =>
         this.actions$.pipe(
             ofType(HolidaysActions.loadList),
-            switchMap(({ year }) =>
-                this.holidayService.getByYear(year).pipe(
+            switchMap(({ year, countryCode }) =>
+                this.holidayService.getByYear(year, countryCode).pipe(
                     map((response) => HolidaysActions.loadListSuccess({ data: response.data })),
                     catchError((error: HttpErrorResponse) =>
                         of(HolidaysActions.loadListFailure({ error: this.extractError(error) }))
@@ -53,8 +53,8 @@ export class HolidaysEffects {
                     detail: 'Día no laborable creado correctamente'
                 })
             ),
-            withLatestFrom(this.store.select(selectSelectedYear)),
-            map(([, year]) => HolidaysActions.loadList({ year }))
+            withLatestFrom(this.store.select(selectSelectedYear), this.store.select(selectSelectedCountry)),
+            map(([, year, countryCode]) => HolidaysActions.loadList({ year, countryCode }))
         )
     );
 
@@ -82,8 +82,8 @@ export class HolidaysEffects {
                     detail: 'Día no laborable actualizado correctamente'
                 })
             ),
-            withLatestFrom(this.store.select(selectSelectedYear)),
-            map(([, year]) => HolidaysActions.loadList({ year }))
+            withLatestFrom(this.store.select(selectSelectedYear), this.store.select(selectSelectedCountry)),
+            map(([, year, countryCode]) => HolidaysActions.loadList({ year, countryCode }))
         )
     );
 
@@ -111,8 +111,8 @@ export class HolidaysEffects {
                     detail: 'Día no laborable eliminado correctamente'
                 })
             ),
-            withLatestFrom(this.store.select(selectSelectedYear)),
-            map(([, year]) => HolidaysActions.loadList({ year }))
+            withLatestFrom(this.store.select(selectSelectedYear), this.store.select(selectSelectedCountry)),
+            map(([, year, countryCode]) => HolidaysActions.loadList({ year, countryCode }))
         )
     );
 
@@ -136,8 +136,8 @@ export class HolidaysEffects {
         this.actions$.pipe(
             ofType(HolidaysActions.importBatchSuccess),
             filter(({ result }) => (result.created > 0 || result.overwritten > 0) && !result.conflicts?.length),
-            withLatestFrom(this.store.select(selectSelectedYear)),
-            map(([, year]) => HolidaysActions.loadList({ year }))
+            withLatestFrom(this.store.select(selectSelectedYear), this.store.select(selectSelectedCountry)),
+            map(([, year, countryCode]) => HolidaysActions.loadList({ year, countryCode }))
         )
     );
 
