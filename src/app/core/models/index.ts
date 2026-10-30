@@ -28,4 +28,5 @@ export * from './license-config.model';
 export * from './subscription-plan.model';
 export * from './user.model';
 export * from './health-entity.model';
+export * from './accounting-provider.model';
 
