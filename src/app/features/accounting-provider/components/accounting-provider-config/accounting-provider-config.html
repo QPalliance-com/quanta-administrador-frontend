@@ -1,0 +1,100 @@
+<div class="flex flex-col gap-5">
+    <div class="flex items-center gap-2" *ngIf="!loading()">
+        <span class="text-sm text-surface-500">Estado</span>
+        <p-tag [value]="statusLabel(status())" [severity]="statusSeverity(status())" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+        <label for="accounting-provider-select" class="font-medium text-sm">Proveedor</label>
+        <p-select
+            inputId="accounting-provider-select"
+            [options]="providers()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Selecciona un proveedor"
+            [ngModel]="providerId()"
+            (ngModelChange)="onProviderChange($event)"
+            [disabled]="locked()"
+            [loading]="loading() || loadingProviders()"
+            [pTooltip]="locked() ? 'El proveedor no se puede cambiar mientras esté activo' : ''"
+            appendTo="body"
+            styleClass="w-full"
+        />
+    </div>
+
+    <ng-container *ngIf="provider() && fields().length">
+        <!-- PRUEBAS -->
+        <form *ngIf="hasTestEnv()" [formGroup]="forms.test" (ngSubmit)="save('test')" autocomplete="off" class="flex flex-col gap-3" aria-labelledby="accounting-test-title">
+            <div class="flex items-center justify-between">
+                <h3 id="accounting-test-title" class="font-semibold text-base m-0">Pruebas</h3>
+                <p-button *ngIf="testConnected() && !replacing().test" label="Reemplazar" icon="pi pi-refresh" size="small" severity="secondary" [text]="true" type="button" (onClick)="startReplace('test')" />
+                <p-button *ngIf="replacing().test" label="Cancelar" size="small" severity="secondary" [text]="true" type="button" (onClick)="cancelReplace('test')" />
+            </div>
+
+            <div *ngFor="let field of fields()" class="flex flex-col gap-1">
+                <label [for]="'acc-test-' + field.key" class="text-sm font-medium">{{ field.label }} <span *ngIf="field.required" class="text-red-500">*</span></label>
+                <ng-container *ngIf="field.secret && testConnected() && !replacing().test; else testInput">
+                    <span class="text-sm text-surface-500 flex items-center gap-1"><i class="pi pi-lock text-xs"></i>Credencial configurada</span>
+                </ng-container>
+                <ng-template #testInput>
+                    <input
+                        pInputText
+                        [id]="'acc-test-' + field.key"
+                        [type]="inputType(field)"
+                        [formControlName]="field.key"
+                        [attr.placeholder]="placeholder(field, 'test')"
+                        [attr.readonly]="isEditable('test') ? null : ''"
+                        [attr.autocomplete]="'new-password'"
+                        class="w-full"
+                    />
+                </ng-template>
+            </div>
+
+            <small *ngIf="envError('test') as err" class="text-red-500 flex items-center gap-1" role="alert"><i class="pi pi-exclamation-circle text-xs"></i>{{ err }}</small>
+
+            <div class="flex items-center gap-2">
+                <p-button label="Probar conexión" icon="pi pi-bolt" type="submit" [loading]="saving() === 'test'" [disabled]="!canSave('test')" />
+                <p-tag *ngIf="testConnected()" value="Pruebas conectadas" severity="success" />
+            </div>
+        </form>
+
+        <!-- PRODUCCIÓN -->
+        <form [formGroup]="forms.prod" (ngSubmit)="save('prod')" autocomplete="off" class="flex flex-col gap-3" aria-labelledby="accounting-prod-title">
+            <div class="flex items-center justify-between">
+                <h3 id="accounting-prod-title" class="font-semibold text-base m-0">Producción</h3>
+                <p-button *ngIf="prodConnected() && !replacing().prod" label="Reemplazar" icon="pi pi-refresh" size="small" severity="secondary" [text]="true" type="button" (onClick)="startReplace('prod')" />
+                <p-button *ngIf="replacing().prod" label="Cancelar" size="small" severity="secondary" [text]="true" type="button" (onClick)="cancelReplace('prod')" />
+            </div>
+
+            <small *ngIf="!prodEnabled()" class="text-surface-500">Conecta primero el ambiente de pruebas para habilitar producción.</small>
+
+            <fieldset class="flex flex-col gap-3 border-0 p-0 m-0" [disabled]="!prodEnabled()">
+                <div *ngFor="let field of fields()" class="flex flex-col gap-1">
+                    <label [for]="'acc-prod-' + field.key" class="text-sm font-medium">{{ field.label }} <span *ngIf="field.required" class="text-red-500">*</span></label>
+                    <ng-container *ngIf="field.secret && prodConnected() && !replacing().prod; else prodInput">
+                        <span class="text-sm text-surface-500 flex items-center gap-1"><i class="pi pi-lock text-xs"></i>Credencial configurada</span>
+                    </ng-container>
+                    <ng-template #prodInput>
+                        <input
+                            pInputText
+                            [id]="'acc-prod-' + field.key"
+                            [type]="inputType(field)"
+                            [formControlName]="field.key"
+                            [attr.placeholder]="placeholder(field, 'prod')"
+                            [attr.readonly]="isEditable('prod') ? null : ''"
+                            [attr.autocomplete]="'new-password'"
+                            class="w-full"
+                        />
+                    </ng-template>
+                </div>
+            </fieldset>
+
+            <small *ngIf="envError('prod') as err" class="text-red-500 flex items-center gap-1" role="alert"><i class="pi pi-exclamation-circle text-xs"></i>{{ err }}</small>
+
+            <div class="flex items-center gap-2">
+                <p-button label="Guardar producción" icon="pi pi-check" type="submit" [loading]="saving() === 'prod'" [disabled]="!canSave('prod')" />
+                <p-tag *ngIf="prodConnected()" value="Producción conectada" severity="success" />
+            </div>
+        </form>
+    </ng-container>
+</div>

@@ -16,6 +16,7 @@ export * from './timezone.service';
 export * from './company.service';
 export * from './holiday.service';
 export * from './health-entity.service';
+export * from './accounting-provider.service';
 export * from './licence.service';
 export * from './licence-lot.service';
 export * from './mercadopago-payment.service';

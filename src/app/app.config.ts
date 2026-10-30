@@ -46,6 +46,8 @@ import { authReducer } from './features/auth/state/reducers/auth.reducer';
 import { AuthEffects } from './features/auth/state/effects/auth.effects';
 import { dashboardReducer } from './features/dashboard/state/reducers/dashboard.reducer';
 import { DashboardEffects } from './features/dashboard/state/effects/dashboard.effects';
+import { accountingProviderReducer } from './features/accounting-provider/state/reducers/accounting-provider.reducer';
+import { AccountingProviderEffects } from './features/accounting-provider/state/effects/accounting-provider.effects';
 import { LoaderInterceptor } from './core/interceptors/loading.interceptor';
 import { HttpErrorInterceptor } from './core/interceptors/http-error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -104,7 +106,8 @@ export const appConfig: ApplicationConfig = {
                 expiringLots: expiringLotsReducer,
                 licenceInvoices: invoicesReducer,
                 mercadoPagoPayments: mercadoPagoPaymentsReducer,
-                dashboard: dashboardReducer
+                dashboard: dashboardReducer,
+                accountingProvider: accountingProviderReducer
             },
             {
                 runtimeChecks: {
@@ -136,7 +139,8 @@ export const appConfig: ApplicationConfig = {
             ExpiringLotsEffects,
             InvoicesEffects,
             MercadoPagoPaymentsEffects,
-            DashboardEffects
+            DashboardEffects,
+            AccountingProviderEffects
         ]),
 
         // NgRx DevTools
