@@ -23,6 +23,12 @@ export class AccountingProviderService {
 
     /** Guarda las credenciales de un ambiente y prueba la conexión; los 4xx los muestra el feature (422: códigos 70/71). */
     saveCredentials(companyId: number, request: SaveCredentialsRequest) {
-        return this.http.post<ApiResponse<SaveCredentialsResult>>(`${this.adminUrl}companies/${companyId}/accounting-provider/credentials`, { data: request }, { context: localErrorHandling() });
+        const data = { ...request, environment: this.toBackendEnvironment(request.environment) };
+        return this.http.post<ApiResponse<SaveCredentialsResult>>(`${this.adminUrl}companies/${companyId}/accounting-provider/credentials`, { data }, { context: localErrorHandling() });
+    }
+
+    /** 'prod' solo llega al backend en build de producción (environment.production); en dev, qa y demo todo va como 'test'. */
+    private toBackendEnvironment(env: SaveCredentialsRequest['environment']): SaveCredentialsRequest['environment'] {
+        return env === 'prod' && environment.production ? 'prod' : 'test';
     }
 }
