@@ -5,8 +5,10 @@ export const selectCatalogsState = createFeatureSelector<CatalogsState>('catalog
 
 export const selectPaymentTypes = createSelector(selectCatalogsState, (state) => state.paymentTypes);
 
+export const selectPaymentTypesCountry = createSelector(selectCatalogsState, (state) => state.paymentTypesCountry);
+
 export const selectPeriods = createSelector(selectCatalogsState, (state) => state.periods);
 
-export const selectCatalogsLoaded = createSelector(selectCatalogsState, (state) => state.loaded);
+export const selectPeriodsLoaded = createSelector(selectCatalogsState, (state) => state.periodsLoaded);
 
 export const selectCatalogsLoading = createSelector(selectCatalogsState, (state) => state.loading);

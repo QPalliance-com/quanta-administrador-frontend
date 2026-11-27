@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse, CountryCatalog, PaymentTypeCatalog, PeriodCatalog } from '@/core/models';
 import { localErrorHandling } from '@/core/interceptors/local-error-handling';
@@ -15,6 +15,12 @@ export class CatalogService {
 
     getPaymentTypes(): Observable<ApiResponse<PaymentTypeCatalog[]>> {
         return this.http.get<ApiResponse<PaymentTypeCatalog[]>>(`${this.apiUrl}/payment-types`, this.options);
+    }
+
+    // Cuelga de la base admin (no de /catalogs): devuelve las formas de pago del país y las globales (country null)
+    getPaymentTypesByCountry(countryCode: string): Observable<ApiResponse<PaymentTypeCatalog[]>> {
+        const params = new HttpParams().set('countryCode', countryCode);
+        return this.http.get<ApiResponse<PaymentTypeCatalog[]>>(`${environment.adminApiUrl}payment-type-catalog`, { ...this.options, params });
     }
 
     getPeriods(): Observable<ApiResponse<PeriodCatalog[]>> {

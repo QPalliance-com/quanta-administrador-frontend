@@ -22,6 +22,7 @@ import { Store } from '@ngrx/store';
 import { CompaniesActions } from '../../state/actions/companies.actions';
 import { selectAllCompanies, selectCompaniesLoading, selectSelectedCompany } from '../../state/selectors/companies.selectors';
 import { LocationNamePipe } from '@/core/pipes/location-name.pipe';
+import { AccountingProviderDialogComponent } from '@/features/accounting-provider/components/accounting-provider-dialog/accounting-provider-dialog';
 
 @Component({
     selector: 'app-company-list',
@@ -41,7 +42,8 @@ import { LocationNamePipe } from '@/core/pipes/location-name.pipe';
         Drawer,
         Menu,
         ExportToolbarComponent,
-        LocationNamePipe
+        LocationNamePipe,
+        AccountingProviderDialogComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './company-list.html'
@@ -61,6 +63,9 @@ export class CompanyListComponent implements OnInit, OnDestroy {
     selectedCompany: Company | null = null;
     displayViewDrawer = false;
     rowMenuItems: MenuItem[] = [];
+    accountingDialogVisible = false;
+    accountingCompany: Company | null = null;
+    private viewRequested = false;
 
     @ViewChild('companiesTable') companiesTable!: Table;
     @ViewChild('rowMenu') rowMenu!: Menu;
@@ -83,7 +88,10 @@ export class CompanyListComponent implements OnInit, OnDestroy {
         this.store.select(selectSelectedCompany)
             .pipe(takeUntil(this.destroy$))
             .subscribe((company) => {
-                if (company) {
+                // Solo abre el drawer si fue esta pantalla quien pidió el detalle;
+                // selectedCompany también lo deja company-form al editar.
+                if (company && this.viewRequested) {
+                    this.viewRequested = false;
                     this.selectedCompany = company;
                     this.displayViewDrawer = true;
                 }
@@ -110,6 +118,7 @@ export class CompanyListComponent implements OnInit, OnDestroy {
 
     navigateToView(companyId: string | number): void {
         if (companyId) {
+            this.viewRequested = true;
             this.store.dispatch(CompaniesActions.loadCompany({ id: Number(companyId) }));
         }
     }
@@ -138,6 +147,11 @@ export class CompanyListComponent implements OnInit, OnDestroy {
                 icon: 'pi pi-credit-card',
                 command: () => this.router.navigate(['/companies', company.id, 'licences'])
             },
+            {
+                label: 'Facturador electrónico',
+                icon: 'pi pi-file-edit',
+                command: () => this.openAccountingDialog(company)
+            },
             { separator: true },
             {
                 label: 'Eliminar',
@@ -147,6 +161,15 @@ export class CompanyListComponent implements OnInit, OnDestroy {
             }
         ];
         this.rowMenu.toggle(event);
+    }
+
+    openAccountingDialog(company: Company): void {
+        this.accountingCompany = company;
+        this.accountingDialogVisible = true;
+    }
+
+    closeAccountingDialog(): void {
+        this.accountingDialogVisible = false;
     }
 
     editCompany(company: Company): void {

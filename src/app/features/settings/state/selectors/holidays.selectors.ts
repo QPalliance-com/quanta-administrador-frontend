@@ -12,6 +12,8 @@ export const selectHolidaysError = createSelector(selectHolidaysState, (state) =
 
 export const selectSelectedYear = createSelector(selectHolidaysState, (state) => state.selectedYear);
 
+export const selectSelectedCountry = createSelector(selectHolidaysState, (state) => state.selectedCountry);
+
 export const selectTotalActiveInYear = createSelector(
     selectHolidaysState,
     (state) => state.totalActiveInYear

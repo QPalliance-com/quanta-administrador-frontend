@@ -45,6 +45,7 @@ export class MigrationDialogComponent implements OnChanges, OnDestroy {
 
     @Input() visible = false;
     @Input({ required: true }) companyId!: number;
+    @Input() countryCode = ''; // país de la company: las formas de pago se ofrecen según el país
     @Input() lot: LicenceLot | null = null;
     @Output() closed = new EventEmitter<void>();
 
@@ -82,7 +83,10 @@ export class MigrationDialogComponent implements OnChanges, OnDestroy {
         if (changes['visible'] && this.visible) {
             this.inlineError = null;
             this.form.reset();
-            this.store.dispatch(CatalogsActions.load());
+            this.store.dispatch(CatalogsActions.loadPaymentTypes({ countryCode: this.countryCode }));
+        } else if (changes['countryCode'] && this.visible) {
+            this.form.get('newPaymentTypeCatalogId')?.reset();
+            this.store.dispatch(CatalogsActions.loadPaymentTypes({ countryCode: this.countryCode }));
         }
     }
 

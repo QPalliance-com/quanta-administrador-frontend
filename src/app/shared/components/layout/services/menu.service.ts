@@ -72,6 +72,12 @@ const MENU_ITEMS: MenuItem[] = [
                 icon: 'pi pi-calendar-plus',
                 routerLink: ['/settings/holidays/list'],
                 description: 'Calendario de festivos nacionales para efectos de costeo'
+            },
+            {
+                label: 'Entidades de Salud',
+                icon: 'pi pi-heart',
+                routerLink: ['/settings/health-entities/list'],
+                description: 'Gestión de entidades de salud (EPS, ARL, etc.) por país'
             }
         ]
     }

@@ -67,6 +67,7 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
 
     @Input() visible = false;
     @Input({ required: true }) companyId!: number;
+    @Input() countryCode = ''; // país de la company: las formas de pago se ofrecen según el país
     @Output() closed = new EventEmitter<void>();
 
     readonly profileOptions = PROFILE_OPTIONS;
@@ -128,8 +129,12 @@ export class AddLicencesDrawerComponent implements OnChanges, OnDestroy {
         if (changes['visible'] && this.visible) {
             this.inlineError = null;
             this.form.reset({ roleTypeProfile: null, quantityToAdd: 1, paymentReference: '' });
-            this.store.dispatch(CatalogsActions.load());
+            this.store.dispatch(CatalogsActions.loadPeriods());
+            this.store.dispatch(CatalogsActions.loadPaymentTypes({ countryCode: this.countryCode }));
             if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
+        } else if (changes['countryCode'] && this.visible) {
+            this.form.get('paymentTypeCatalogId')?.reset();
+            this.store.dispatch(CatalogsActions.loadPaymentTypes({ countryCode: this.countryCode }));
         }
     }
 

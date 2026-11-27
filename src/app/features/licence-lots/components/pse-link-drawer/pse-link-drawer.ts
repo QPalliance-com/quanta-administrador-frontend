@@ -98,7 +98,7 @@ export class PseLinkDrawerComponent implements OnChanges, OnDestroy {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['visible'] && this.visible) {
             this.resetForm();
-            this.store.dispatch(CatalogsActions.load());
+            this.store.dispatch(CatalogsActions.loadPeriods());
             if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
         }
     }

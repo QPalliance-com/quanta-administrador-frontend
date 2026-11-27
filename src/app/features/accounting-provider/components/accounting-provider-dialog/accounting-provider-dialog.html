@@ -1,0 +1,13 @@
+<p-dialog
+    [visible]="visible"
+    (visibleChange)="onVisibleChange($event)"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '560px' }"
+    [breakpoints]="{ '575px': '95vw' }"
+    appendTo="body"
+    [header]="companyName ? 'Facturador electrónico · ' + companyName : 'Facturador electrónico'"
+>
+    <!-- El *ngIf recrea el componente en cada apertura: ngOnInit resetea el estado NgRx de la empresa anterior -->
+    <app-accounting-provider-config *ngIf="visible && companyId !== null" [companyId]="companyId" />
+</p-dialog>

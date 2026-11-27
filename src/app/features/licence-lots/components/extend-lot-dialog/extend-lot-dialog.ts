@@ -118,7 +118,7 @@ export class ExtendLotDialogComponent implements OnChanges, OnDestroy {
         if (changes['visible'] && this.visible) {
             this.inlineError = null;
             this.form.reset({ paymentReference: '' });
-            this.store.dispatch(CatalogsActions.load());
+            this.store.dispatch(CatalogsActions.loadPeriods());
             if (!this.plans.length) this.store.dispatch(LicencesActions.loadLicences());
         }
     }

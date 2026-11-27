@@ -19,7 +19,7 @@ export class HolidayService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.adminApiUrl}holidays`;
 
-    getByYear(year: number, countryCode = 'CO'): Observable<ApiResponse<HolidayCalendarList>> {
+    getByYear(year: number, countryCode: string): Observable<ApiResponse<HolidayCalendarList>> {
         return this.http.get<ApiResponse<HolidayCalendarList>>(this.apiUrl, {
             params: { year, country: countryCode }
         });

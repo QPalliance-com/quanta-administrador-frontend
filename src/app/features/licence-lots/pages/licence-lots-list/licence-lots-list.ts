@@ -132,10 +132,11 @@ export class LicenceLotsListComponent implements OnInit {
     loading$ = this.store.select(selectLicenceLotsLoading);
     error$ = this.store.select(selectLicenceLotsError);
     company$ = this.store.select(selectCompanyById(this.companyId));
+    countryCode$ = this.company$.pipe(map((company) => company?.countryCode ?? ''));
     billingEmail$ = this.company$.pipe(map((company) => company?.emailBilling || company?.email || null));
 
     ngOnInit(): void {
-        this.store.dispatch(CatalogsActions.load());
+        this.store.dispatch(CatalogsActions.loadPeriods());
         this.load();
 
         // Si se entra por URL directa la lista de compañías puede no estar cargada todavía

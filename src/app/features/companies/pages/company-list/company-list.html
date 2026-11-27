@@ -92,6 +92,13 @@
 
 <p-confirmdialog />
 
+<app-accounting-provider-dialog
+    [visible]="accountingDialogVisible"
+    [companyId]="accountingCompany?.id ?? null"
+    [companyName]="accountingCompany?.companyName ?? ''"
+    (closed)="closeAccountingDialog()"
+/>
+
 <!-- Drawer lateral de detalle -->
 <p-drawer [(visible)]="displayViewDrawer" position="right" [style]="{ width: '420px' }" [modal]="true">
     <ng-template #header>
